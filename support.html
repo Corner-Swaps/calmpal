@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calmpal – App Support & Frequently Asked Questions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0A0A0F;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.10);
+      --accent-teal: #49CECD;
+      --text-main: #FFFFFF;
+      --text-sub: rgba(255, 255, 255, 0.70);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 20%, #121824 0%, #06060A 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      max-width: 680px;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent-teal);
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 15px;
+      color: var(--text-sub);
+    }
+    .section {
+      margin-bottom: 28px;
+    }
+    .section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 8px;
+    }
+    .faq-item {
+      margin-bottom: 16px;
+    }
+    .faq-item h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent-teal);
+      margin-bottom: 4px;
+    }
+    .faq-item p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-sub);
+    }
+    .contact-box {
+      background: rgba(73, 206, 205, 0.08);
+      border: 1px solid rgba(73, 206, 205, 0.25);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-top: 32px;
+    }
+    .contact-box h3 {
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+    .contact-box a {
+      color: var(--accent-teal);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.40);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Calmpal Support</h1>
+      <p>Help, Frequently Asked Questions, and Contact Information</p>
+    </div>
+
+    <div class="section">
+      <h2>Frequently Asked Questions</h2>
+      
+      <div class="faq-item">
+        <h3>How do I start or pause audio?</h3>
+        <p>Tap the central circle on your screen to play or pause your ambient soundscape. You can also use your AirPods hardware controls or iOS Control Center to play and pause seamlessly.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Does Calmpal support background playback?</h3>
+        <p>Yes. Calmpal continues playing high-fidelity ambient sounds even when you switch to another app or lock your iPhone screen.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>How do I add or remove sounds from my grounding circle?</h3>
+        <p>Tap the plus button at the bottom of your screen to open the Sound Library and add new sounds. Tap the edit button to remove sounds from your custom layout.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>How do I customize the app theme?</h3>
+        <p>Tap the theme button at the top right corner of the screen to cycle through rich dark mode color themes.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Privacy & Data</h2>
+      <p style="font-size: 14px; color: var(--text-sub); line-height: 1.6;">
+        Calmpal is built with privacy first. We do not collect, store, or share your personal data, listening history, or location information.
+      </p>
+    </div>
+
+    <div class="contact-box">
+      <h3>Need Help or Have Feedback?</h3>
+      <p style="font-size: 14px; color: var(--text-sub); margin-bottom: 10px;">Contact our support team directly:</p>
+      <a href="mailto:support@calmpal.app">support@calmpal.app</a>
+    </div>
+
+    <div class="footer">
+      © 2026 Calmpal. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

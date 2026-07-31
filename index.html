@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calmpal – Preview</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --iphone-w: 393px;
+    --iphone-h: 852px;
+  }
+  html, body {
+    width: 100vw; height: 100vh;
+    margin: 0; padding: 0;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 30% 20%, #12082a 0%, #050508 70%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Outfit', sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+
+  /* ── Phone Frame ─────────────────────────────────────────────── */
+  .phone {
+    width: var(--iphone-w);
+    height: var(--iphone-h);
+    background: #000;
+    border-radius: 52px;
+    border: 1px solid #2a2a2a;
+    box-shadow:
+      0 0 0 10px #1a1a1a,
+      0 0 0 11px #111,
+      0 30px 80px rgba(0,0,0,0.8),
+      0 0 80px rgba(100,60,255,0.12);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* Auto-scale to fit viewport */
+    scale: clamp(0.45, calc((100vh - 32px) / var(--iphone-h)), 1);
+    transform-origin: center center;
+    flex-shrink: 0;
+  }
+
+  /* ── Dynamic Island ──────────────────────────────────────────── */
+  .island {
+    position: absolute; top: 13px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 34px;
+    background: #000; border-radius: 20px;
+    z-index: 50;
+  }
+
+  /* ── Status Bar ──────────────────────────────────────────────── */
+  .status-bar {
+    height: 36px; padding: 6px 28px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+    flex-shrink: 0; z-index: 10;
+  }
+  .status-icons { display: flex; gap: 5px; align-items: center; font-size: 12px; }
+
+  /* ── Main Screen ─────────────────────────────────────────────── */
+  #main-screen {
+    flex: 1; display: flex; flex-direction: column; background: #000; overflow: hidden;
+  }
+
+  /* ── Header ──────────────────────────────────────────────────── */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 20px 18px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; transition: background 0.15s, transform 0.1s;
+  }
+  .icon-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.16); }
+  .icon-btn.playing { background: rgba(255,255,255,0.16); }
+  .header-title {
+    font-size: 19px; font-weight: 700; color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .theme-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .theme-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.16); }
+  .theme-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    transition: background 0.35s;
+  }
+
+  .cat-icon {
+    width: 16px; height: 16px;
+    display: block;
+  }
+
+  /* ── Main Screen & Giant Circular Timer ──────────────────────────── */
+  .scroll-area {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    background: #000; overflow: hidden; position: relative;
+  }
+
+  .circle-visualizer {
+    position: relative; width: 320px; height: 320px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .orbit-ring-guide {
+    position: absolute; width: 280px; height: 280px; border-radius: 50%;
+    border: 1.5px stroke rgba(255,255,255,0.08); border-style: dashed;
+    pointer-events: none;
+  }
+
+  .center-circle {
+    position: relative; width: 210px; height: 210px; border-radius: 50%;
+    background: radial-gradient(circle, #1c1c1e 0%, #0c0c0e 100%);
+    border: 7px solid rgba(255,255,255,0.12);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; text-align: center; padding: 16px; box-shadow: 0 0 40px rgba(0,0,0,0.8);
+    transition: transform 0.2s, border-color 0.3s;
+  }
+  .center-circle:active { transform: scale(0.96); }
+
+  .center-circle-progress {
+    position: absolute; inset: -7px; border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .orbit-node {
+    position: absolute; width: 46px; height: 46px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); border: 2px solid transparent;
+    color: rgba(255,255,255,0.7); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: all 0.25s ease; z-index: 10; transform: translate(-50%, -50%);
+  }
+  .orbit-node:active { transform: translate(-50%, -50%) scale(0.9); }
+  .orbit-node.active {
+    background: #0d85ff; color: #fff; border-color: #fff;
+    box-shadow: 0 0 16px rgba(13,133,255,0.6);
+  }
+
+  .orbit-label {
+    position: absolute; top: 50px; font-size: 11px; font-weight: 600;
+    color: rgba(255,255,255,0.6); white-space: nowrap; pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .orbit-node.active .orbit-label { color: #fff; font-weight: 700; }
+  .row-cat.playing-tag { color: #fff; }
+
+  /* ── Bottom Nav ──────────────────────────────────────────────── */
+  .bottom-nav {
+    display: flex; background: #0f0f10;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 12px 6px 30px; flex-shrink: 0;
+  }
+  .nav-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+    background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.4);
+    transition: transform 0.1s;
+  }
+  .nav-tab:active { transform: scale(0.90); }
+  .nav-circle {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: background 0.2s;
+  }
+  .nav-label { font-size: 9px; font-weight: 700; text-transform: capitalize; letter-spacing: 0.2px; }
+
+  /* ── Picker Sheet ────────────────────────────────────────────── */
+  #picker-sheet {
+    position: absolute; inset: 0; z-index: 90;
+    background: rgba(5,5,8,0.97);
+    display: none; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.17,0.89,0.32,1.05);
+  }
+  #picker-sheet.open { display: flex; transform: translateY(0); }
+
+  .picker-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 20px 14px; flex-shrink: 0;
+  }
+  .back-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 600;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .back-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.16); }
+  .picker-title {
+    font-size: 21px; font-weight: 700; color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .picker-list {
+    flex: 1; overflow-y: auto; scrollbar-width: none;
+  }
+  .picker-list::-webkit-scrollbar { display: none; }
+
+  .picker-row {
+    display: flex; align-items: center; gap: 12px;
+    height: 80px; min-height: 80px;
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer; transition: background 0.15s;
+  }
+  .picker-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+  .picker-row:active { background: rgba(255,255,255,0.08); }
+  .picker-num {
+    font-size: 12px; font-weight: 700; width: 24px; text-align: center;
+    flex-shrink: 0;
+  }
+  .picker-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .picker-name { font-size: 21px; font-weight: 700; color: #fff; }
+  .picker-desc {
+    font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.65);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .picker-hz {
+    font-size: 16px; font-weight: 700; display: flex; align-items: baseline; gap: 1px;
+    flex-shrink: 0;
+  }
+  .picker-hz-unit { font-size: 9px; font-weight: 500; opacity: 0.6; }
+
+  /* ── Picker Bottom Tab Bar ───────────────────────────────────── */
+  .picker-nav {
+    display: flex; flex-shrink: 0;
+    background: rgba(18,18,20,0.98);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 6px 32px;
+  }
+  .picker-nav-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: none; border: none; cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .picker-nav-tab:active { transform: scale(0.90); }
+  .picker-nav-circle {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: background 0.2s;
+  }
+  .picker-nav-circle.selected { /* set by JS */ }
+  .picker-nav-label {
+    font-size: 9px; font-weight: 700;
+    color: rgba(255,255,255,0.30); text-transform: capitalize;
+    transition: color 0.2s;
+  }
+
+  /* ── Home Indicator ─────────────────────────────────────────── */
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; background: rgba(255,255,255,0.75); border-radius: 10px;
+    z-index: 200; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+
+  <!-- Dynamic Island -->
+  <div class="island"></div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span id="clock">9:41</span>
+    <div class="status-icons">
+      <span>●●●</span>
+      <span>WiFi</span>
+      <span>🔋</span>
+    </div>
+  </div>
+
+  <!-- Main Screen -->
+  <div id="main-screen">
+    <!-- Top Clearance -->
+    <div style="height: 20px;"></div>
+
+    <!-- Giant Circular Timer Display -->
+    <div class="scroll-area" id="scroll-area"></div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" id="bottom-nav"></div>
+  </div>
+
+  <!-- Picker Sheet (slide up) -->
+  <div id="picker-sheet">
+    <div style="height: 16px;"></div>
+    <div class="picker-list" id="picker-list"></div>
+    <div class="picker-nav" id="picker-nav"></div>
+  </div>
+
+  <!-- Home Indicator -->
+  <div class="home-indicator"></div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const THEMES = [
+  { accent: '#0a84ff', palette: ['#1c1c1e','#0a84ff','#a00d9f','#5e17eb','#3d0099'] },
+  { accent: '#e65a0d', palette: ['#471408','#8c280a','#b84004','#991314','#6b0f24'] },
+];
+
+const CATEGORIES = [
+  {
+    name: 'Rain',
+    iconHTML: '<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/><path d="M8 19v2M12 19v2M16 19v2"/></svg>',
+    color: '#26c2bf',
+    description: 'Gentle rain drops, window patter & thunder.',
+    sounds: [
+      { name: 'Rain', desc: 'Soft, soothing patter of light rainfall.' },
+      { name: 'Window', desc: 'Calming rain drops tapping against window glass.' },
+      { name: 'Canopy', desc: 'Gentle shower falling on forest leaves.' },
+      { name: 'Downpour', desc: 'Deep, comforting downfall of steady summer rain.' },
+      { name: 'Thunder', desc: 'Low, rumbling thunder echoing safely over hills.' }
+    ]
+  },
+  {
+    name: 'Ocean',
+    iconHTML: '<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c3-2 6-2 9 0s6 2 9 0M2 17c3-2 6-2 9 0s6 2 9 0"/></svg>',
+    color: '#00b4d8',
+    description: 'Coastal surf, waterfalls & rivers.',
+    sounds: [
+      { name: 'Waves', desc: 'Rhythmic ocean surf swells rolling onto sandy shores.' },
+      { name: 'Waterfall', desc: 'Pure white water cascading into a deep natural pool.' },
+      { name: 'River', desc: 'Clear stream water trickling over smooth river stones.' },
+      { name: 'Droplets', desc: 'Crisp, rhythmic water drops falling into a spring.' },
+      { name: 'Seagulls', desc: 'Ocean tides washing coastal rocks with gull calls.' }
+    ]
+  },
+  {
+    name: 'Forest',
+    iconHTML: '<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 22h20L12 2Z"/></svg>',
+    color: '#2dae46',
+    description: 'Morning birdsong, jungle & crickets.',
+    sounds: [
+      { name: 'Birds', desc: 'Vibrant morning birdsong chorus in woodland canopy.' },
+      { name: 'Jungle', desc: 'Rich tropical atmosphere with warm birdsong and rustle.' },
+      { name: 'Crickets', desc: 'Quiet evening field silence with gentle cricket chirps.' },
+      { name: 'Frogs', desc: 'Peaceful twilight pond atmosphere with soft frog croaks.' },
+      { name: 'Purr', desc: 'Rhythmic, deep cat purr providing sensory warmth.' }
+    ]
+  },
+  {
+    name: 'Wind',
+    iconHTML: '<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2M9.6 4.6A2 2 0 1 1 11 8H2M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>',
+    color: '#eb8f1a',
+    description: 'Canopy breeze, campfire & winds.',
+    sounds: [
+      { name: 'Trees', desc: 'Rustling forest canopy breeze sweeping through trees.' },
+      { name: 'Campfire', desc: 'Warm hearth wood embers crackling and popping softly.' },
+      { name: 'Breeze', desc: 'Smooth, warm whistling breeze blowing across dunes.' },
+      { name: 'Gale', desc: 'Atmospheric high mountain wind blowing over peaks.' },
+      { name: 'Leaves', desc: 'Rhythmic crunch of dry autumn leaves beneath steps.' }
+    ]
+  },
+  {
+    name: 'Ambient',
+    iconHTML: '<svg class="cat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>',
+    color: '#a00d9f',
+    description: 'Warm café, library & night village.',
+    sounds: [
+      { name: 'Cafe', desc: 'Subtle background coffee shop chatter and cup clinks.' },
+      { name: 'Library', desc: 'Peaceful indoor sanctuary air flow for focus.' },
+      { name: 'Village', desc: 'Serene night atmosphere in a quiet, secluded village.' },
+      { name: 'Temple', desc: 'Soothing temple sanctuary drone for calm meditation.' },
+      { name: 'Deep', desc: 'Deep sub-aquatic ocean pressure swell and resonance.' }
+    ]
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let themeIdx = 0;
+let rows = [
+  { name: 'Drizzle', display: 'Drizzle', badge: 'Rain', catLabel: 'RAIN', hz: null },
+  { name: 'Waves', display: 'Waves', badge: 'Ocean', catLabel: 'OCEAN', hz: null },
+  { name: 'Birds', display: 'Birds', badge: 'Forest', catLabel: 'FOREST', hz: null },
+  { name: 'Trees', display: 'Trees', badge: 'Wind', catLabel: 'WIND', hz: null },
+  { name: 'Cafe', display: 'Cafe', badge: 'Ambient', catLabel: 'AMBIENT', hz: null }
+];
+
+const SOUND_FILES = {
+  'Drizzle': 'Sounds/light-rain.mp3',
+  'Window': 'Sounds/rain-on-window.mp3',
+  'Canopy': 'Sounds/rain-on-leaves.mp3',
+  'Downpour': 'Sounds/heavy-rain.mp3',
+  'Thunder': 'Sounds/thunder.mp3',
+  'Waves': 'Sounds/waves.mp3',
+  'Waterfall': 'Sounds/waterfall.mp3',
+  'River': 'Sounds/river.mp3',
+  'Droplets': 'Sounds/droplets.mp3',
+  'Seagulls': 'Sounds/seagulls.mp3',
+  'Birds': 'Sounds/birds.mp3',
+  'Jungle': 'Sounds/jungle.mp3',
+  'Crickets': 'Sounds/crickets.mp3',
+  'Frogs': 'Sounds/frog.mp3',
+  'Purr': 'Sounds/cat-purring.mp3',
+  'Trees': 'Sounds/wind-in-trees.mp3',
+  'Campfire': 'Sounds/campfire.mp3',
+  'Breeze': 'Sounds/wind.mp3',
+  'Gale': 'Sounds/howling-wind.mp3',
+  'Leaves': 'Sounds/walk-on-leaves.mp3',
+  'Cafe': 'Sounds/cafe.mp3',
+  'Library': 'Sounds/library.mp3',
+  'Village': 'Sounds/night-village.mp3',
+  'Temple': 'Sounds/temple.mp3',
+  'Deep': 'Sounds/underwater.mp3'
+};
+let activeName = null;
+let progress = 0;
+let progressTimer = null;
+let pickerCat = 0;
+
+// Web Audio API State
+let audioCtx = null;
+let activeOsc = null;
+let activeGain = null;
+let activeNoiseNode = null;
+let previewActiveName = null;
+
+// ── RENDER HELPERS ────────────────────────────────────────────────────────────
+
+function theme() { return THEMES[themeIdx]; }
+
+function renderClock() {
+  const d = new Date();
+  const h = d.getHours() % 12 || 12;
+  const m = String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}`;
+}
+setInterval(renderClock, 10000); renderClock();
+
+function renderThemeDot() {
+  document.getElementById('theme-dot').style.background = theme().accent;
+}
+
+const SOUND_COLORS = {
+  'Rain': '#47a6f2', 'Window': '#1fbfe8', 'Canopy': '#0d99a6', 'Downpour': '#3366d9', 'Thunder': '#734dd9',
+  'Waves': '#0d85ff', 'Waterfall': '#26b3f2', 'River': '#1aa6b3', 'Droplets': '#59ccfa', 'Seagulls': '#40bfb3',
+  'Birds': '#2eb847', 'Jungle': '#148c33', 'Crickets': '#599940', 'Frogs': '#80bf26', 'Purr': '#b38c33',
+  'Trees': '#eb8f1a', 'Campfire': '#f2611f', 'Breeze': '#e0ad40', 'Gale': '#8c99ad', 'Leaves': '#d16b2e',
+  'Cafe': '#b36133', 'Library': '#8c4db3', 'Village': '#40478c', 'Temple': '#cc9e2e', 'Deep': '#1a4099'
+};
+
+let isPaused = false;
+
+function renderRows() {
+  const area = document.getElementById('scroll-area');
+  area.innerHTML = '';
+  
+  const activeRow = rows.find(r => r.name === activeName);
+  const activeColor = activeRow ? (SOUND_COLORS[activeRow.display] || theme().accent) : theme().accent;
+  
+  const visualizer = document.createElement('div');
+  visualizer.className = 'circle-visualizer';
+  visualizer.style.marginTop = '28px'; // Lowered whole metal/circle visualizer section down a bit
+
+  // Center Circle
+  const center = document.createElement('div');
+  center.className = 'center-circle';
+  center.style.borderColor = activeName ? (isPaused ? 'rgba(255,255,255,0.4)' : activeColor) : 'rgba(255,255,255,0.12)';
+
+  if (activeRow) {
+    const totalSec = Math.floor(elapsedSeconds);
+    const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+    const ss = String(totalSec % 60).padStart(2, '0');
+
+    center.innerHTML = `
+      <div style="font-size:26px; font-weight:700; color:#fff; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-top:10px;">${activeRow.display}</div>
+      <div style="font-size:22px; font-weight:700; color:rgba(255,255,255,0.9); font-family:monospace; margin-top:6px;">${mm}:${ss}</div>
+      ${isPaused ? `<div style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.6); letter-spacing:1.5px; margin-top:4px;">PAUSED</div>` : ''}
+    `;
+    center.innerHTML = `
+      <div style="font-size:24px; font-weight:700; color:#ffffff;">Tap to Play</div>
+      <div style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.45); letter-spacing:1.5px; margin-top:4px;">SELECT SOUND</div>
+    `;
+
+  center.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeName) {
+      // Tapping middle circle PAUSES/RESUMES, does NOT reset to Tap to Play!
+      isPaused = !isPaused;
+      if (isPaused) {
+        if (activeAudioElement) activeAudioElement.pause();
+      } else {
+        if (activeAudioElement) activeAudioElement.play();
+      }
+    } else if (rows.length > 0) {
+      toggleRow(rows[0].name);
+    }
+    renderRows();
+  });
+
+  visualizer.appendChild(center);
+
+  // Tapping anywhere on the black background resets to Tap to Play!
+  visualizer.addEventListener('click', (e) => {
+    if (e.target === visualizer) {
+      stopPlayback();
+    }
+  });
+
+  // Orbiting Category & Sound Icons around outer ring
+  const count = rows.length;
+  const radius = 135; // orbit radius in px
+
+  const catIcons = {
+    'Rain': '🌧️',
+    'Ocean': '🌊',
+    'Forest': '🌲',
+    'Wind': '💨',
+    'Ambient': '☕'
+  };
+
+  rows.forEach((row, i) => {
+    const angleDeg = -90 + (i * (360 / Math.max(1, count)));
+    const angleRad = angleDeg * (Math.PI / 180);
+    const x = Math.round(160 + radius * Math.cos(angleRad));
+    const y = Math.round(160 + radius * Math.sin(angleRad));
+    const isActive = row.name === activeName;
+    const icon = catIcons[row.badge] || '🎵';
+    const soundCol = SOUND_COLORS[row.display] || '#26c2bf';
+
+    const btn = document.createElement('button');
+    btn.className = `orbit-node${isActive ? ' active' : ''}`;
+    btn.style.left = `${x}px`;
+    btn.style.top = `${y}px`;
+    
+    if (isEditing) {
+      btn.style.background = 'rgb(225, 100, 100)';
+      btn.style.boxShadow = '0 0 0 4px #000'; // Solid black border mask prevents white lines
+      btn.innerHTML = `
+        <span style="font-size:24px; font-weight:bold; color:#fff;">ー</span>
+        <span class="orbit-label" style="color:rgba(240, 120, 120, 1);">${row.display}</span>
+      `;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (row.name === activeName) stopWebAudio();
+        rows.splice(i, 1);
+        renderRows();
+      });
+    } else {
+      if (isActive) {
+        btn.style.background = soundCol;
+      }
+      btn.innerHTML = `
+        <span style="font-size:20px;">${icon}</span>
+        <span class="orbit-label">${row.display}</span>
+      `;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleRow(row.name);
+      });
+    }
+
+    visualizer.appendChild(btn);
+  });
+
+  area.appendChild(visualizer);
+}
+
+function renderPickerList() {
+  const cat = CATEGORIES[pickerCat];
+  const list = document.getElementById('picker-list');
+  list.scrollTop = 0;
+  list.innerHTML = '';
+
+  // Render Section Header centered in the middle with generous top clearance!
+  const header = document.createElement('div');
+  header.style.padding = '64px 24px 28px 24px';
+  header.style.textAlign = 'center';
+  header.innerHTML = `
+    <div style="font-size:28px; font-weight:700; color:#fff; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${cat.name}</div>
+    <div style="font-size:13px; font-weight:500; color:rgba(255,255,255,0.65); font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-top:4px;">${cat.description}</div>
+  `;
+  list.appendChild(header);
+
+  cat.sounds.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'picker-row';
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.justifyContent = 'space-between';
+    row.style.padding = '12px 20px';
+    row.style.height = '80px';
+
+    const isPrev = previewActiveName === s.name;
+
+    row.innerHTML = `
+      <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:0;">
+        <div class="picker-info" style="flex:1; min-width:0; text-align:left;">
+          <div class="picker-name" style="font-size:21px; font-weight:700; color:#fff;">${s.name}</div>
+          <div class="picker-desc" style="font-size:13px; font-weight:500; color:rgba(255,255,255,0.65); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.desc}</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+        <button class="picker-preview-btn" style="width:42px; height:42px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; transition: background 0.15s; background:${isPrev ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)'}; color:#fff;">
+          ${isPrev ? '■' : '▶'}
+        </button>
+        <button class="picker-add-btn" style="width:42px; height:42px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; font-weight:bold; background:${cat.color}; color:#fff;">
+          +
+        </button>
+      </div>`;
+
+    row.querySelector('.picker-preview-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleWebPreview(s, cat);
+    });
+
+    row.querySelector('.picker-add-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      addRow(s, cat);
+      closePicker();
+    });
+
+    list.appendChild(row);
+  });
+}
+
+function renderPickerNav() {
+  const nav = document.getElementById('picker-nav');
+  nav.innerHTML = '';
+
+  // Back button on bottom left next to Rain!
+  const backBtn = document.createElement('button');
+  backBtn.className = 'picker-nav-tab';
+  backBtn.innerHTML = `
+    <div class="picker-nav-circle" style="background:rgba(255,255,255,0.12); font-size:16px; font-weight:bold;">←</div>
+    <span class="picker-nav-label" style="color:rgba(255,255,255,0.5)">Back</span>`;
+  backBtn.addEventListener('click', () => closePicker());
+  nav.appendChild(backBtn);
+
+  CATEGORIES.forEach((cat, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'picker-nav-tab';
+    const isActive = i === pickerCat;
+    btn.innerHTML = `
+      <div class="picker-nav-circle" style="background:${isActive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'};">${cat.iconHTML}</div>
+      <span class="picker-nav-label" style="color:${isActive ? '#fff' : 'rgba(255,255,255,0.30)'}">${cat.name}</span>`;
+    btn.addEventListener('click', () => {
+      pickerCat = i;
+      renderPickerList();
+      renderPickerNav();
+    });
+    nav.appendChild(btn);
+  });
+}
+
+function renderBottomNav() {
+  const nav = document.getElementById('bottom-nav');
+  nav.innerHTML = '';
+  CATEGORIES.forEach((cat, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-tab';
+    btn.innerHTML = `
+      <div class="nav-circle" style="color:#fff; background:rgba(255,255,255,0.08);">${cat.iconHTML}</div>
+      <span class="nav-label" style="color:rgba(255,255,255,0.7);">${cat.name}</span>`;
+    btn.addEventListener('click', () => openPicker(i));
+    nav.appendChild(btn);
+  });
+}
+
+// ── PICKER ────────────────────────────────────────────────────────────────────
+
+function openPicker(catIdx) {
+  pickerCat = catIdx;
+  renderPickerList();
+  renderPickerNav();
+  const sheet = document.getElementById('picker-sheet');
+  sheet.style.display = 'flex';
+  requestAnimationFrame(() => sheet.classList.add('open'));
+}
+
+function closePicker() {
+  if (previewActiveName) {
+    stopWebAudio();
+    previewActiveName = null;
+    if (activeName) {
+      const row = rows.find(r => r.name === activeName);
+      if (row) playWebAudio(row);
+    }
+  }
+  const sheet = document.getElementById('picker-sheet');
+  sheet.classList.remove('open');
+  setTimeout(() => { sheet.style.display = 'none'; }, 350);
+}
+
+function renderPickerList() {
+  const cat = CATEGORIES[pickerCat];
+  const list = document.getElementById('picker-list');
+  list.scrollTop = 0;
+  list.innerHTML = '';
+
+  // Render Section Header with Back Button on the left side next to Category title!
+  const header = document.createElement('div');
+  header.style.padding = '14px 20px 16px 20px';
+  header.style.display = 'flex';
+  header.style.alignItems = 'flex-start';
+  header.style.gap = '14px';
+  header.innerHTML = `
+    <button class="back-btn" onclick="closePicker()" style="width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.12); border:none; color:#fff; font-size:18px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;">←</button>
+    <div style="text-align:left;">
+      <div style="font-size:24px; font-weight:700; color:#fff; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${cat.name}</div>
+      <div style="font-size:13px; font-weight:500; color:rgba(255,255,255,0.65); font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin-top:3px;">${cat.description}</div>
+    </div>
+  `;
+  list.appendChild(header);
+
+  cat.sounds.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'picker-row';
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.justifyContent = 'space-between';
+    row.style.padding = '12px 20px';
+    row.style.height = '80px';
+
+    const isPrev = previewActiveName === s.name;
+    const activeColor = cat.color;
+
+    row.innerHTML = `
+      <div style="display:flex; align-items:center; gap:14px; flex:1; min-width:0;">
+        <span class="picker-num" style="color:rgba(255,255,255,0.6); font-size:14px; font-weight:700; font-family:monospace; min-width:24px; text-align:center;">${String(i+1).padStart(2,'0')}</span>
+        <div class="picker-info" style="flex:1; min-width:0; text-align:left;">
+          <div class="picker-name" style="font-size:21px; font-weight:700; color:#fff;">${s.name}</div>
+          <div class="picker-desc" style="font-size:13px; font-weight:500; color:rgba(255,255,255,0.65); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${s.desc}</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+        <button class="picker-preview-btn" style="width:42px; height:42px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; transition: background 0.15s; background:${isPrev ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)'}; color:#fff;">
+          ${isPrev ? '■' : '▶'}
+        </button>
+        <button class="picker-add-btn" style="width:42px; height:42px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; font-weight:bold; background:${cat.color}; color:#fff;">
+          +
+        </button>
+      </div>`;
+
+    row.querySelector('.picker-preview-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleWebPreview(s, cat);
+    });
+
+    row.querySelector('.picker-add-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      addRow(s, cat);
+      closePicker();
+    });
+
+    list.appendChild(row);
+  });
+}
+
+function toggleWebPreview(sound, cat) {
+  if (previewActiveName === sound.name) {
+    stopWebAudio();
+    previewActiveName = null;
+    if (activeName) {
+      const row = rows.find(r => r.name === activeName);
+      if (row) playWebAudio(row);
+    }
+  } else {
+    previewActiveName = sound.name;
+    const dummyRow = { name: sound.name, hz: sound.hz };
+    playWebAudio(dummyRow);
+  }
+  renderPickerList();
+}
+
+function renderPickerNav() {
+  const nav = document.getElementById('picker-nav');
+  nav.innerHTML = '';
+  CATEGORIES.forEach((cat, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'picker-nav-tab';
+    const isActive = i === pickerCat;
+    btn.innerHTML = `
+      <div class="picker-nav-circle" style="background:${isActive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'};">${cat.iconHTML}</div>
+      <span class="picker-nav-label" style="color:${isActive ? '#fff' : 'rgba(255,255,255,0.30)'}">${cat.name}</span>`;
+    btn.addEventListener('click', () => {
+      pickerCat = i;
+      renderPickerList();
+      renderPickerNav();
+    });
+    nav.appendChild(btn);
+  });
+}
+
+const SOUND_FILES = {
+  'Gentle Light Rain': 'Sounds/light-rain.mp3',
+  'Rain on Window Glass': 'Sounds/rain-on-window.mp3',
+  'Rain on Forest Canopy': 'Sounds/rain-on-leaves.mp3',
+  'Heavy Rain Shower': 'Sounds/heavy-rain.mp3',
+  'Distant Rolling Thunder': 'Sounds/thunder.mp3',
+  'Rhythmic Ocean Waves': 'Sounds/waves.mp3',
+  'Cascading Waterfall': 'Sounds/waterfall.mp3',
+  'Bubbling Forest River': 'Sounds/river.mp3',
+  'Gentle Water Droplets': 'Sounds/droplets.mp3',
+  'Coastal Seagulls & Tide': 'Sounds/seagulls.mp3',
+  'Morning Forest Birdsong': 'Sounds/birds.mp3',
+  'Lush Tropical Jungle': 'Sounds/jungle.mp3',
+  'Quiet Night Crickets': 'Sounds/crickets.mp3',
+  'Evening Pond Frogs': 'Sounds/frog.mp3',
+  'Soft Cat Purring': 'Sounds/cat-purring.mp3',
+  'Wind in Forest Trees': 'Sounds/wind-in-trees.mp3',
+  'Cozy Hearth Campfire': 'Sounds/campfire.mp3',
+  'Gentle Dune Breeze': 'Sounds/wind.mp3',
+  'Mountain Howling Wind': 'Sounds/howling-wind.mp3',
+  'Walk on Autumn Leaves': 'Sounds/walk-on-leaves.mp3',
+  'Warm Cafe Ambience': 'Sounds/cafe.mp3',
+  'Quiet Library Study': 'Sounds/library.mp3',
+  'Peaceful Night Village': 'Sounds/night-village.mp3',
+  'Restful Temple Sanctuary': 'Sounds/temple.mp3',
+  'Deep Underwater Swell': 'Sounds/underwater.mp3'
+};
+
+let activeAudioElement = null;
+
+function addRow(sound, cat) {
+  const display = sound.name;
+  const badge   = cat.name;
+  const catMap  = { 'Rain & Storm':'RAIN & STORM', 'Ocean & Water':'OCEAN & WATER', 'Forest & Wildlife':'FOREST & WILDLIFE', 'Wind & Fire':'WIND & FIRE', 'Ambient & Cozy':'AMBIENT & COZY' };
+  rows.push({ name: sound.name, display, badge, catLabel: catMap[cat.name] || 'NATURE', hz: null });
+  renderRows();
+}
+
+// ── PLAYBACK ──────────────────────────────────────────────────────────────────
+
+function stopWebAudio() {
+  if (activeAudioElement) {
+    try { activeAudioElement.pause(); activeAudioElement.currentTime = 0; } catch(e){}
+    activeAudioElement = null;
+  }
+}
+
+function playWebAudio(row) {
+  stopWebAudio();
+  const filePath = SOUND_FILES[row.name];
+  if (filePath) {
+    activeAudioElement = new Audio(filePath);
+    activeAudioElement.loop = true;
+    activeAudioElement.volume = 0.6;
+    activeAudioElement.play().catch(e => console.log('Web audio playback error:', e));
+  }
+}
+
+function toggleRow(name) {
+  if (activeName === name) {
+    if (isPaused) {
+      isPaused = false;
+      if (activeAudioElement) activeAudioElement.play();
+    } else {
+      isPaused = true;
+      if (activeAudioElement) activeAudioElement.pause();
+    }
+    renderRows();
+  } else {
+    activeName = name;
+    isPaused = false;
+    elapsedSeconds = 0;
+    startProgress();
+    const pauseBtn = document.getElementById('pause-btn');
+    if (pauseBtn) {
+      pauseBtn.classList.add('playing');
+      pauseBtn.textContent = '⏸';
+    }
+    const row = rows.find(r => r.name === name);
+    if (row) playWebAudio(row);
+    renderRows();
+  }
+}
+
+function stopPlayback() {
+  stopWebAudio();
+  activeName = null;
+  isPaused = false;
+  elapsedSeconds = 0;
+  clearInterval(progressTimer);
+  progressTimer = null;
+  const pauseBtn = document.getElementById('pause-btn');
+  if (pauseBtn) {
+    pauseBtn.classList.remove('playing');
+    pauseBtn.textContent = '▶';
+  }
+  renderRows();
+}
+
+function togglePause() {
+  if (activeName) {
+    isPaused = !isPaused;
+    if (isPaused) {
+      if (activeAudioElement) activeAudioElement.pause();
+    } else {
+      if (activeAudioElement) activeAudioElement.play();
+    }
+    renderRows();
+  } else {
+    if (rows.length > 0) {
+      toggleRow(rows[0].name);
+    }
+  }
+}
+
+function startProgress() {
+  clearInterval(progressTimer);
+  progressTimer = setInterval(() => {
+    if (!isPaused) {
+      elapsedSeconds += 0.05;
+      renderRows();
+    }
+  }, 50);
+}
+
+function updateProgressBar(idx) {
+  const bar = document.getElementById(`rp-${idx}`);
+  if (bar) bar.style.width = (progress * 100) + '%';
+}
+
+// ── THEME CYCLING ─────────────────────────────────────────────────────────────
+
+function cycleTheme() {
+  themeIdx = (themeIdx + 1) % THEMES.length;
+  renderThemeDot();
+  renderRows();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+
+renderThemeDot();
+renderRows();
+renderBottomNav();
+</script>
+</body>
+</html>
