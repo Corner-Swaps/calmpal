@@ -177,4 +177,17 @@ final class CalmpalTests: XCTestCase {
         let sanitized = input.filteringControlCharacters()
         XCTAssertEqual(sanitized, input)
     }
+
+    // MARK: - Sound Banner Themes Tests
+
+    func testSoundBannerThemes() {
+        XCTAssertEqual(allSoundBanners.count, 25)
+        for banner in allSoundBanners {
+            XCTAssertFalse(banner.id.isEmpty)
+            XCTAssertFalse(banner.title.isEmpty)
+            XCTAssertFalse(banner.imageName.isEmpty)
+            let matched = bannerFor(profile: banner.profile)
+            XCTAssertEqual(matched.profile, banner.profile)
+        }
+    }
 }

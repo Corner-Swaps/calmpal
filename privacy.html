@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calmpal – Privacy Policy & Data Governance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07090E;
+      --card-bg: rgba(255, 255, 255, 0.04);
+      --card-border: rgba(255, 255, 255, 0.09);
+      --accent: #49CECD;
+      --accent-glow: rgba(73, 206, 205, 0.25);
+      --danger: #FF6B6B;
+      --danger-bg: rgba(255, 107, 107, 0.10);
+      --text-main: #FFFFFF;
+      --text-sub: rgba(255, 255, 255, 0.72);
+      --text-dim: rgba(255, 255, 255, 0.45);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 10%, #101626 0%, #06070B 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 48px 20px;
+      display: flex;
+      justify-content: center;
+      line-height: 1.65;
+    }
+    .legal-container {
+      max-width: 820px;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 48px 40px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+    }
+    .legal-header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .legal-header h1 {
+      font-size: 34px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .legal-header p {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .crisis-card {
+      background: var(--danger-bg);
+      border: 1px solid var(--danger);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 36px;
+    }
+    .crisis-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--danger);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .crisis-card p {
+      font-size: 14px;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+    }
+    .helpline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .helpline-item {
+      background: rgba(0,0,0,0.30);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+    .helpline-item strong {
+      display: block;
+      color: #ffffff;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+    .helpline-item a {
+      color: var(--danger);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .legal-section {
+      margin-bottom: 36px;
+    }
+    .legal-section h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legal-section p, .legal-section li {
+      font-size: 14.5px;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+    }
+    .legal-section ul {
+      padding-left: 24px;
+      margin-bottom: 14px;
+    }
+    .legal-section li {
+      margin-bottom: 6px;
+    }
+    .table-box {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13.5px;
+    }
+    .table-box th, .table-box td {
+      border: 1px solid var(--card-border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .table-box th {
+      background: rgba(255,255,255,0.06);
+      color: #ffffff;
+    }
+    .table-box td {
+      color: var(--text-sub);
+    }
+    .action-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+      margin-top: 36px;
+    }
+    .btn-purge {
+      background: #E53935;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 100px;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn-purge:active { transform: scale(0.96); opacity: 0.85; }
+    .back-nav {
+      margin-top: 36px;
+      text-align: center;
+    }
+    .back-nav a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    @media (max-width: 600px) {
+      .legal-container { padding: 32px 20px; }
+      .legal-header h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="legal-container">
+  <div class="legal-header">
+    <span class="badge">Verified Compliance</span>
+    <h1>Privacy Policy & Data Governance</h1>
+    <p>Last Updated: August 18, 2026 • Compliant with BC PIPA, PIPEDA, CCPA/CPRA, GDPR & FTC Rules</p>
+  </div>
+
+  <!-- 🚨 Immediate Crisis Support Interceptor Resources -->
+  <div class="crisis-card" id="crisis-resources">
+    <h2>⚠️ Free 24/7 Crisis & Mental Health Support</h2>
+    <p>If you or someone you know is struggling, in emotional distress, or having thoughts of self-harm, please reach out immediately. Free, confidential support is available 24/7:</p>
+    <div class="helpline-grid">
+      <div class="helpline-item">
+        <strong>🇺🇸 United States</strong>
+        <a href="tel:988">Call or Text 988</a> (Suicide & Crisis Lifeline)
+      </div>
+      <div class="helpline-item">
+        <strong>🇨🇦 Canada</strong>
+        <a href="tel:18334564566">1-833-456-4566</a> (Talk Suicide Canada)
+      </div>
+      <div class="helpline-item">
+        <strong>📱 Crisis Text Line</strong>
+        <a href="sms:686868">Text HOME to 686868 (CA)</a> / <a href="sms:741741">741741 (US)</a>
+      </div>
+      <div class="helpline-item">
+        <strong>🌐 International Emergency</strong>
+        <a href="tel:911">Call 911 (US/CA)</a> / <a href="tel:112">112 (EU)</a> / <a href="tel:999">999 (UK)</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. Executive Summary & Zero Data Selling Guarantee -->
+  <div class="legal-section">
+    <h2>1. Executive Summary & Zero-Sale Guarantee</h2>
+    <p>Calmpal is an atmospheric soundscape and sleep timer application engineered with a <strong>privacy-first architecture</strong>. We guarantee unconditionally:</p>
+    <ul>
+      <li><strong>Zero Data Selling:</strong> We NEVER sell, rent, monetize, or trade your personal information, session recordings, or listening habits to data brokers, advertisers, or third parties under CCPA/CPRA § 1798.120 and GDPR Article 21.</li>
+      <li><strong>No Tracking Cookies:</strong> We do not deploy cross-site tracking pixels, third-party advertising cookies, or fingerprinting scripts.</li>
+      <li><strong>On-Device Processing:</strong> Sleep timer countdowns, audio mixing, and volume settings are processed locally in your browser or native device memory.</li>
+    </ul>
+  </div>
+
+  <!-- 2. Applicable Legal Frameworks -->
+  <div class="legal-section">
+    <h2>2. Applicable Governance Frameworks</h2>
+    <p>This policy complies with all applicable regional and international privacy legislation:</p>
+    <ul>
+      <li><strong>British Columbia PIPA:</strong> Personal Information Protection Act (SBC 2003, c. 63).</li>
+      <li><strong>Canadian PIPEDA:</strong> Personal Information Protection and Electronic Documents Act (S.C. 2000, c. 5).</li>
+      <li><strong>California CCPA/CPRA:</strong> California Consumer Privacy Act as amended by the California Privacy Rights Act (Cal. Civ. Code § 1798.100 et seq.).</li>
+      <li><strong>European Union GDPR:</strong> General Data Protection Regulation (EU 2016/679).</li>
+    </ul>
+  </div>
+
+  <!-- 3. Information We Process -->
+  <div class="legal-section">
+    <h2>3. Information We Process</h2>
+    <p>Calmpal processes only minimal, strictly essential technical data:</p>
+    <table class="table-box">
+      <thead>
+        <tr>
+          <th>Data Category</th>
+          <th>Purpose</th>
+          <th>Storage Location</th>
+          <th>Retention Period</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Timer & Sound Preferences</strong></td>
+          <td>Persists active sound choice, custom duration, and volume between sessions.</td>
+          <td>Local Device Storage (localStorage / UserDefaults)</td>
+          <td>Until user clears cache or purges data.</td>
+        </tr>
+        <tr>
+          <td><strong>Cookie / Storage Consent</strong></td>
+          <td>Records your consent to local storage preferences.</td>
+          <td>Local Storage</td>
+          <td>12 months or until cleared.</td>
+        </tr>
+        <tr>
+          <td><strong>Crash & Diagnostic Logs</strong> (Optional)</td>
+          <td>Identifies audio engine runtime faults to maintain app stability.</td>
+          <td>Anonymized (Apple App Store / Firebase)</td>
+          <td>30 days rolling.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. Artificial Intelligence (AI) Disclosure -->
+  <div class="legal-section">
+    <h2>4. Artificial Intelligence (AI) Disclosure & Safety</h2>
+    <p>In full transparency:</p>
+    <ul>
+      <li><strong>Voluntary AI Features:</strong> Any AI-assisted recommendations or relaxation prompts are strictly voluntary and opt-in.</li>
+      <li><strong>No Foundation Model Training:</strong> Your private sessions, timer configurations, and interactive requests are <strong>NEVER used to train, fine-tune, or develop public foundation AI models</strong> (e.g. OpenAI, Google Gemini, Anthropic).</li>
+      <li><strong>Automated Crisis Interceptor:</strong> Any interactive input that detects keywords associated with self-harm or immediate psychological crisis immediately triggers localized crisis helpline resources without punitive data logging.</li>
+    </ul>
+  </div>
+
+  <!-- 5. Third-Party Service Processors -->
+  <div class="legal-section">
+    <h2>5. Authorized Third-Party Processors</h2>
+    <p>We work exclusively with certified cloud and distribution infrastructure providers that comply with SOC 2 Type II, ISO 27001, and GDPR Data Processing Agreements (DPA):</p>
+    <table class="table-box">
+      <thead>
+        <tr>
+          <th>Processor</th>
+          <th>Function</th>
+          <th>Location</th>
+          <th>Compliance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Apple Inc.</strong> (App Store)</td>
+          <td>Native iOS app binary distribution and localized crash reporting.</td>
+          <td>USA / Global</td>
+          <td>ISO 27001 / GDPR</td>
+        </tr>
+        <tr>
+          <td><strong>Google LLC</strong> (Firebase / Fonts)</td>
+          <td>Opt-in crash diagnostics and CDN typography hosting.</td>
+          <td>USA / EU</td>
+          <td>EU-US DPF / ISO 27001</td>
+        </tr>
+        <tr>
+          <td><strong>Unsplash Inc.</strong></td>
+          <td>High-definition nature photography delivery via secure CDN.</td>
+          <td>Canada / USA</td>
+          <td>PIPEDA / CCPA</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 6. Right to Erasure & Instant Data Purge (FTC Click-to-Cancel Compliance) -->
+  <div class="legal-section">
+    <h2>6. Right to Erasure / Account Purge (FTC Compliance)</h2>
+    <p>Under GDPR Article 17, CCPA § 1798.105, and the FTC "Click to Cancel" rule, you possess an absolute, frictionless right to permanently erase your data at any time without administrative delay or forced exit surveys.</p>
+    
+    <div class="action-box">
+      <h3 style="color: #fff; margin-bottom: 6px;">One-Click Local Data Erasure</h3>
+      <p style="font-size: 13.5px; color: var(--text-sub); margin-bottom: 0;">Clicking the button below instantly purges all saved sound configurations, cookie consent flags, and cached state from this browser.</p>
+      <button class="btn-purge" onclick="purgeAllData()">Purge All Local Data Now</button>
+      <p id="purge-status" style="font-size: 13px; color: var(--accent); margin-top: 8px; display: none;">✓ All local storage and cached data successfully purged.</p>
+    </div>
+  </div>
+
+  <!-- 7. Billing & Subscription Transparency -->
+  <div class="legal-section">
+    <h2>7. Billing & Free Service Disclosures</h2>
+    <p>Calmpal is provided 100% free of charge:</p>
+    <ul>
+      <li><strong>No Auto-Renewing Subscriptions:</strong> There are no recurring subscription fees, automatic renewals, or hidden monthly billing traps.</li>
+      <li><strong>No Payment Info Collected:</strong> We do not request, process, or store credit card numbers, bank accounts, or financial credentials.</li>
+    </ul>
+  </div>
+
+  <!-- 8. Interactive Simulation & Demo Disclaimer (FTC Compliance) -->
+  <div class="legal-section">
+    <h2>8. Interactive Simulation / Demo Notice</h2>
+    <p>In accordance with FTC Truth in Advertising guidelines (16 CFR Part 255):</p>
+    <ul>
+      <li>All web preview mockups, sound samplers, and visual animations are designated as <strong>Interactive Simulations / Demo Modes</strong>.</li>
+      <li>Calmpal contains <strong>zero fabricated celebrity endorsements</strong> or compensated fake testimonials.</li>
+    </ul>
+  </div>
+
+  <!-- 9. Contact Data Protection Officer -->
+  <div class="legal-section">
+    <h2>9. Contact & Data Protection Officer</h2>
+    <p>For any privacy inquiries, data access requests, or regulatory questions, please contact our Data Protection Officer:</p>
+    <p style="color: #fff;"><strong>Data Protection Officer:</strong> Slava Goloubov<br>
+    <strong>Email:</strong> <a href="mailto:Goloubov@gmail.com" style="color: var(--accent); text-decoration: none;">Goloubov@gmail.com</a><br>
+    <strong>Jurisdiction:</strong> Vancouver, British Columbia, Canada</p>
+  </div>
+
+  <div class="back-nav">
+    <a href="index.html">← Return to Calmpal Player</a>
+  </div>
+</div>
+
+<script>
+function purgeAllData() {
+  localStorage.clear();
+  sessionStorage.clear();
+  const statusEl = document.getElementById('purge-status');
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1200);
+  }
+}
+</script>
+
+</body>
+</html>

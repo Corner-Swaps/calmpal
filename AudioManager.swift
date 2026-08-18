@@ -50,6 +50,7 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
     case deepUnderwater  = "Deep"
 
     public var id: String { rawValue }
+    public var displayName: String { rawValue }
 
     // MARK: – Resource File Base Name
     public var resourceFileName: String {

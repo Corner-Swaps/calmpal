@@ -6,7 +6,7 @@
 	objectVersion = 56;
 	objects = {
 
-/* Begin PBXBuildFile */
+/* Begin PBXBuildFile section */
 		E1A00000000000000000000B /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00000000000000000000A /* HapticManager.swift */; };
 		E1A00001000000000000000B /* TactileSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00001000000000000000A /* TactileSurfaceView.swift */; };
 		E1A00002000000000000000B /* Color+Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00002000000000000000A /* Color+Theme.swift */; };
@@ -20,7 +20,7 @@
 		E1A00010000000000000000B /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00010000000000000000A /* MainTabView.swift */; };
 		E1A00011000000000000000B /* CalmpalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00011000000000000000A /* CalmpalApp.swift */; };
 		E1A00012000000000000000B /* GroundingScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00012000000000000000A /* GroundingScreenView.swift */; };
-		E1A00013000000000000000B /* CalmpalTests.swift in TestSources */ = {isa = PBXBuildFile; fileRef = E1A00013000000000000000A /* CalmpalTests.swift */; };
+		E1A00013000000000000000B /* Tests/CalmpalTests/CalmpalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00013000000000000000A /* Tests/CalmpalTests/CalmpalTests.swift */; };
 		E1A000990000000000000041 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E1A000990000000000000040 /* Assets.xcassets */; };
 		E1A00300000000000000000B /* light-rain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A00300000000000000000A /* light-rain.mp3 */; };
 		E1A00301000000000000000B /* rain-on-window.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A00301000000000000000A /* rain-on-window.mp3 */; };
@@ -70,9 +70,9 @@
 		E1A00420000000000000000B /* inside-a-train.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A00420000000000000000A /* inside-a-train.mp3 */; };
 		E1A00421000000000000000B /* church.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A00421000000000000000A /* church.mp3 */; };
 		E1A00422000000000000000B /* clock.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A00422000000000000000A /* clock.mp3 */; };
-/* End PBXBuildFile */
+/* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy */
+/* Begin PBXContainerItemProxy section */
 		E1A000990000000000000031 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E1A000990000000000000000 /* Project object */;
@@ -80,77 +80,77 @@
 			remoteGlobalIDString = E1A000990000000000000007;
 			remoteInfo = Calmpal;
 		};
-/* End PBXContainerItemProxy */
+/* End PBXContainerItemProxy section */
 
-/* Begin PBXFileReference */
-		E1A00000000000000000000A /* HapticManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HapticManager.swift"; sourceTree = "<group>"; };
-		E1A00001000000000000000A /* TactileSurfaceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TactileSurfaceView.swift"; sourceTree = "<group>"; };
+/* Begin PBXFileReference section */
+		E1A00000000000000000000A /* HapticManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		E1A00001000000000000000A /* TactileSurfaceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TactileSurfaceView.swift; sourceTree = "<group>"; };
 		E1A00002000000000000000A /* Color+Theme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
-		E1A00003000000000000000A /* TactileTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "TactileTestView.swift"; sourceTree = "<group>"; };
-		E1A00004000000000000000A /* SessionViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SessionViewModel.swift"; sourceTree = "<group>"; };
-		E1A00005000000000000000A /* AudioManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AudioManager.swift"; sourceTree = "<group>"; };
-		E1A00006000000000000000A /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Models.swift"; sourceTree = "<group>"; };
-		E1A00007000000000000000A /* GAD7AssessmentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GAD7AssessmentView.swift"; sourceTree = "<group>"; };
-		E1A00008000000000000000A /* PDFExporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "PDFExporter.swift"; sourceTree = "<group>"; };
-		E1A00009000000000000000A /* HistoryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HistoryView.swift"; sourceTree = "<group>"; };
-		E1A00010000000000000000A /* MainTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MainTabView.swift"; sourceTree = "<group>"; };
-		E1A00011000000000000000A /* CalmpalApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CalmpalApp.swift"; sourceTree = "<group>"; };
-		E1A00012000000000000000A /* GroundingScreenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GroundingScreenView.swift"; sourceTree = "<group>"; };
-		E1A00013000000000000000A /* CalmpalTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Tests/CalmpalTests/CalmpalTests.swift"; sourceTree = "<group>"; };
-		E1A000990000000000000001 /* Calmpal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Calmpal.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E1A000990000000000000021 /* CalmpalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "CalmpalTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		E1A000990000000000000040 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Assets.xcassets; sourceTree = "<group>"; };
+		E1A00003000000000000000A /* TactileTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TactileTestView.swift; sourceTree = "<group>"; };
+		E1A00004000000000000000A /* SessionViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionViewModel.swift; sourceTree = "<group>"; };
+		E1A00005000000000000000A /* AudioManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
+		E1A00006000000000000000A /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		E1A00007000000000000000A /* GAD7AssessmentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GAD7AssessmentView.swift; sourceTree = "<group>"; };
+		E1A00008000000000000000A /* PDFExporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PDFExporter.swift; sourceTree = "<group>"; };
+		E1A00009000000000000000A /* HistoryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		E1A00010000000000000000A /* MainTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		E1A00011000000000000000A /* CalmpalApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalmpalApp.swift; sourceTree = "<group>"; };
+		E1A00012000000000000000A /* GroundingScreenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GroundingScreenView.swift; sourceTree = "<group>"; };
+		E1A00013000000000000000A /* Tests/CalmpalTests/CalmpalTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tests/CalmpalTests/CalmpalTests.swift; sourceTree = "<group>"; };
+		E1A000990000000000000001 /* Calmpal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Calmpal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1A000990000000000000021 /* CalmpalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalmpalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E1A000990000000000000040 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E1A00300000000000000000A /* light-rain.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "light-rain.mp3"; path = "Sounds/light-rain.mp3"; sourceTree = "<group>"; };
 		E1A00301000000000000000A /* rain-on-window.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-window.mp3"; path = "Sounds/rain-on-window.mp3"; sourceTree = "<group>"; };
 		E1A00302000000000000000A /* rain-on-leaves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-leaves.mp3"; path = "Sounds/rain-on-leaves.mp3"; sourceTree = "<group>"; };
 		E1A00303000000000000000A /* heavy-rain.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "heavy-rain.mp3"; path = "Sounds/heavy-rain.mp3"; sourceTree = "<group>"; };
-		E1A00304000000000000000A /* thunder.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "thunder.mp3"; path = "Sounds/thunder.mp3"; sourceTree = "<group>"; };
-		E1A00305000000000000000A /* waves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "waves.mp3"; path = "Sounds/waves.mp3"; sourceTree = "<group>"; };
-		E1A00306000000000000000A /* waterfall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "waterfall.mp3"; path = "Sounds/waterfall.mp3"; sourceTree = "<group>"; };
-		E1A00307000000000000000A /* river.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "river.mp3"; path = "Sounds/river.mp3"; sourceTree = "<group>"; };
-		E1A00308000000000000000A /* droplets.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "droplets.mp3"; path = "Sounds/droplets.mp3"; sourceTree = "<group>"; };
-		E1A00309000000000000000A /* seagulls.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "seagulls.mp3"; path = "Sounds/seagulls.mp3"; sourceTree = "<group>"; };
-		E1A00310000000000000000A /* birds.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "birds.mp3"; path = "Sounds/birds.mp3"; sourceTree = "<group>"; };
-		E1A00311000000000000000A /* jungle.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "jungle.mp3"; path = "Sounds/jungle.mp3"; sourceTree = "<group>"; };
-		E1A00312000000000000000A /* crickets.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "crickets.mp3"; path = "Sounds/crickets.mp3"; sourceTree = "<group>"; };
-		E1A00313000000000000000A /* frog.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "frog.mp3"; path = "Sounds/frog.mp3"; sourceTree = "<group>"; };
+		E1A00304000000000000000A /* thunder.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = thunder.mp3; path = Sounds/thunder.mp3; sourceTree = "<group>"; };
+		E1A00305000000000000000A /* waves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = waves.mp3; path = Sounds/waves.mp3; sourceTree = "<group>"; };
+		E1A00306000000000000000A /* waterfall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = waterfall.mp3; path = Sounds/waterfall.mp3; sourceTree = "<group>"; };
+		E1A00307000000000000000A /* river.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = river.mp3; path = Sounds/river.mp3; sourceTree = "<group>"; };
+		E1A00308000000000000000A /* droplets.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = droplets.mp3; path = Sounds/droplets.mp3; sourceTree = "<group>"; };
+		E1A00309000000000000000A /* seagulls.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = seagulls.mp3; path = Sounds/seagulls.mp3; sourceTree = "<group>"; };
+		E1A00310000000000000000A /* birds.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = birds.mp3; path = Sounds/birds.mp3; sourceTree = "<group>"; };
+		E1A00311000000000000000A /* jungle.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = jungle.mp3; path = Sounds/jungle.mp3; sourceTree = "<group>"; };
+		E1A00312000000000000000A /* crickets.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = crickets.mp3; path = Sounds/crickets.mp3; sourceTree = "<group>"; };
+		E1A00313000000000000000A /* frog.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = frog.mp3; path = Sounds/frog.mp3; sourceTree = "<group>"; };
 		E1A00314000000000000000A /* cat-purring.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "cat-purring.mp3"; path = "Sounds/cat-purring.mp3"; sourceTree = "<group>"; };
 		E1A00315000000000000000A /* wind-in-trees.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wind-in-trees.mp3"; path = "Sounds/wind-in-trees.mp3"; sourceTree = "<group>"; };
-		E1A00316000000000000000A /* campfire.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "campfire.mp3"; path = "Sounds/campfire.mp3"; sourceTree = "<group>"; };
-		E1A00317000000000000000A /* wind.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wind.mp3"; path = "Sounds/wind.mp3"; sourceTree = "<group>"; };
+		E1A00316000000000000000A /* campfire.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = campfire.mp3; path = Sounds/campfire.mp3; sourceTree = "<group>"; };
+		E1A00317000000000000000A /* wind.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = wind.mp3; path = Sounds/wind.mp3; sourceTree = "<group>"; };
 		E1A00318000000000000000A /* howling-wind.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "howling-wind.mp3"; path = "Sounds/howling-wind.mp3"; sourceTree = "<group>"; };
 		E1A00319000000000000000A /* walk-on-leaves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "walk-on-leaves.mp3"; path = "Sounds/walk-on-leaves.mp3"; sourceTree = "<group>"; };
-		E1A00320000000000000000A /* cafe.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "cafe.mp3"; path = "Sounds/cafe.mp3"; sourceTree = "<group>"; };
-		E1A00321000000000000000A /* library.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "library.mp3"; path = "Sounds/library.mp3"; sourceTree = "<group>"; };
+		E1A00320000000000000000A /* cafe.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = cafe.mp3; path = Sounds/cafe.mp3; sourceTree = "<group>"; };
+		E1A00321000000000000000A /* library.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = library.mp3; path = Sounds/library.mp3; sourceTree = "<group>"; };
 		E1A00322000000000000000A /* night-village.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "night-village.mp3"; path = "Sounds/night-village.mp3"; sourceTree = "<group>"; };
-		E1A00323000000000000000A /* temple.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "temple.mp3"; path = "Sounds/temple.mp3"; sourceTree = "<group>"; };
-		E1A00324000000000000000A /* underwater.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "underwater.mp3"; path = "Sounds/underwater.mp3"; sourceTree = "<group>"; };
+		E1A00323000000000000000A /* temple.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = temple.mp3; path = Sounds/temple.mp3; sourceTree = "<group>"; };
+		E1A00324000000000000000A /* underwater.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = underwater.mp3; path = Sounds/underwater.mp3; sourceTree = "<group>"; };
 		E1A00400000000000000000A /* rain-on-car-roof.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-car-roof.mp3"; path = "Sounds/rain-on-car-roof.mp3"; sourceTree = "<group>"; };
 		E1A00401000000000000000A /* rain-on-tent.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-tent.mp3"; path = "Sounds/rain-on-tent.mp3"; sourceTree = "<group>"; };
 		E1A00402000000000000000A /* rain-on-umbrella.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-umbrella.mp3"; path = "Sounds/rain-on-umbrella.mp3"; sourceTree = "<group>"; };
 		E1A00403000000000000000A /* windshield-wipers.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "windshield-wipers.mp3"; path = "Sounds/windshield-wipers.mp3"; sourceTree = "<group>"; };
-		E1A00404000000000000000A /* submarine.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "submarine.mp3"; path = "Sounds/submarine.mp3"; sourceTree = "<group>"; };
-		E1A00405000000000000000A /* sailboat.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "sailboat.mp3"; path = "Sounds/sailboat.mp3"; sourceTree = "<group>"; };
+		E1A00404000000000000000A /* submarine.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = submarine.mp3; path = Sounds/submarine.mp3; sourceTree = "<group>"; };
+		E1A00405000000000000000A /* sailboat.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = sailboat.mp3; path = Sounds/sailboat.mp3; sourceTree = "<group>"; };
 		E1A00406000000000000000A /* rowing-boat.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rowing-boat.mp3"; path = "Sounds/rowing-boat.mp3"; sourceTree = "<group>"; };
-		E1A00407000000000000000A /* whale.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "whale.mp3"; path = "Sounds/whale.mp3"; sourceTree = "<group>"; };
-		E1A00408000000000000000A /* owl.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "owl.mp3"; path = "Sounds/owl.mp3"; sourceTree = "<group>"; };
-		E1A00409000000000000000A /* woodpecker.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "woodpecker.mp3"; path = "Sounds/woodpecker.mp3"; sourceTree = "<group>"; };
-		E1A00410000000000000000A /* wolf.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wolf.mp3"; path = "Sounds/wolf.mp3"; sourceTree = "<group>"; };
-		E1A00411000000000000000A /* beehive.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "beehive.mp3"; path = "Sounds/beehive.mp3"; sourceTree = "<group>"; };
-		E1A00412000000000000000A /* chickens.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "chickens.mp3"; path = "Sounds/chickens.mp3"; sourceTree = "<group>"; };
+		E1A00407000000000000000A /* whale.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = whale.mp3; path = Sounds/whale.mp3; sourceTree = "<group>"; };
+		E1A00408000000000000000A /* owl.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = owl.mp3; path = Sounds/owl.mp3; sourceTree = "<group>"; };
+		E1A00409000000000000000A /* woodpecker.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = woodpecker.mp3; path = Sounds/woodpecker.mp3; sourceTree = "<group>"; };
+		E1A00410000000000000000A /* wolf.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = wolf.mp3; path = Sounds/wolf.mp3; sourceTree = "<group>"; };
+		E1A00411000000000000000A /* beehive.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = beehive.mp3; path = Sounds/beehive.mp3; sourceTree = "<group>"; };
+		E1A00412000000000000000A /* chickens.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = chickens.mp3; path = Sounds/chickens.mp3; sourceTree = "<group>"; };
 		E1A00413000000000000000A /* walk-in-snow.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "walk-in-snow.mp3"; path = "Sounds/walk-in-snow.mp3"; sourceTree = "<group>"; };
 		E1A00414000000000000000A /* walk-on-gravel.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "walk-on-gravel.mp3"; path = "Sounds/walk-on-gravel.mp3"; sourceTree = "<group>"; };
 		E1A00415000000000000000A /* wind-chimes.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wind-chimes.mp3"; path = "Sounds/wind-chimes.mp3"; sourceTree = "<group>"; };
 		E1A00416000000000000000A /* ceiling-fan.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "ceiling-fan.mp3"; path = "Sounds/ceiling-fan.mp3"; sourceTree = "<group>"; };
 		E1A00417000000000000000A /* singing-bowl.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "singing-bowl.mp3"; path = "Sounds/singing-bowl.mp3"; sourceTree = "<group>"; };
-		E1A00418000000000000000A /* office.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "office.mp3"; path = "Sounds/office.mp3"; sourceTree = "<group>"; };
-		E1A00419000000000000000A /* restaurant.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "restaurant.mp3"; path = "Sounds/restaurant.mp3"; sourceTree = "<group>"; };
+		E1A00418000000000000000A /* office.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = office.mp3; path = Sounds/office.mp3; sourceTree = "<group>"; };
+		E1A00419000000000000000A /* restaurant.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = restaurant.mp3; path = Sounds/restaurant.mp3; sourceTree = "<group>"; };
 		E1A00420000000000000000A /* inside-a-train.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "inside-a-train.mp3"; path = "Sounds/inside-a-train.mp3"; sourceTree = "<group>"; };
-		E1A00421000000000000000A /* church.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "church.mp3"; path = "Sounds/church.mp3"; sourceTree = "<group>"; };
-		E1A00422000000000000000A /* clock.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "clock.mp3"; path = "Sounds/clock.mp3"; sourceTree = "<group>"; };
-/* End PBXFileReference */
+		E1A00421000000000000000A /* church.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = church.mp3; path = Sounds/church.mp3; sourceTree = "<group>"; };
+		E1A00422000000000000000A /* clock.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = clock.mp3; path = Sounds/clock.mp3; sourceTree = "<group>"; };
+/* End PBXFileReference section */
 
-/* Begin PBXFrameworksBuildPhase */
+/* Begin PBXFrameworksBuildPhase section */
 		E1A000990000000000000002 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -165,9 +165,189 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-/* End PBXFrameworksBuildPhase */
+/* End PBXFrameworksBuildPhase section */
 
-/* Begin PBXResourcesBuildPhase */
+/* Begin PBXGroup section */
+		E1A000990000000000000003 = {
+			isa = PBXGroup;
+			children = (
+				E1A000990000000000000005 /* . */,
+				E1A000990000000000000025 /* . */,
+				E1A000990000000000000006 /* Products */,
+				F989C07D302ABB15004AC438 /* Recovered References */,
+			);
+			sourceTree = "<group>";
+		};
+		E1A000990000000000000005 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				E1A000990000000000000040 /* Assets.xcassets */,
+				E1A00000000000000000000A /* HapticManager.swift */,
+				E1A00001000000000000000A /* TactileSurfaceView.swift */,
+				E1A00002000000000000000A /* Color+Theme.swift */,
+				E1A00003000000000000000A /* TactileTestView.swift */,
+				E1A00004000000000000000A /* SessionViewModel.swift */,
+				E1A00005000000000000000A /* AudioManager.swift */,
+				E1A00006000000000000000A /* Models.swift */,
+				E1A00007000000000000000A /* GAD7AssessmentView.swift */,
+				E1A00008000000000000000A /* PDFExporter.swift */,
+				E1A00009000000000000000A /* HistoryView.swift */,
+				E1A00010000000000000000A /* MainTabView.swift */,
+				E1A00011000000000000000A /* CalmpalApp.swift */,
+				E1A00012000000000000000A /* GroundingScreenView.swift */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		E1A000990000000000000006 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E1A000990000000000000001 /* Calmpal.app */,
+				E1A000990000000000000021 /* CalmpalTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E1A000990000000000000025 /* . */ = {
+			isa = PBXGroup;
+			children = (
+				E1A00013000000000000000A /* Tests/CalmpalTests/CalmpalTests.swift */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		F989C07D302ABB15004AC438 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				E1A00400000000000000000A /* rain-on-car-roof.mp3 */,
+				E1A00401000000000000000A /* rain-on-tent.mp3 */,
+				E1A00402000000000000000A /* rain-on-umbrella.mp3 */,
+				E1A00403000000000000000A /* windshield-wipers.mp3 */,
+				E1A00404000000000000000A /* submarine.mp3 */,
+				E1A00405000000000000000A /* sailboat.mp3 */,
+				E1A00406000000000000000A /* rowing-boat.mp3 */,
+				E1A00407000000000000000A /* whale.mp3 */,
+				E1A00408000000000000000A /* owl.mp3 */,
+				E1A00409000000000000000A /* woodpecker.mp3 */,
+				E1A00410000000000000000A /* wolf.mp3 */,
+				E1A00411000000000000000A /* beehive.mp3 */,
+				E1A00412000000000000000A /* chickens.mp3 */,
+				E1A00413000000000000000A /* walk-in-snow.mp3 */,
+				E1A00414000000000000000A /* walk-on-gravel.mp3 */,
+				E1A00415000000000000000A /* wind-chimes.mp3 */,
+				E1A00416000000000000000A /* ceiling-fan.mp3 */,
+				E1A00417000000000000000A /* singing-bowl.mp3 */,
+				E1A00418000000000000000A /* office.mp3 */,
+				E1A00419000000000000000A /* restaurant.mp3 */,
+				E1A00420000000000000000A /* inside-a-train.mp3 */,
+				E1A00421000000000000000A /* church.mp3 */,
+				E1A00422000000000000000A /* clock.mp3 */,
+				E1A00300000000000000000A /* light-rain.mp3 */,
+				E1A00301000000000000000A /* rain-on-window.mp3 */,
+				E1A00302000000000000000A /* rain-on-leaves.mp3 */,
+				E1A00303000000000000000A /* heavy-rain.mp3 */,
+				E1A00304000000000000000A /* thunder.mp3 */,
+				E1A00305000000000000000A /* waves.mp3 */,
+				E1A00306000000000000000A /* waterfall.mp3 */,
+				E1A00307000000000000000A /* river.mp3 */,
+				E1A00308000000000000000A /* droplets.mp3 */,
+				E1A00309000000000000000A /* seagulls.mp3 */,
+				E1A00310000000000000000A /* birds.mp3 */,
+				E1A00311000000000000000A /* jungle.mp3 */,
+				E1A00312000000000000000A /* crickets.mp3 */,
+				E1A00313000000000000000A /* frog.mp3 */,
+				E1A00314000000000000000A /* cat-purring.mp3 */,
+				E1A00315000000000000000A /* wind-in-trees.mp3 */,
+				E1A00316000000000000000A /* campfire.mp3 */,
+				E1A00317000000000000000A /* wind.mp3 */,
+				E1A00318000000000000000A /* howling-wind.mp3 */,
+				E1A00319000000000000000A /* walk-on-leaves.mp3 */,
+				E1A00320000000000000000A /* cafe.mp3 */,
+				E1A00321000000000000000A /* library.mp3 */,
+				E1A00322000000000000000A /* night-village.mp3 */,
+				E1A00323000000000000000A /* temple.mp3 */,
+				E1A00324000000000000000A /* underwater.mp3 */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E1A000990000000000000007 /* Calmpal */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E1A00099000000000000000D /* Build configuration list for PBXNativeTarget "Calmpal" */;
+			buildPhases = (
+				E1A000990000000000000008 /* Sources */,
+				E1A000990000000000000002 /* Frameworks */,
+				E1A000990000000000000004 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Calmpal;
+			productName = Calmpal;
+			productReference = E1A000990000000000000001 /* Calmpal.app */;
+			productType = "com.apple.product-type.application";
+		};
+		E1A000990000000000000027 /* CalmpalTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E1A00099000000000000002D /* Build configuration list for PBXNativeTarget "CalmpalTests" */;
+			buildPhases = (
+				E1A000990000000000000028 /* Sources */,
+				E1A000990000000000000022 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E1A000990000000000000030 /* PBXTargetDependency */,
+			);
+			name = CalmpalTests;
+			productName = CalmpalTests;
+			productReference = E1A000990000000000000021 /* CalmpalTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E1A000990000000000000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					E1A000990000000000000007 = {
+						CreatedOnToolsVersion = 15.0;
+						LastSwiftMigration = 1500;
+					};
+					E1A000990000000000000027 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = E1A000990000000000000007;
+					};
+				};
+			};
+			buildConfigurationList = E1A00099000000000000000C /* Build configuration list for PBXProject "Calmpal" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E1A000990000000000000003;
+			productRefGroup = E1A000990000000000000006 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E1A000990000000000000007 /* Calmpal */,
+				E1A000990000000000000027 /* CalmpalTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
 		E1A000990000000000000004 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -224,133 +404,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-/* End PBXResourcesBuildPhase */
+/* End PBXResourcesBuildPhase section */
 
-/* Begin PBXGroup */
-		E1A000990000000000000003 /* Root */ = {
-			isa = PBXGroup;
-			children = (
-				E1A000990000000000000005 /* Sources */,
-				E1A000990000000000000025 /* Tests */,
-				E1A000990000000000000006 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		E1A000990000000000000005 /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				E1A000990000000000000040 /* Assets.xcassets */,
-				E1A00000000000000000000A /* HapticManager.swift */,
-				E1A00001000000000000000A /* TactileSurfaceView.swift */,
-				E1A00002000000000000000A /* Color+Theme.swift */,
-				E1A00003000000000000000A /* TactileTestView.swift */,
-				E1A00004000000000000000A /* SessionViewModel.swift */,
-				E1A00005000000000000000A /* AudioManager.swift */,
-				E1A00006000000000000000A /* Models.swift */,
-				E1A00007000000000000000A /* GAD7AssessmentView.swift */,
-				E1A00008000000000000000A /* PDFExporter.swift */,
-				E1A00009000000000000000A /* HistoryView.swift */,
-				E1A00010000000000000000A /* MainTabView.swift */,
-				E1A00011000000000000000A /* CalmpalApp.swift */,
-				E1A00012000000000000000A /* GroundingScreenView.swift */,
-			);
-			path = ".";
-			sourceTree = "<group>";
-		};
-		E1A000990000000000000025 /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-				E1A00013000000000000000A /* CalmpalTests.swift */,
-			);
-			path = ".";
-			sourceTree = "<group>";
-		};
-		E1A000990000000000000006 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				E1A000990000000000000001 /* Calmpal.app */,
-				E1A000990000000000000021 /* CalmpalTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-/* End PBXGroup */
-
-/* Begin PBXNativeTarget */
-		E1A000990000000000000007 /* Calmpal */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E1A00099000000000000000D /* Build configuration list for PBXNativeTarget "Calmpal" */;
-			buildPhases = (
-				E1A000990000000000000008 /* Sources */,
-				E1A000990000000000000002 /* Frameworks */,
-				E1A000990000000000000004 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = Calmpal;
-			productName = Calmpal;
-			productReference = E1A000990000000000000001 /* Calmpal.app */;
-			productType = "com.apple.product-type.application";
-		};
-		E1A000990000000000000027 /* CalmpalTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = E1A00099000000000000002D /* Build configuration list for PBXNativeTarget "CalmpalTests" */;
-			buildPhases = (
-				E1A000990000000000000028 /* Sources */,
-				E1A000990000000000000022 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				E1A000990000000000000030 /* PBXTargetDependency */,
-			);
-			name = CalmpalTests;
-			productName = CalmpalTests;
-			productReference = E1A000990000000000000021 /* CalmpalTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-/* End PBXNativeTarget */
-
-/* Begin PBXProject */
-		E1A000990000000000000000 /* Project object */ = {
-			isa = PBXProject;
-			attributes = {
-				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
-				TargetAttributes = {
-					E1A000990000000000000007 = {
-						CreatedOnToolsVersion = 15.0;
-						LastSwiftMigration = 1500;
-					};
-					E1A000990000000000000027 = {
-						CreatedOnToolsVersion = 15.0;
-						TestTargetID = E1A000990000000000000007;
-					};
-				};
-			};
-			buildConfigurationList = E1A00099000000000000000C /* Build configuration list for PBXProject "Calmpal" */;
-			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
-			hasScannedForEncodings = 0;
-			knownRegions = (
-				en,
-				Base,
-			);
-			mainGroup = E1A000990000000000000003 /* Root */;
-			productRefGroup = E1A000990000000000000006 /* Products */;
-			projectDirPath = "";
-			projectRoot = "";
-			targets = (
-				E1A000990000000000000007 /* Calmpal */,
-				E1A000990000000000000027 /* CalmpalTests */,
-			);
-		};
-/* End PBXProject */
-
-/* Begin PBXSourcesBuildPhase */
+/* Begin PBXSourcesBuildPhase section */
 		E1A000990000000000000008 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -375,21 +431,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E1A00013000000000000000B /* CalmpalTests.swift in TestSources */,
+				E1A00013000000000000000B /* Tests/CalmpalTests/CalmpalTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-/* End PBXSourcesBuildPhase */
+/* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency */
+/* Begin PBXTargetDependency section */
 		E1A000990000000000000030 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E1A000990000000000000007 /* Calmpal */;
 			targetProxy = E1A000990000000000000031 /* PBXContainerItemProxy */;
 		};
-/* End PBXTargetDependency */
+/* End PBXTargetDependency section */
 
-/* Begin XCBuildConfiguration */
+/* Begin XCBuildConfiguration section */
 		E1A00099000000000000000E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -442,7 +498,7 @@
 				GCC_WARN_UNINITIALIZED_ACTUAL = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -496,7 +552,7 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = "17.0";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -512,10 +568,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				PRIMARY_APP_ICON = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "KZ8W2GCVH8";
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = KZ8W2GCVH8;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
@@ -523,13 +578,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = "1.0";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.calmpal.app";
+				MARKETING_VERSION = 3.0;
+				PRIMARY_APP_ICON = AppIcon;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calmpal.app;
 				PRODUCT_NAME = Calmpal;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = "5.0";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -540,10 +596,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
-				PRIMARY_APP_ICON = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "KZ8W2GCVH8";
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = KZ8W2GCVH8;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
@@ -551,13 +606,14 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = "1.0";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.calmpal.app";
+				MARKETING_VERSION = 3.0;
+				PRIMARY_APP_ICON = AppIcon;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calmpal.app;
 				PRODUCT_NAME = Calmpal;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = "5.0";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -567,15 +623,15 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "KZ8W2GCVH8";
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = KZ8W2GCVH8;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = "1.0";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.calmpal.tests";
+				MARKETING_VERSION = 3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calmpal.tests;
 				PRODUCT_NAME = CalmpalTests;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_VERSION = "5.0";
+				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Calmpal.app/Calmpal";
 			};
 			name = Debug;
@@ -585,22 +641,22 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "KZ8W2GCVH8";
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = KZ8W2GCVH8;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = "1.0";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.calmpal.tests";
+				MARKETING_VERSION = 3.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.calmpal.tests;
 				PRODUCT_NAME = CalmpalTests;
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SWIFT_VERSION = "5.0";
+				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Calmpal.app/Calmpal";
 			};
 			name = Release;
 		};
-/* End XCBuildConfiguration */
+/* End XCBuildConfiguration section */
 
-/* Begin XCConfigurationList */
+/* Begin XCConfigurationList section */
 		E1A00099000000000000000C /* Build configuration list for PBXProject "Calmpal" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -628,7 +684,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-/* End XCConfigurationList */
+/* End XCConfigurationList section */
 	};
 	rootObject = E1A000990000000000000000 /* Project object */;
 }
