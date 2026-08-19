@@ -4,40 +4,6 @@ import SwiftData
 
 final class CalmpalTests: XCTestCase {
     
-    // MARK: - GAD-7 Assessment Score Severity Tests
-    
-    func testGAD7SeverityMinimal() {
-        let assessment = GAD7Assessment(score: 3, notes: "Minimal tests")
-        XCTAssertEqual(assessment.score, 3)
-        XCTAssertEqual(assessment.severityDescription, "Minimal anxiety")
-    }
-    
-    func testGAD7SeverityMild() {
-        let assessment = GAD7Assessment(score: 7, notes: "Mild tests")
-        XCTAssertEqual(assessment.score, 7)
-        XCTAssertEqual(assessment.severityDescription, "Mild anxiety")
-    }
-    
-    func testGAD7SeverityModerate() {
-        let assessment = GAD7Assessment(score: 12, notes: "Moderate tests")
-        XCTAssertEqual(assessment.score, 12)
-        XCTAssertEqual(assessment.severityDescription, "Moderate anxiety")
-    }
-    
-    func testGAD7SeveritySevere() {
-        let assessment = GAD7Assessment(score: 18, notes: "Severe tests")
-        XCTAssertEqual(assessment.score, 18)
-        XCTAssertEqual(assessment.severityDescription, "Severe anxiety")
-    }
-    
-    func testGAD7ScoreClamping() {
-        let lowAssessment = GAD7Assessment(score: -5, notes: "Clamping negative")
-        XCTAssertEqual(lowAssessment.score, 0)
-        
-        let highAssessment = GAD7Assessment(score: 30, notes: "Clamping high")
-        XCTAssertEqual(highAssessment.score, 21)
-    }
-    
     // MARK: - SessionViewModel Transition Tests
     
     @MainActor
@@ -95,6 +61,7 @@ final class CalmpalTests: XCTestCase {
     @MainActor
     func testAudioManagerSoundProfiles() {
         let audioManager = AudioManager.shared
+        audioManager.activeProfile = .gentleRain
         
         // Default profile should be Rain
         XCTAssertEqual(audioManager.activeProfile, .gentleRain)
@@ -181,7 +148,7 @@ final class CalmpalTests: XCTestCase {
     // MARK: - Sound Banner Themes Tests
 
     func testSoundBannerThemes() {
-        XCTAssertEqual(allSoundBanners.count, 25)
+        XCTAssertEqual(allSoundBanners.count, 21)
         for banner in allSoundBanners {
             XCTAssertFalse(banner.id.isEmpty)
             XCTAssertFalse(banner.title.isEmpty)

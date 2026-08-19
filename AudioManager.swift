@@ -149,6 +149,7 @@ public final class AudioManager {
     public var activeProfile: SoundProfile = .gentleRain {
         didSet {
             guard oldValue != activeProfile else { return }
+            bufferCache.removeAll(keepingCapacity: false)
             applyBuffer(for: activeProfile)
         }
     }
@@ -182,6 +183,18 @@ public final class AudioManager {
             self, selector: #selector(handleRouteChange),
             name: AVAudioSession.routeChangeNotification, object: nil
         )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleEngineConfigurationChange),
+            name: .AVAudioEngineConfigurationChange, object: audioEngine
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleAppForeground),
+            name: UIApplication.didBecomeActiveNotification, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleAppForeground),
+            name: UIApplication.willEnterForegroundNotification, object: nil
+        )
         #endif
     }
 
@@ -197,10 +210,10 @@ public final class AudioManager {
                 pause()
             }
         case .ended:
-            let opts = AVAudioSession.InterruptionOptions(
-                rawValue: (info[AVAudioSessionInterruptionOptionKey] as? UInt) ?? 0)
-            if opts.contains(.shouldResume) && wasPlayingBeforeInterruption {
-                resume()
+            if wasPlayingBeforeInterruption {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.resume()
+                }
             }
             wasPlayingBeforeInterruption = false
         @unknown default: break
@@ -214,35 +227,113 @@ public final class AudioManager {
         if reason == .oldDeviceUnavailable {
             wasPlayingBeforeInterruption = false
             pause()
+        } else if isAudioPlaying {
+            ensureEngineRunningAndPlaying()
         }
     }
+
+    @objc private func handleEngineConfigurationChange(notification: Notification) {
+        guard isAudioPlaying else { return }
+        ensureEngineRunningAndPlaying()
+    }
+
+    @objc private func handleAppForeground(notification: Notification) {
+        guard isAudioPlaying else { return }
+        ensureEngineRunningAndPlaying()
+    }
     #endif
+
+    public func ensureEngineRunningAndPlaying() {
+        #if os(iOS)
+        setupAudioSession()
+        #endif
+        do {
+            if !audioEngine.isRunning {
+                try audioEngine.start()
+            }
+            if !playerNode.isPlaying && isAudioPlaying {
+                applyBuffer(for: activeProfile)
+                playerNode.play()
+            }
+        } catch {
+            print("[AudioManager] Failed to ensure engine running: \(error)")
+        }
+    }
 
     private func setupAudioSession() {
         #if os(iOS)
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.allowBluetoothA2DP])
+            try AVAudioSession.sharedInstance().setCategory(
+                .playback,
+                mode: .default,
+                options: [.allowBluetoothA2DP, .mixWithOthers]
+            )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch { print("[AudioManager] Session error: \(error)") }
         #endif
+    }
+
+    private func bannerTitle(for profile: SoundProfile) -> String {
+        switch profile {
+        case .nightCrickets:   return "Crickets Night"
+        case .gentleRain:      return "Gentle Rain"
+        case .cozyCampfire:    return "Cozy Campfire"
+        case .oceanWaves:      return "Peaceful Ocean"
+        case .windInTrees:     return "Wind in Trees"
+        case .rainOnWindow:    return "Rain on Window"
+        case .catPurring:      return "Cat Purring"
+        case .waterfall:       return "Forest Waterfall"
+        case .quietLibrary:    return "Quiet Library"
+        case .rollingThunder:  return "Rolling Thunder"
+        case .duneBreeze:      return "Desert Dune Breeze"
+        case .forestRiver:     return "Flowing River"
+        case .eveningFrogs:    return "Evening Frogs"
+        case .heavyRain:       return "Heavy Downpour"
+        case .templeSanctuary: return "Sacred Temple"
+        case .coastalSeagulls: return "Coastal Seagulls"
+        case .howlingWind:     return "Howling Winter Gale"
+        case .rainCanopy:      return "Rain on Leaves"
+        case .deepUnderwater:  return "Deep Underwater"
+        case .tropicalJungle:  return "Tropical Jungle"
+        case .nightVillage:    return "Quiet Mountain Village"
+        default:               return profile.rawValue
+        }
     }
 
     private func updateNowPlayingInfo() {
         #if os(iOS)
         let playing = self.isAudioPlaying
         var info = [String: Any]()
-        info[MPMediaItemPropertyTitle] = activeProfile.rawValue
+        info[MPMediaItemPropertyTitle] = bannerTitle(for: activeProfile)
         info[MPMediaItemPropertyArtist] = "Calmpal"
         info[MPMediaItemPropertyPlaybackDuration] = 86400.0
         info[MPNowPlayingInfoPropertyPlaybackRate] = playing ? 1.0 : 0.0
+        info[MPNowPlayingInfoPropertyDefaultPlaybackRate] = 1.0
         info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0.0
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
 
-        let cc = MPRemoteCommandCenter.shared()
-        cc.playCommand.isEnabled = true
-        cc.pauseCommand.isEnabled = true
-        cc.togglePlayPauseCommand.isEnabled = true
-        cc.stopCommand.isEnabled = true
+        // Universal Crisp White Sound Playing Icon for Dynamic Island (Pure black background, no gray box, no emojis)
+        let artworkSize = CGSize(width: 128, height: 128)
+        let artwork = MPMediaItemArtwork(boundsSize: artworkSize) { targetSize in
+            let renderer = UIGraphicsImageRenderer(size: targetSize)
+            return renderer.image { ctx in
+                // Pure black background seamlessly blends into the Dynamic Island hardware pill
+                UIColor.black.setFill()
+                ctx.fill(CGRect(origin: .zero, size: targetSize))
+
+                let config = UIImage.SymbolConfiguration(pointSize: targetSize.width * 0.52, weight: .medium)
+                if let icon = UIImage(systemName: "speaker.wave.2.fill", withConfiguration: config)?.withTintColor(.white, renderingMode: .alwaysOriginal) {
+                    let iconRect = CGRect(
+                        x: (targetSize.width - icon.size.width) / 2,
+                        y: (targetSize.height - icon.size.height) / 2,
+                        width: icon.size.width,
+                        height: icon.size.height
+                    )
+                    icon.draw(in: iconRect)
+                }
+            }
+        }
+        info[MPMediaItemPropertyArtwork] = artwork
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
         #endif
         NotificationCenter.default.post(name: AudioManager.audioStateDidChangeNotification, object: self)
     }
@@ -255,14 +346,12 @@ public final class AudioManager {
         let fmt = AVAudioFormat(standardFormatWithSampleRate: sr, channels: 2)!
         audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: fmt)
         if let buf = bufferForProfile(activeProfile) {
-            audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: buf.format)
             playerNode.scheduleBuffer(buf, at: nil, options: .loops, completionHandler: nil)
         }
     }
 
-    // MARK: – Buffer & Audio File Loading
+    // MARK: – Audio Buffer Management
 
-    @discardableResult
     private func bufferForProfile(_ profile: SoundProfile) -> AVAudioPCMBuffer? {
         if let cached = bufferCache[profile] {
             return cached
@@ -279,14 +368,45 @@ public final class AudioManager {
         }
 
         if let url = audioURL, let file = try? AVAudioFile(forReading: url) {
-            let format = file.processingFormat
+            let fileFormat = file.processingFormat
             let frameCount = AVAudioFrameCount(file.length)
-            if let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) {
+            if let fileBuffer = AVAudioPCMBuffer(pcmFormat: fileFormat, frameCapacity: frameCount) {
                 do {
-                    try file.read(into: buffer)
-                    bufferCache[profile] = buffer
-                    return buffer
-                } catch {}
+                    try file.read(into: fileBuffer)
+
+                    // Target standard engine format: 44.1kHz Stereo (2 channels)
+                    let standardFormat = AVAudioFormat(standardFormatWithSampleRate: 44100.0, channels: 2)!
+                    
+                    if fileFormat.sampleRate == standardFormat.sampleRate && fileFormat.channelCount == standardFormat.channelCount {
+                        bufferCache[profile] = fileBuffer
+                        return fileBuffer
+                    } else if let converter = AVAudioConverter(from: fileFormat, to: standardFormat) {
+                        let ratio = standardFormat.sampleRate / fileFormat.sampleRate
+                        let targetCapacity = AVAudioFrameCount(Double(frameCount) * ratio + 100)
+                        if let convertedBuffer = AVAudioPCMBuffer(pcmFormat: standardFormat, frameCapacity: targetCapacity) {
+                            var error: NSError? = nil
+                            var haveData = true
+                            converter.convert(to: convertedBuffer, error: &error) { _, outStatus in
+                                if haveData {
+                                    haveData = false
+                                    outStatus.pointee = .haveData
+                                    return fileBuffer
+                                } else {
+                                    outStatus.pointee = .noDataNow
+                                    return nil
+                                }
+                            }
+                            if error == nil && convertedBuffer.frameLength > 0 {
+                                bufferCache[profile] = convertedBuffer
+                                return convertedBuffer
+                            }
+                        }
+                    }
+                    bufferCache[profile] = fileBuffer
+                    return fileBuffer
+                } catch {
+                    print("[AudioManager] Failed to read audio file: \(error)")
+                }
             }
         }
 
@@ -322,9 +442,15 @@ public final class AudioManager {
 
     private func applyBuffer(for profile: SoundProfile) {
         guard let buf = bufferForProfile(profile) else { return }
+        let wasPlaying = isAudioPlaying
         playerNode.stop()
-        audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: buf.format)
         playerNode.scheduleBuffer(buf, at: nil, options: .loops, completionHandler: nil)
+        if wasPlaying {
+            if !audioEngine.isRunning {
+                try? audioEngine.start()
+            }
+            playerNode.play()
+        }
     }
 
     nonisolated private func fillBuffer(_ profile: SoundProfile, _ cd: UnsafeMutablePointer<Float>, count n: Int, sampleRate sr: Double) {
@@ -340,43 +466,7 @@ public final class AudioManager {
 
     public func start() {
         guard !isAudioPlaying else { return }
-        
-        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil {
-            isAudioPlaying = true
-            updateNowPlayingInfo()
-            return
-        }
-
-        #if os(iOS)
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.allowBluetoothA2DP])
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("[AudioManager] Session start error: \(error)")
-        }
-        #endif
-        
-        do {
-            if !audioEngine.isRunning {
-                try audioEngine.start()
-            }
-        } catch {
-            print("[AudioManager] Engine start error: \(error)")
-            return
-        }
-        
-        guard audioEngine.isRunning else {
-            print("[AudioManager] Engine is not running, aborting play")
-            return
-        }
-        
-        applyBuffer(for: activeProfile)
-        let targetVolume = self.volume > 0 ? self.volume : 0.5
-        playerNode.volume = targetVolume
-        playerNode.play()
-        isAudioPlaying = true
-        fadeVolume(to: volume, duration: 0.3)
-        updateNowPlayingInfo()
+        resume()
     }
 
     public func togglePlayPause() {
@@ -388,6 +478,7 @@ public final class AudioManager {
     }
 
     public func pause() {
+        guard isAudioPlaying else { return }
         fadeTask?.cancel()
         fadeTask = nil
         isAudioPlaying = false
@@ -409,7 +500,11 @@ public final class AudioManager {
 
         #if os(iOS)
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.allowBluetoothA2DP])
+            try AVAudioSession.sharedInstance().setCategory(
+                .playback,
+                mode: .default,
+                options: [.allowBluetoothA2DP, .mixWithOthers]
+            )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("[AudioManager] Resume session error: \(error)")
@@ -444,46 +539,43 @@ public final class AudioManager {
 
     private func setupRemoteCommandCenter() {
         #if os(iOS)
+        UIApplication.shared.beginReceivingRemoteControlEvents()
         let commandCenter = MPRemoteCommandCenter.shared()
         
         commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.removeTarget(nil)
         commandCenter.pauseCommand.addTarget { [weak self] _ in
-            guard let self = self else { return .commandFailed }
-            return MainActor.assumeIsolated {
-                self.pause()
-                return .success
+            DispatchQueue.main.async {
+                self?.pause()
             }
+            return .success
         }
         
         commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.removeTarget(nil)
         commandCenter.playCommand.addTarget { [weak self] _ in
-            guard let self = self else { return .commandFailed }
-            return MainActor.assumeIsolated {
-                self.resume()
-                return .success
+            DispatchQueue.main.async {
+                self?.resume()
             }
+            return .success
         }
         
         commandCenter.togglePlayPauseCommand.isEnabled = true
         commandCenter.togglePlayPauseCommand.removeTarget(nil)
         commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
-            guard let self = self else { return .commandFailed }
-            return MainActor.assumeIsolated {
-                self.togglePlayPause()
-                return .success
+            DispatchQueue.main.async {
+                self?.togglePlayPause()
             }
+            return .success
         }
 
         commandCenter.stopCommand.isEnabled = true
         commandCenter.stopCommand.removeTarget(nil)
         commandCenter.stopCommand.addTarget { [weak self] _ in
-            guard let self = self else { return .commandFailed }
-            return MainActor.assumeIsolated {
-                self.pause()
-                return .success
+            DispatchQueue.main.async {
+                self?.pause()
             }
+            return .success
         }
 
         commandCenter.changePlaybackPositionCommand.isEnabled = false

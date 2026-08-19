@@ -42,49 +42,6 @@ public final class GroundingSession {
     }
 }
 
-/// Persisted record of a GAD-7 (Generalized Anxiety Disorder 7-item) weekly assessment.
-@Model
-public final class GAD7Assessment {
-    /// Unique identifier.
-    public var id: UUID
-    
-    /// The date the questionnaire was completed.
-    public var date: Date
-    
-    /// The calculated severity score (clamped 0-21).
-    public var score: Int
-    
-    /// Therapist notes or patient personal reflection text.
-    public var notes: String
-    
-    public init(
-        id: UUID = UUID(),
-        date: Date = Date(),
-        score: Int,
-        notes: String
-    ) {
-        self.id = id
-        self.date = date
-        // Safety: ensure score is bound strictly by the diagnostic rules
-        self.score = max(0, min(21, score))
-        self.notes = notes
-    }
-    
-    /// Maps the clinical score range to diagnostic severity descriptions.
-    public var severityDescription: String {
-        switch score {
-        case 0...4:
-            return "Minimal anxiety"
-        case 5...9:
-            return "Mild anxiety"
-        case 10...14:
-            return "Moderate anxiety"
-        default:
-            return "Severe anxiety"
-        }
-    }
-}
-
 // MARK: - String Control Character Filtering
 
 public extension String {

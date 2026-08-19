@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calmpal — Dynamic Analogue Clock Concepts</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    
+    <!-- Controls Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-mark">CP</div>
+        <div>
+          <h2>Calmpal Clock Lab</h2>
+          <p>Dynamic Analogue Clock Variations</p>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <label class="section-label">Clock Concept</label>
+        <div class="button-group" id="conceptGroup">
+          <button class="btn-option active" data-concept="radialFlipped">
+            <span class="opt-title">1. Radial Flipped Dial</span>
+            <span class="opt-desc">Radial lines separating flipped dial numerals</span>
+          </button>
+          <button class="btn-option" data-concept="kinetic3D">
+            <span class="opt-title">2. 3D Kinetic Flip</span>
+            <span class="opt-desc">Numbers flip in 3D perspective as sweep passes</span>
+          </button>
+          <button class="btn-option" data-concept="bauhausChrono">
+            <span class="opt-title">3. Bauhaus Chrono Ray</span>
+            <span class="opt-desc">Clean split cells with precision tick rays</span>
+          </button>
+          <button class="btn-option" data-concept="orbitalGravity">
+            <span class="opt-title">4. Orbital Gravity Clock</span>
+            <span class="opt-desc">Outer segmented track with breathing particle aura</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <label class="section-label">Number Orientation & Flip</label>
+        <div class="chip-group" id="flipGroup">
+          <button class="chip active" data-flip="radialOutward">Outward Radial</button>
+          <button class="chip" data-flip="flippedUpsideDown">Upside Down (180°)</button>
+          <button class="chip" data-flip="tangentFlipped">Tangent Flipped</button>
+          <button class="chip" data-flip="mirrored">Mirrored Inward</button>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <label class="section-label">Separator Lines Count</label>
+        <div class="chip-group" id="linesGroup">
+          <button class="chip" data-lines="12">12 Segments (Hours)</button>
+          <button class="chip active" data-lines="24">24 Segments</button>
+          <button class="chip" data-lines="60">60 Segments (Minutes)</button>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <label class="section-label">Line Length & Glow</label>
+        <div class="range-row">
+          <span>Length</span>
+          <input type="range" id="lineLength" min="8" max="42" value="22">
+          <span id="lineLengthVal">22px</span>
+        </div>
+        <div class="range-row">
+          <span>Glow</span>
+          <input type="range" id="glowIntensity" min="0" max="100" value="50">
+          <span id="glowVal">50%</span>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <label class="section-label">Timer Simulation (<span id="timerLabel">30:00</span>)</label>
+        <input type="range" id="timeScrubber" min="10" max="7200" step="5" value="1800">
+        <div class="playback-actions">
+          <button id="togglePlayBtn" class="primary-btn">⏸ Pause Simulation</button>
+          <button id="resetTimerBtn" class="secondary-btn">Reset 30m</button>
+        </div>
+      </div>
+
+      <div class="control-section">
+        <label class="section-label">Background Atmosphere</label>
+        <select id="bgSelect" class="styled-select">
+          <option value="images/crickets-night.jpg">Crickets Night</option>
+          <option value="images/gentle-rain.jpg">Gentle Rain</option>
+          <option value="images/cozy-campfire.jpg">Cozy Campfire</option>
+          <option value="images/ocean-waves.jpg">Peaceful Ocean</option>
+          <option value="images/gentle-wind.jpg">Wind in Trees</option>
+          <option value="images/rain-window.jpg">Rain on Window</option>
+          <option value="images/cat-purr.jpg">Cat Purring</option>
+          <option value="images/waterfall.jpg">Forest Waterfall</option>
+          <option value="images/quiet-library.jpg">Quiet Library</option>
+          <option value="images/rolling-thunder.jpg">Rolling Thunder</option>
+          <option value="images/dune-breeze.jpg">Desert Dune Breeze</option>
+          <option value="images/flowing-river.jpg">Flowing River</option>
+          <option value="images/evening-frogs.jpg">Evening Frogs</option>
+          <option value="images/heavy-rain.jpg">Heavy Downpour</option>
+          <option value="images/temple-sanctuary.jpg">Sacred Temple</option>
+          <option value="images/coastal-seagulls.jpg">Coastal Seagulls</option>
+          <option value="images/howling-wind.jpg">Howling Winter Gale</option>
+          <option value="images/rain-canopy.jpg">Rain on Leaves</option>
+          <option value="images/deep-underwater.jpg">Deep Underwater</option>
+          <option value="images/tropical-jungle.jpg">Tropical Jungle</option>
+          <option value="images/night-village.jpg">Quiet Mountain Village</option>
+        </select>
+      </div>
+
+      <div class="control-section">
+        <label class="section-label">Display Mode</label>
+        <div class="chip-group" id="frameGroup">
+          <button class="chip active" data-frame="phone">iPhone 16 Pro Frame</button>
+          <button class="chip" data-frame="fullscreen">Fullscreen View</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Interactive Phone / Canvas Stage -->
+    <main class="stage-container" id="stageContainer">
+      
+      <!-- iPhone Mockup Shell -->
+      <div class="iphone-shell" id="iphoneShell">
+        
+        <!-- Dynamic Island -->
+        <div class="dynamic-island">
+          <div class="di-left">
+            <svg class="di-icon" viewBox="0 0 24 24" fill="white">
+              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
+          </div>
+          <div class="di-right">
+            <div class="audio-wave-bars">
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+              <div class="bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- App Screen Content -->
+        <div class="screen-content" id="screenContent">
+          <div class="bg-layer" id="bgLayer"></div>
+          <div class="gradient-overlay"></div>
+
+          <!-- Dynamic Clock Area -->
+          <div class="clock-stage" id="clockStage">
+            <canvas id="clockCanvas" width="680" height="680"></canvas>
+            
+            <div class="clock-center-overlay" id="centerOverlay">
+              <div class="digital-time" id="digitalTime">30:00</div>
+              <div class="sub-label" id="subLabel">RELAXING COUNTDOWN</div>
+            </div>
+          </div>
+
+          <!-- Bottom 5-Button Dock (+7% Scaled) -->
+          <div class="bottom-dock">
+            <button class="dock-btn" title="Previous Sound">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button class="dock-btn" title="Sound Library">
+              <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </button>
+            <button class="dock-btn play-pause-btn" id="dockPlayBtn" title="Play / Pause">
+              <svg id="playPauseIcon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="dock-btn" title="Edit Timer">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+            </button>
+            <button class="dock-btn" title="Next Sound">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+
+          <!-- Home Indicator Bar -->
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

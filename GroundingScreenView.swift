@@ -23,35 +23,48 @@ public struct SoundBannerTheme: Identifiable, Equatable {
     public let profile: SoundProfile
     public let title: String
     public let imageName: String
+    public let previewAlignment: Alignment
+
+    public init(
+        id: String,
+        profile: SoundProfile,
+        title: String,
+        imageName: String,
+        previewAlignment: Alignment = .center
+    ) {
+        self.id = id
+        self.profile = profile
+        self.title = title
+        self.imageName = imageName
+        self.previewAlignment = previewAlignment
+    }
 }
 
 public let allSoundBanners: [SoundBannerTheme] = [
     SoundBannerTheme(id: "crickets-night", profile: .nightCrickets, title: "Crickets Night", imageName: "crickets-night"),
-    SoundBannerTheme(id: "ocean-waves", profile: .oceanWaves, title: "Ocean Waves", imageName: "ocean-waves"),
     SoundBannerTheme(id: "gentle-rain", profile: .gentleRain, title: "Gentle Rain", imageName: "gentle-rain"),
+    SoundBannerTheme(id: "ocean-waves", profile: .oceanWaves, title: "Peaceful Ocean", imageName: "ocean-waves"),
+    SoundBannerTheme(id: "wind-in-trees", profile: .windInTrees, title: "Wind in Trees", imageName: "gentle-wind"),
     SoundBannerTheme(id: "rain-window", profile: .rainOnWindow, title: "Rain on Window", imageName: "rain-window"),
-    SoundBannerTheme(id: "cozy-campfire", profile: .cozyCampfire, title: "Cozy Campfire", imageName: "cozy-campfire"),
+
     SoundBannerTheme(id: "waterfall", profile: .waterfall, title: "Forest Waterfall", imageName: "waterfall"),
-    SoundBannerTheme(id: "flowing-river", profile: .forestRiver, title: "Flowing River", imageName: "flowing-river"),
-
-    SoundBannerTheme(id: "forest-birds", profile: .forestBirdsong, title: "Morning Birds", imageName: "forest-birds"),
-    SoundBannerTheme(id: "rolling-thunder", profile: .rollingThunder, title: "Rolling Thunder", imageName: "rolling-thunder"),
-    SoundBannerTheme(id: "heavy-rain", profile: .heavyRain, title: "Heavy Downpour", imageName: "heavy-rain"),
-    SoundBannerTheme(id: "rain-canopy", profile: .rainCanopy, title: "Rain on Leaves", imageName: "rain-canopy"),
-    SoundBannerTheme(id: "tropical-jungle", profile: .tropicalJungle, title: "Tropical Jungle", imageName: "tropical-jungle"),
-    SoundBannerTheme(id: "evening-frogs", profile: .eveningFrogs, title: "Evening Frogs", imageName: "evening-frogs"),
-
-    SoundBannerTheme(id: "cat-purr", profile: .catPurring, title: "Cat Purring", imageName: "cat-purr"),
-    SoundBannerTheme(id: "howling-wind", profile: .howlingWind, title: "Howling Winter Gale", imageName: "howling-wind"),
-    SoundBannerTheme(id: "warm-cafe", profile: .warmCafe, title: "Warm Coffee House", imageName: "warm-cafe"),
+    SoundBannerTheme(id: "dune-breeze", profile: .duneBreeze, title: "Desert Dune Breeze", imageName: "dune-breeze", previewAlignment: .bottom), // Below Forest Waterfall, shows bottom of dune
+    SoundBannerTheme(id: "cozy-campfire", profile: .cozyCampfire, title: "Cozy Campfire", imageName: "cozy-campfire"),
     SoundBannerTheme(id: "quiet-library", profile: .quietLibrary, title: "Quiet Library", imageName: "quiet-library"),
-    SoundBannerTheme(id: "night-village", profile: .nightVillage, title: "Quiet Mountain Village", imageName: "night-village"),
-    SoundBannerTheme(id: "temple-sanctuary", profile: .templeSanctuary, title: "Sacred Temple", imageName: "temple-sanctuary"),
-    SoundBannerTheme(id: "deep-underwater", profile: .deepUnderwater, title: "Deep Underwater", imageName: "deep-underwater"),
+    SoundBannerTheme(id: "rolling-thunder", profile: .rollingThunder, title: "Rolling Thunder", imageName: "rolling-thunder"),
 
-    SoundBannerTheme(id: "coastal-seagulls", profile: .coastalSeagulls, title: "Coastal Seagulls", imageName: "coastal-seagulls"),
-    SoundBannerTheme(id: "walk-leaves", profile: .walkOnLeaves, title: "Walk on Leaves", imageName: "walk-leaves"),
-    SoundBannerTheme(id: "water-droplets", profile: .waterDroplets, title: "Water Droplets", imageName: "water-droplets")
+    SoundBannerTheme(id: "flowing-river", profile: .forestRiver, title: "Flowing River", imageName: "flowing-river"),
+    SoundBannerTheme(id: "evening-frogs", profile: .eveningFrogs, title: "Evening Frogs", imageName: "evening-frogs"),
+    SoundBannerTheme(id: "cat-purr", profile: .catPurring, title: "Cat Purring", imageName: "cat-purr"), // Under Evening Frogs
+    SoundBannerTheme(id: "heavy-rain", profile: .heavyRain, title: "Heavy Downpour", imageName: "heavy-rain"),
+    SoundBannerTheme(id: "temple-sanctuary", profile: .templeSanctuary, title: "Sacred Temple", imageName: "temple-sanctuary"),
+
+    SoundBannerTheme(id: "coastal-seagulls", profile: .coastalSeagulls, title: "Coastal Seagulls", imageName: "coastal-seagulls", previewAlignment: .bottom), // Bottom of picture
+    SoundBannerTheme(id: "howling-wind", profile: .howlingWind, title: "Howling Winter Gale", imageName: "howling-wind", previewAlignment: .bottom), // Bottom of picture
+    SoundBannerTheme(id: "rain-canopy", profile: .rainCanopy, title: "Rain on Leaves", imageName: "rain-canopy"),
+    SoundBannerTheme(id: "deep-underwater", profile: .deepUnderwater, title: "Deep Underwater", imageName: "deep-underwater"),
+    SoundBannerTheme(id: "tropical-jungle", profile: .tropicalJungle, title: "Tropical Jungle", imageName: "tropical-jungle"),
+    SoundBannerTheme(id: "night-village", profile: .nightVillage, title: "Quiet Mountain Village", imageName: "night-village")
 ]
 
 public func bannerFor(profile: SoundProfile) -> SoundBannerTheme {
@@ -60,256 +73,340 @@ public func bannerFor(profile: SoundProfile) -> SoundBannerTheme {
 
 // MARK: ── Main View ──────────────────────────────────────────────────────────
 
+public enum ActiveScreenOverlay: Equatable {
+    case none
+    case editTimer
+    case soundSelection
+}
+
 public struct GroundingScreenView: View {
 
     @State private var activeProfile: SoundProfile = .nightCrickets
+    @State private var remainingTimerSeconds: TimeInterval = 600.0 // Default 10 min
+    @State private var totalTimerDuration: TimeInterval = 600.0    // Total selected span
     @State private var isPlaying: Bool = true
-
-    // Sleep Timer (Preset default: 30 minutes = 1800s)
-    @State private var remainingTimerSeconds: TimeInterval = 1800.0
-    @State private var totalTimerDuration: TimeInterval = 1800.0
+    @State private var activeOverlay: ActiveScreenOverlay = .none
     @State private var isDraggingTimer: Bool = false
-    @State private var isEditingTimer: Bool = false
+    @State private var isZenMode: Bool = false
+    @State private var timerEndTimestamp: Date? = Date().addingTimeInterval(600.0)
 
-    // Sound Library View
-    @State private var showSoundsSheet: Bool = false
-
-    private let timerTicker = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+    private let timerTicker = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
     public init() {}
 
-    private var activeBanner: SoundBannerTheme {
-        bannerFor(profile: activeProfile)
-    }
-
     public var body: some View {
-        ZStack {
-            // ── Dynamic Fullscreen Scenic Photographic Backdrop ──
-            Image(activeBanner.imageName)
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-                .overlay(
-                    LinearGradient(
-                        colors: [
-                            Color.black.opacity(0.15),
-                            Color.clear,
-                            Color.black.opacity(0.40)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .ignoresSafeArea()
-                )
+        GeometryReader { screenGeo in
+            let screenWidth = screenGeo.size.width
+            let screenHeight = screenGeo.size.height
 
-            // ── Normal Mode: Main Player Interface ──
-            if !isEditingTimer {
-                VStack(spacing: 0) {
-                    // Tap anywhere on the main screen (background, title, circular clock) to play / pause
-                    Color.clear
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            togglePlayPause()
-                        }
-                        .overlay(
-                            VStack(spacing: 0) {
-                                Spacer()
+            ZStack(alignment: .bottom) {
+                // ── Deep Atmospheric Fullscreen Backdrop ──
+                let activeBanner = bannerFor(profile: activeProfile)
 
-                                // Centered Group: Elevated Title + Circular Timer Ring
-                                VStack(spacing: 32) {
-                                    Text(activeBanner.title)
-                                        .font(.system(size: 26, weight: .regular, design: .rounded))
-                                        .tracking(0.4)
-                                        .foregroundColor(.white)
-                                        .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
-
-                                    FullCircularTimerView(
-                                        remainingSeconds: $remainingTimerSeconds,
-                                        totalDuration: $totalTimerDuration
-                                    )
-                                    .frame(width: 240, height: 240)
-                                }
-                                .offset(y: -16)
-
-                                Spacer()
-                            }
-                            .allowsHitTesting(false) // Let the tap pass through to the tap handler
+                Image(activeBanner.imageName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: screenWidth, height: screenHeight)
+                    .clipped()
+                    .overlay(
+                        LinearGradient(
+                            colors: [
+                                Color.black.opacity(0.35),
+                                Color.clear,
+                                Color.black.opacity(0.40)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
                         )
-
-                    // Bottom Dock Controls: [🎵 Sounds] [⏵/⏸ Play/Pause] [✏️ Edit] (All 50pt)
-                    HStack(spacing: 26) {
-                        // 🎵 1. Relaxing Sounds Button (50pt)
-                        Button(action: {
-                            HapticManager.shared.start()
-                            showSoundsSheet = true
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.black.opacity(0.35))
-                                    .frame(width: 50, height: 50)
-                                Circle()
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                                    .frame(width: 50, height: 50)
-
-                                Image(systemName: "music.note")
-                                    .font(.system(size: 19, weight: .semibold))
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        .buttonStyle(.plain)
-
-                        // ⏵/⏸ 2. Play / Pause Button (50pt)
-                        Button(action: { togglePlayPause() }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.black.opacity(0.35))
-                                    .frame(width: 50, height: 50)
-                                Circle()
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                                    .frame(width: 50, height: 50)
-
-                                Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                                    .font(.system(size: 22, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .offset(x: isPlaying ? 0 : 1.5)
-                            }
-                        }
-                        .buttonStyle(.plain)
-
-                        // ✏️ 3. Edit Timer Button (50pt)
-                        Button(action: {
-                            HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
-                            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
-                                isEditingTimer = true
-                            }
-                        }) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.black.opacity(0.35))
-                                    .frame(width: 50, height: 50)
-                                Circle()
-                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                                    .frame(width: 50, height: 50)
-
-                                Image(systemName: "pencil")
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.bottom, 44)
-                }
-                .transition(.opacity)
-            }
-
-            // ── Edit Mode: Solid Black + Top Timer + Fluid Waves + Bottom Checkmark (50pt) ──
-            if isEditingTimer {
-                ZStack(alignment: .bottom) {
-                    Color.black
                         .ignoresSafeArea()
+                    )
 
-                    VStack(spacing: 0) {
-                        // Top Clean Digital Timer in Edit Mode
-                        Text(formatNoLeadingZeroHours(remainingTimerSeconds))
-                            .font(.system(size: 44, weight: .light, design: .rounded))
-                            .monospacedDigit()
-                            .foregroundColor(.white)
-                            .padding(.top, 64)
+                // ── Normal Mode: Main Player Interface ──
+                if activeOverlay == .none {
+                    ZStack {
+                        // Background tap gesture: Always toggles play/pause (both normal and Zen mode)
+                        Color.clear
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                togglePlayPause()
+                            }
 
-                        // Tall Fluid Wave Measuring Lines View
+                        // Top Zen / Immersion Button just below Dynamic Island
+                        // Equipped with a large invisible circular hit area (~84pt)
+                        VStack {
+                            Button(action: {
+                                HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                withAnimation(.easeInOut(duration: 0.35)) {
+                                    isZenMode.toggle()
+                                }
+                            }) {
+                                Image(systemName: isZenMode ? "eye" : "eye.slash")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.white.opacity(isZenMode ? 0.40 : 0.65))
+                                    .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 2)
+                                    .frame(width: 84, height: 84)
+                                    .contentShape(Circle())
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.top, 38)
+
+                            Spacer()
+                        }
+                        .zIndex(20)
+
+                        // Main Clock & Bottom Controls (All disappear in Zen Mode)
+                        VStack(spacing: 0) {
+                            Spacer()
+
+                            // Original Clean Circular Timer Ring (Fades in Zen Mode)
+                            FullCircularTimerView(
+                                remainingSeconds: $remainingTimerSeconds,
+                                totalDuration: $totalTimerDuration,
+                                isPlaying: isPlaying,
+                                timerEndTimestamp: timerEndTimestamp
+                            )
+                            .frame(width: 318, height: 318)
+                            .offset(y: 20)
+                            .opacity(isZenMode ? 0 : 1)
+                            .animation(.easeInOut(duration: 0.35), value: isZenMode)
+
+                            Spacer()
+
+                            // Bottom Dock Controls: [‹ Prev] [🎵 Sounds] [⏵/⏸ Play/Pause] [✏️ Edit] [› Next] (+7% Size)
+                            HStack(spacing: 24) {
+                                // ‹ 1. Previous Sound Track
+                                Button(action: { selectPreviousSound() }) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 21.4, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 47, height: 47)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+
+                                // 🎵 2. Relaxing Sounds Button
+                                Button(action: {
+                                    HapticManager.shared.start()
+                                    activeOverlay = .soundSelection
+                                }) {
+                                    Image(systemName: "music.note")
+                                        .font(.system(size: 22.5, weight: .medium))
+                                        .foregroundColor(.white)
+                                        .frame(width: 47, height: 47)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+
+                                // ⏵/⏸ 3. Play / Pause Button
+                                Button(action: { togglePlayPause() }) {
+                                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                                        .font(.system(size: 28, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 47, height: 47)
+                                        .offset(x: isPlaying ? 0 : 1.5)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+
+                                // ✏️ 4. Edit Timer Button
+                                Button(action: {
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        activeOverlay = .editTimer
+                                    }
+                                }) {
+                                    Image(systemName: "pencil")
+                                        .font(.system(size: 21.4, weight: .medium))
+                                        .foregroundColor(.white)
+                                        .frame(width: 47, height: 47)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+
+                                // › 5. Next Sound Track
+                                Button(action: { selectNextSound() }) {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 21.4, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 47, height: 47)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                            .padding(.bottom, 36)
+                            .opacity(isZenMode ? 0 : 1)
+                            .animation(.easeInOut(duration: 0.35), value: isZenMode)
+                            .allowsHitTesting(!isZenMode)
+                        }
+                    }
+                    .frame(width: screenWidth, height: screenHeight)
+                    .transition(.identity)
+                }
+
+                // ── Edit Mode: Solid Black + Top Timer + Full Height Waves + Bottom Checkmark ──
+                if activeOverlay == .editTimer {
+                    ZStack(alignment: .bottom) {
+                        Color.black
+                            .ignoresSafeArea()
+
+                        // Full Height Fluid Wave Measuring Lines (Brought closer to timer & checkmark)
                         TallFusedMeasuringLinesView(
                             remainingSeconds: $remainingTimerSeconds,
                             totalDuration: $totalTimerDuration,
                             isDragging: $isDraggingTimer
                         )
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .padding(.vertical, 16)
+                        .ignoresSafeArea()
 
-                        Spacer().frame(height: 94)
-                    }
-
-                    // Floating Checkmark Confirmation Button (50pt, subtle glass)
-                    Button(action: {
-                        HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.5)
-                        withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) {
-                            isEditingTimer = false
-                        }
-                    }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.black.opacity(0.40))
-                                .frame(width: 50, height: 50)
-                            Circle()
-                                .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                                .frame(width: 50, height: 50)
-
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 18, weight: .bold))
+                        // Top Clean Digital Timer in Edit Mode (Exact 44pt size matching main screen)
+                        VStack {
+                            Text(formatNoLeadingZeroHours(remainingTimerSeconds))
+                                .font(.system(size: 44, weight: .light, design: .rounded))
+                                .monospacedDigit()
                                 .foregroundColor(.white)
-                        }
-                        .shadow(color: Color.black.opacity(0.5), radius: 8, x: 0, y: 4)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.bottom, 44)
-                }
-                .transition(.opacity)
-                .zIndex(50)
-            }
+                                .shadow(color: Color.black.opacity(0.90), radius: 8, x: 0, y: 3)
+                                .padding(.top, 96)
 
-            // ── Full-Screen Relaxing Sounds Sheet with Floating Bottom (X) Button (50pt) ──
-            if showSoundsSheet {
-                RelaxingSoundsFullView(
-                    activeProfile: $activeProfile,
-                    isPlaying: isPlaying,
-                    onSelectSound: { selectedProfile in
-                        activeProfile = selectedProfile
-                        AudioManager.shared.activeProfile = selectedProfile
-                        AudioManager.shared.start()
-                        isPlaying = true
-                        showSoundsSheet = false
-                        HapticManager.shared.start()
-                    },
-                    onClose: {
-                        showSoundsSheet = false
+                            Spacer()
+                        }
+                        .allowsHitTesting(false) // Let drag touch pass through to the measuring lines
+
+                        // Floating Checkmark Confirmation Button (+7% Size, exact matching 47x47 frame)
+                        Button(action: {
+                            HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
+                            if isPlaying {
+                                timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                            }
+                            activeOverlay = .none
+                        }) {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 25.7, weight: .bold))
+                                .foregroundColor(.white)
+                                .shadow(color: Color.black.opacity(0.95), radius: 8, x: 0, y: 3)
+                                .frame(width: 47, height: 47)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.bottom, 36)
+                        .zIndex(20)
                     }
-                )
-                .transition(.opacity)
-                .zIndex(100)
+                    .frame(width: screenWidth, height: screenHeight)
+                    .transition(.identity)
+                    .zIndex(50)
+                }
+
+                // ── Relaxing Sounds Library Overlay (Static Instant Cut) ──
+                if activeOverlay == .soundSelection {
+                    RelaxingSoundsFullView(
+                        screenWidth: screenWidth,
+                        activeProfile: $activeProfile,
+                        isPlaying: isPlaying,
+                        onSelectSound: { profile in
+                            activeProfile = profile
+                            isPlaying = true
+                            timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                            activeOverlay = .none
+                            AudioManager.shared.activeProfile = profile
+                            if !AudioManager.shared.isAudioPlaying {
+                                AudioManager.shared.start()
+                            }
+                        },
+                        onClose: {
+                            activeOverlay = .none
+                        }
+                    )
+                    .frame(width: screenWidth, height: screenHeight)
+                    .transition(.identity)
+                    .zIndex(100)
+                }
+            }
+            .frame(width: screenWidth, height: screenHeight)
+            .clipped()
+        }
+        .ignoresSafeArea()
+        .onReceive(timerTicker) { _ in
+            if isPlaying && !isDraggingTimer && activeOverlay != .editTimer {
+                if let end = timerEndTimestamp {
+                    let left = end.timeIntervalSinceNow
+                    if left <= 0 {
+                        remainingTimerSeconds = 0
+                        isPlaying = false
+                        timerEndTimestamp = nil
+                        AudioManager.shared.pause()
+                    } else {
+                        remainingTimerSeconds = left
+                    }
+                } else {
+                    timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AudioManager.audioStateDidChangeNotification)) { _ in
+            let audioPlaying = AudioManager.shared.isAudioPlaying
+            if isPlaying != audioPlaying {
+                isPlaying = audioPlaying
+                if audioPlaying {
+                    if remainingTimerSeconds <= 0 {
+                        remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+                    }
+                    timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                } else {
+                    timerEndTimestamp = nil
+                }
             }
         }
         .onAppear {
-            setupInitialPlayback()
-        }
-        .onReceive(timerTicker) { _ in
-            guard isPlaying, !isDraggingTimer, !isEditingTimer else { return }
-            if remainingTimerSeconds > 0 {
-                remainingTimerSeconds -= 1.0
-            } else {
-                togglePlayPause(forceStop: true)
+            AudioManager.shared.activeProfile = activeProfile
+            if isPlaying {
+                timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                AudioManager.shared.start()
             }
         }
     }
 
-    private func setupInitialPlayback() {
-        AudioManager.shared.activeProfile = activeProfile
-        AudioManager.shared.start()
-        isPlaying = true
+    private func togglePlayPause() {
+        HapticManager.shared.playTransientHeartbeat(intensity: 0.6, sharpness: 0.6)
+        isPlaying.toggle()
+        if isPlaying {
+            if remainingTimerSeconds <= 0 {
+                remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+            }
+            timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+        } else {
+            timerEndTimestamp = nil
+        }
+        AudioManager.shared.togglePlayPause()
     }
 
-    private func togglePlayPause(forceStop: Bool = false) {
-        HapticManager.shared.playTransientHeartbeat(intensity: 0.6, sharpness: 0.5)
-        if forceStop {
-            AudioManager.shared.pause()
-            isPlaying = false
-            return
-        }
-        if isPlaying {
-            AudioManager.shared.pause()
-            isPlaying = false
-        } else {
-            AudioManager.shared.resume()
+    private func selectPreviousSound() {
+        HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.5)
+        guard let currentIndex = allSoundBanners.firstIndex(where: { $0.profile == activeProfile }) else { return }
+        let newIndex = (currentIndex - 1 + allSoundBanners.count) % allSoundBanners.count
+        let newProfile = allSoundBanners[newIndex].profile
+        activeProfile = newProfile
+        AudioManager.shared.activeProfile = newProfile
+        if !isPlaying {
             isPlaying = true
+            timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+        }
+        if !AudioManager.shared.isAudioPlaying {
+            AudioManager.shared.start()
+        }
+    }
+
+    private func selectNextSound() {
+        HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.5)
+        guard let currentIndex = allSoundBanners.firstIndex(where: { $0.profile == activeProfile }) else { return }
+        let newIndex = (currentIndex + 1) % allSoundBanners.count
+        let newProfile = allSoundBanners[newIndex].profile
+        activeProfile = newProfile
+        AudioManager.shared.activeProfile = newProfile
+        if !isPlaying {
+            isPlaying = true
+            timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+        }
+        if !AudioManager.shared.isAudioPlaying {
+            AudioManager.shared.start()
         }
     }
 }
@@ -317,7 +414,7 @@ public struct GroundingScreenView: View {
 // MARK: ── Clean Time Formatter ───────────────────────────────────────────────
 
 private func formatNoLeadingZeroHours(_ seconds: TimeInterval) -> String {
-    let total = max(0, Int(seconds))
+    let total = max(0, Int(ceil(seconds)))
     let hrs = total / 3600
     let mins = (total % 3600) / 60
     let secs = total % 60
@@ -328,56 +425,69 @@ private func formatNoLeadingZeroHours(_ seconds: TimeInterval) -> String {
     }
 }
 
-// MARK: ── 1. Full Circle Timer View with Minimal White Dot ───────────────────
+// MARK: ── 1. Circular Countdown Timer (Original Smooth Ring & Gliding Dot) ───
 
 private struct FullCircularTimerView: View {
     @Binding var remainingSeconds: TimeInterval
     @Binding var totalDuration: TimeInterval
-
-    private let maxTime: TimeInterval = 14400.0 // 4 hours
-
-    private var progress: Double {
-        max(0.0, min(1.0, remainingSeconds / maxTime))
-    }
+    let isPlaying: Bool
+    let timerEndTimestamp: Date?
 
     var body: some View {
-        GeometryReader { geo in
-            let radius = min(geo.size.width, geo.size.height) / 2
-            let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
+        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
+            let now = timeline.date
+            let currentRemaining: Double = {
+                if isPlaying, let end = timerEndTimestamp {
+                    return max(0.0, end.timeIntervalSince(now))
+                }
+                return remainingSeconds
+            }()
 
-            let angleRad = (progress * 360.0 - 90.0) * .pi / 180.0
-            let tickX = center.x + CGFloat(cos(angleRad)) * (radius - 10)
-            let tickY = center.y + CGFloat(sin(angleRad)) * (radius - 10)
+            let progress: Double = {
+                guard totalDuration > 0 else { return 1.0 }
+                return max(0.0, min(1.0, currentRemaining / totalDuration))
+            }()
 
-            ZStack {
-                // Background Track Ring
-                Circle()
-                    .stroke(Color.white.opacity(0.16), lineWidth: 3.5)
-                    .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+            GeometryReader { geo in
+                let size = min(geo.size.width, geo.size.height)
+                let radius = size / 2
+                let center = CGPoint(x: size / 2, y: size / 2)
 
-                // White Progress Arc
-                Circle()
-                    .trim(from: 0, to: CGFloat(progress))
-                    .stroke(
-                        Color.white,
-                        style: StrokeStyle(lineWidth: 4.0, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(-90))
-                    .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+                let angle = (progress * 360.0) - 90.0
+                let rad = angle * .pi / 180.0
+                let tickX = center.x + (radius - 10) * CGFloat(cos(rad))
+                let tickY = center.y + (radius - 10) * CGFloat(sin(rad))
 
-                // Minimal Little White Dot
-                Circle()
-                    .fill(Color.white)
-                    .frame(width: 10, height: 10)
-                    .shadow(color: Color.white.opacity(0.85), radius: 3, x: 0, y: 0)
-                    .position(x: tickX, y: tickY)
+                ZStack {
+                    // Background Track Ring
+                    Circle()
+                        .stroke(Color.white.opacity(0.16), lineWidth: 4.0)
+                        .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
 
-                // Center Digital Countdown
-                Text(formatNoLeadingZeroHours(remainingSeconds))
-                    .font(.system(size: 38, weight: .light, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundColor(.white)
-                    .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                    // Foreground Animated Smooth Flowing Remaining Arc
+                    Circle()
+                        .trim(from: 0.0, to: CGFloat(progress))
+                        .stroke(
+                            Color.white,
+                            style: StrokeStyle(lineWidth: 4.5, lineCap: .round)
+                        )
+                        .rotationEffect(.degrees(-90))
+                        .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+
+                    // Minimal Little White Dot (Smooth 60/120fps continuous glide)
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 10, height: 10)
+                        .shadow(color: Color.white.opacity(0.85), radius: 3, x: 0, y: 0)
+                        .position(x: tickX, y: tickY)
+
+                    // Center Digital Countdown (Exact 44pt rounded light font)
+                    Text(formatNoLeadingZeroHours(currentRemaining))
+                        .font(.system(size: 44, weight: .light, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundColor(.white)
+                        .shadow(color: Color.black.opacity(0.90), radius: 8, x: 0, y: 3)
+                }
             }
         }
     }
@@ -405,14 +515,13 @@ private struct TallFusedMeasuringLinesView: View {
                 let midY = height / 2
 
                 Canvas { context, size in
-                    // ── 1. Center Ambient Aura Beam ──
-                    let glowRect = CGRect(x: 0, y: midY - 50, width: width, height: 100)
+                    // ── 1. Center Focal Aura Glow ──
+                    let glowRect = CGRect(x: 0, y: midY - 80, width: width, height: 160)
                     context.fill(
                         Path(glowRect),
                         with: .radialGradient(
                             Gradient(colors: [
-                                Color.white.opacity(0.14),
-                                Color.white.opacity(0.04),
+                                Color.white.opacity(0.08),
                                 Color.clear
                             ]),
                             center: CGPoint(x: midX, y: midY),
@@ -421,8 +530,8 @@ private struct TallFusedMeasuringLinesView: View {
                         )
                     )
 
-                    // ── 2. Floating Shimmer Particles Interacting with Scroll (26 particles) ──
-                    let numParticles = 26
+                    // ── 2. Floating Shimmer Particles along Center Focal Zone ──
+                    let numParticles = 16
                     for i in 0..<numParticles {
                         let seed = Double(i) * 137.5
                         let baseX = (CGFloat(sin(seed)) * 0.5 + 0.5) * (width - 80) + 40
@@ -434,61 +543,87 @@ private struct TallFusedMeasuringLinesView: View {
                         let pY = baseY + driftY
 
                         let dist = abs(pY - midY)
-                        let fade = max(0.0, 1.0 - dist / 85.0)
-                        let pulse = 0.5 + 0.5 * sin(time * 2.8 + seed)
-                        let pRadius: CGFloat = 1.0 + CGFloat(pulse) * 1.2
+                        let fade = max(0.0, 1.0 - dist / 65.0)
+                        let pulse = 0.5 + 0.5 * sin(time * 2.5 + seed)
+                        let pRadius: CGFloat = 1.0 + CGFloat(pulse) * 1.5
 
                         let particleRect = CGRect(x: pX - pRadius, y: pY - pRadius, width: pRadius * 2, height: pRadius * 2)
                         context.fill(
                             Path(ellipseIn: particleRect),
-                            with: .color(Color.white.opacity(0.35 * Double(fade) * pulse))
+                            with: .color(Color.white.opacity(0.40 * Double(fade) * pulse))
                         )
                     }
 
-                    // ── 3. Hourglass Wavy Lines (Wide at ends ~185pt, Narrow in center waist ~75pt) ──
-                    let lineSpacing: CGFloat = 7.0
-                    let numLines = Int(height / lineSpacing)
+                    // ── 3. Animated Fluid Wave Measuring Lines (Closer to timer & checkmark) ──
+                    let lineSpacing: CGFloat = 18.0
+                    let numLines = Int(height / lineSpacing) + 6
+                    let offsetPx = CGFloat((remainingSeconds * (18.0 / 90.0)).truncatingRemainder(dividingBy: Double(lineSpacing)))
 
-                    for i in 0..<numLines {
-                        let yPos = CGFloat(i) * lineSpacing
-                        let distToCenter = abs(yPos - midY)
-                        let normDist = min(1.0, distToCenter / (height / 2))
+                    // Safe boundaries brought closer to the top timer and bottom checkmark
+                    let topSafeFadeStart: CGFloat = 175.0
+                    let topSafeFadeEnd: CGFloat = 145.0
+                    let bottomSafeFadeStart: CGFloat = height - 155.0
+                    let bottomSafeFadeEnd: CGFloat = height - 120.0
 
-                        // Hourglass width profile: sleek waist in center, expanding outward
-                        let hourglassCurve = pow(normDist, 1.7)
-                        let lineWidth = 75.0 + hourglassCurve * 110.0
+                    for i in -2...numLines {
+                        let yPos = CGFloat(i) * lineSpacing - offsetPx
+                        guard yPos >= topSafeFadeEnd && yPos <= bottomSafeFadeEnd else { continue }
 
-                        let wave = sin(time * 2.4 + Double(yPos) * 0.032) * (4.0 * (1.0 - normDist * 0.5) + 2.0)
+                        let distFromCenter = abs(yPos - midY)
+                        let focus = max(0.0, exp(-pow(Double(distFromCenter) / 105.0, 2)))
 
-                        var pointerDeflect: CGFloat = 0.0
-                        if let touch = touchLocation {
-                            let dy = yPos - touch.y
-                            let dx = midX - touch.x
-                            let pDist = hypot(dx, dy)
-                            if pDist < 130 {
-                                let factor = 1.0 - pDist / 130.0
-                                pointerDeflect = sin(factor * .pi) * (dx * 0.38)
+                        // Smooth gradient fade before touching top timer and bottom checkmark
+                        var edgeFade: CGFloat = 1.0
+                        if yPos < topSafeFadeStart {
+                            edgeFade = max(0.0, min(1.0, (yPos - topSafeFadeEnd) / (topSafeFadeStart - topSafeFadeEnd)))
+                        } else if yPos > bottomSafeFadeStart {
+                            edgeFade = max(0.0, min(1.0, (bottomSafeFadeEnd - yPos) / (bottomSafeFadeEnd - bottomSafeFadeStart)))
+                        }
+                        guard edgeFade > 0.005 else { continue }
+                        let smoothEdgeFade = sin(Double(edgeFade) * .pi / 2.0)
+
+                        let lineWidth = (65.0 + CGFloat(focus) * 110.0) * (0.4 + 0.6 * CGFloat(smoothEdgeFade))
+                        let numPts = 16
+                        let xStart = midX - lineWidth / 2
+
+                        var linePath = Path()
+                        for p in 0...numPts {
+                            let u = CGFloat(p) / CGFloat(numPts)
+                            let x = xStart + u * lineWidth
+                            let relX = (x - midX) / (lineWidth / 2)
+                            let envelope = max(0.0, 1.0 - relX * relX)
+
+                            let wave = CGFloat(sin(time * 2.6 + Double(yPos) * 0.035 + Double(relX) * 2.2)) * (2.0 + CGFloat(focus) * 5.0) * envelope
+
+                            var pointerDeflect: CGFloat = 0.0
+                            if let touch = touchLocation {
+                                let dx = x - touch.x
+                                let dy = yPos - touch.y
+                                let distToPoint = hypot(dx, dy)
+                                if distToPoint < 110 {
+                                    let force = (1.0 - distToPoint / 110.0)
+                                    pointerDeflect = force * max(-25.0, min(25.0, touch.y - yPos)) * 0.35 * envelope
+                                }
+                            }
+
+                            let clampedVel = max(-10.0, min(10.0, dragVelocity))
+                            let velocityBow = -clampedVel * CGFloat(focus) * envelope * 2.5
+                            let finalY = yPos + wave + pointerDeflect + velocityBow
+
+                            if p == 0 {
+                                linePath.move(to: CGPoint(x: x, y: finalY))
+                            } else {
+                                linePath.addLine(to: CGPoint(x: x, y: finalY))
                             }
                         }
 
-                        let velocityDeflect = dragVelocity * cos(normDist * .pi * 0.5) * 1.4
-                        let currentMidX = midX + CGFloat(wave) + pointerDeflect + velocityDeflect
-
-                        let xLeft = currentMidX - lineWidth / 2
-                        let xRight = currentMidX + lineWidth / 2
-
-                        let centerFocus = exp(-pow(Double(normDist) * 1.8, 2))
-                        let alpha = max(0.16, min(0.95, 0.22 + centerFocus * 0.72))
-                        let strokeWidth = 1.0 + CGFloat(centerFocus) * 0.6
-
-                        var linePath = Path()
-                        linePath.move(to: CGPoint(x: xLeft, y: yPos))
-                        linePath.addLine(to: CGPoint(x: xRight, y: yPos))
+                        let lineAlpha = (0.12 + focus * 0.88) * smoothEdgeFade
+                        let strokeW = 1.0 + CGFloat(focus) * 0.7
 
                         context.stroke(
                             linePath,
-                            with: .color(Color.white.opacity(alpha)),
-                            style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
+                            with: .color(Color.white.opacity(lineAlpha)),
+                            style: StrokeStyle(lineWidth: strokeW, lineCap: .round)
                         )
                     }
                 }
@@ -497,160 +632,140 @@ private struct TallFusedMeasuringLinesView: View {
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { val in
+                        // Ignore touches near the bottom checkmark area
+                        guard val.startLocation.y < geo.size.height - 80 else { return }
                         isDragging = true
                         touchLocation = val.location
-                        let deltaY = -val.translation.height - dragOffset
-                        dragOffset = -val.translation.height
-                        dragVelocity = deltaY
 
-                        let deltaSeconds = Double(deltaY) * 14.0
-                        remainingSeconds = max(60, min(maxTime, remainingSeconds + deltaSeconds))
-                        totalDuration = remainingSeconds
+                        let dy = val.translation.height - dragOffset
+                        dragVelocity = dy
+                        dragOffset = val.translation.height
+
+                        let sensitivity: Double = 90.0 / 18.0
+                        let secondsDelta = -Double(dy) * sensitivity
+
+                        let currentTotal = totalDuration > 0 ? totalDuration : 600.0
+                        let newTotal = max(60.0, min(maxTime, currentTotal + secondsDelta))
+                        totalDuration = newTotal
+                        remainingSeconds = newTotal
                     }
                     .onEnded { _ in
                         isDragging = false
-                        touchLocation = nil
                         dragOffset = 0.0
+                        touchLocation = nil
                         dragVelocity = 0.0
-                        HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.5)
                     }
             )
         }
     }
 }
 
-// MARK: ── Full-Screen Relaxing Sounds View ───────────────────────────────────
+// MARK: ── 2. Full Relaxing Sounds Selection Library (Static Instant Cut) ──────
 
 private struct RelaxingSoundsFullView: View {
+    let screenWidth: CGFloat
     @Binding var activeProfile: SoundProfile
     let isPlaying: Bool
     let onSelectSound: (SoundProfile) -> Void
     let onClose: () -> Void
 
-    @State private var previewingProfile: SoundProfile? = nil
-    @State private var initialProfile: SoundProfile = .nightCrickets
-    @State private var wasPlayingInitially: Bool = true
+    private let cardHeight: CGFloat = 135.0
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color(red: 0.06, green: 0.06, blue: 0.08)
+            // Solid Black Backdrop
+            Color.black
                 .ignoresSafeArea()
 
-            ScrollView(showsIndicators: true) {
+            // Vertical Soundscapes Scroll View
+            ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(spacing: 0) {
                     ForEach(allSoundBanners) { banner in
-                        let isThisPreviewing = previewingProfile == banner.profile
+                        let isThisActive = (banner.profile == activeProfile)
 
-                        ZStack(alignment: .leading) {
-                            Image(banner.imageName)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 96)
-                                .clipped()
+                        Button(action: {
+                            HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
+                            onSelectSound(banner.profile)
+                        }) {
+                            ZStack(alignment: .bottom) {
+                                // 1. Sound Scenic Background Picture
+                                Image(banner.imageName)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: screenWidth, height: cardHeight, alignment: banner.previewAlignment)
+                                    .clipped()
 
-                            LinearGradient(
-                                colors: [
-                                    Color.black.opacity(0.35),
-                                    Color.black.opacity(0.05),
-                                    Color.black.opacity(0.35)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-
-                            VStack {
-                                Spacer()
+                                // 2. Dark Tint for High Contrast Legibility
                                 Rectangle()
-                                    .fill(Color.black.opacity(0.50))
-                                    .frame(height: 1)
-                            }
+                                    .fill(Color.black.opacity(isThisActive ? 0.22 : 0.38))
+                                    .frame(width: screenWidth, height: cardHeight)
 
-                            HStack(spacing: 14) {
-                                Button(action: {
-                                    togglePreview(for: banner.profile)
-                                }) {
-                                    Image(systemName: isThisPreviewing ? "stop.fill" : "speaker.wave.2")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(isThisPreviewing ? .white : .white.opacity(0.75))
-                                        .padding(6)
-                                }
-                                .buttonStyle(.plain)
-
-                                Text(banner.title)
-                                    .font(.system(size: 16, weight: .regular))
-                                    .foregroundColor(.white)
-                                    .shadow(color: Color.black.opacity(0.85), radius: 4, x: 0, y: 1)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                                Button(action: {
-                                    previewingProfile = nil
-                                    onSelectSound(banner.profile)
-                                }) {
-                                    Image(systemName: "play.fill")
-                                        .font(.system(size: 16, weight: .bold))
+                                // 3. Content Row (Title on Left, Pure White Checkmark on Right)
+                                HStack(spacing: 14) {
+                                    Text(banner.title)
+                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
                                         .foregroundColor(.white)
-                                        .padding(6)
+                                        .shadow(color: Color.black.opacity(0.95), radius: 6, x: 0, y: 2)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                                    if isThisActive {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 20, weight: .bold))
+                                            .foregroundColor(.white)
+                                            .shadow(color: Color.black.opacity(0.95), radius: 4, x: 0, y: 2)
+                                    }
                                 }
-                                .buttonStyle(.plain)
+                                .padding(.horizontal, 24)
+                                .frame(width: screenWidth, height: cardHeight)
                             }
-                            .padding(.horizontal, 20)
+                            .frame(width: screenWidth, height: cardHeight)
                             .contentShape(Rectangle())
-                            .onTapGesture {
-                                previewingProfile = nil
-                                onSelectSound(banner.profile)
-                            }
+                            .clipped()
                         }
-                        .frame(height: 96)
+                        .buttonStyle(.plain)
+                        .contentShape(Rectangle())
                     }
                 }
-                .padding(.bottom, 94)
+                .padding(.top, 50)
+                .padding(.bottom, 84) // Balanced clearance so cards scroll smoothly
             }
+            .frame(width: screenWidth)
+            .ignoresSafeArea(edges: .bottom)
 
-            // Floating Circular Exit (X) Button (50pt)
-            Button(action: handleClose) {
-                ZStack {
-                    Circle()
-                        .fill(Color.black.opacity(0.40))
-                        .frame(width: 50, height: 50)
-                    Circle()
-                        .stroke(Color.white.opacity(0.25), lineWidth: 1)
-                    Image(systemName: "xmark")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.white)
-                }
-                .shadow(color: Color.black.opacity(0.5), radius: 8, x: 0, y: 4)
+            // Ultra-Smooth Bottom Fade Scrim & Floating Exit (X) Button
+            VStack(spacing: 0) {
+                Spacer()
+                LinearGradient(
+                    stops: [
+                        .init(color: .clear, location: 0.0),
+                        .init(color: Color.black.opacity(0.35), location: 0.4),
+                        .init(color: Color.black.opacity(0.75), location: 0.75),
+                        .init(color: Color.black.opacity(0.95), location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(width: screenWidth, height: 85)
+                .allowsHitTesting(false)
+            }
+            .ignoresSafeArea(edges: .bottom)
+
+            // Floating Exit (X) Button (+7% Size, exact matching 47x47 frame)
+            Button(action: {
+                HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
+                onClose()
+            }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 25.7, weight: .bold))
+                    .foregroundColor(.white)
+                    .shadow(color: Color.black.opacity(0.95), radius: 8, x: 0, y: 3)
+                    .frame(width: 47, height: 47)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .padding(.bottom, 44)
+            .padding(.bottom, 36)
+            .zIndex(20)
         }
-        .onAppear {
-            initialProfile = activeProfile
-            wasPlayingInitially = isPlaying
-        }
-    }
-
-    private func togglePreview(for profile: SoundProfile) {
-        HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.6)
-        if previewingProfile == profile {
-            previewingProfile = nil
-            AudioManager.shared.pause()
-        } else {
-            previewingProfile = profile
-            AudioManager.shared.activeProfile = profile
-            AudioManager.shared.start()
-        }
-    }
-
-    private func handleClose() {
-        if previewingProfile != nil {
-            AudioManager.shared.activeProfile = initialProfile
-            if wasPlayingInitially {
-                AudioManager.shared.start()
-            } else {
-                AudioManager.shared.pause()
-            }
-        }
-        onClose()
+        .frame(width: screenWidth)
     }
 }

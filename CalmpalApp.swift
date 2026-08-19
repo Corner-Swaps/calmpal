@@ -14,7 +14,6 @@ struct CalmpalApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             GroundingSession.self,
-            GAD7Assessment.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

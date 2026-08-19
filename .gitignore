@@ -26,8 +26,5 @@ project.xcworkspace/xcuserdata/
 .build/
 .swiftpm/
 
-# CocoaPods
-# Pods/
-
-# Carthage
-# Carthage/Build/
+# Agent metadata
+.gemini/

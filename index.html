@@ -38,7 +38,7 @@
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 0 10px #1a1a1a;
   }
 
-  /* ── 1. Photographic Scenic Backdrop ── */
+  /* ── 1. Photographic Scenic Backdrop (Static instant cut) ── */
   .scenic-bg-layer {
     position: absolute;
     top: 0; left: 0;
@@ -46,7 +46,6 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    transition: background-image 0.15s ease-out;
     z-index: 1;
   }
 
@@ -104,9 +103,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 32px;
     pointer-events: none;
-    transform: translateY(-16px);
+    width: 100%;
   }
 
   .title-sound-name {
@@ -115,16 +113,18 @@
     letter-spacing: 0.4px;
     color: #ffffff;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+    transform: translateY(6px);
   }
 
-  /* ── Circular Countdown Timer ── */
+  /* ── Circular Countdown Timer (Centered, lowered slightly) ── */
   .circular-timer-container {
     position: relative;
-    width: 240px;
-    height: 240px;
+    width: 316px;
+    height: 316px;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: 40px;
   }
 
   .timer-svg {
@@ -161,15 +161,15 @@
 
   .center-digital-time {
     position: relative;
-    font-size: 38px;
+    font-size: 44px;
     font-weight: 300;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.5px;
     color: #ffffff;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
   }
 
-  /* ── Bottom Action Dock: 3 Buttons (Sounds, Play/Pause, Edit) ── */
+  /* ── Bottom Action Dock: 3 Clean Buttons (No Black Highlight) ── */
   .bottom-action-dock {
     padding-bottom: 44px;
     display: flex;
@@ -181,29 +181,45 @@
   .playback-controls-bar {
     display: flex;
     align-items: center;
-    gap: 26px;
+    gap: 36px;
   }
 
-  .dock-round-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(12px);
+  .dock-btn {
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
     cursor: pointer;
-    transition: transform 0.12s, background 0.12s, border-color 0.12s;
+    transition: transform 0.12s, opacity 0.12s;
+  }
+  .dock-btn:active {
+    transform: scale(0.90);
+    opacity: 0.8;
+  }
+
+  .dock-round-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.2px solid rgba(255, 255, 255, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.12s;
   }
   .dock-round-btn:active {
     transform: scale(0.92);
     background: rgba(255, 255, 255, 0.20);
   }
 
-  /* ── 2. Edit Mode View: Solid Black + Top Digital Timer + Canvas Hourglass Waves ── */
+  /* ── 2. Edit Mode View: Solid Black + Top Digital Timer + Canvas Fluid Waves ── */
   .edit-mode-overlay {
     position: absolute;
     top: 0; left: 0;
@@ -214,7 +230,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 64px 20px 44px;
+    padding: 38px 20px 44px;
   }
   .edit-mode-overlay.active { display: flex; }
 
@@ -227,28 +243,29 @@
   }
 
   .fullheight-ruler-viewport {
+    position: absolute;
+    top: 120px;
+    bottom: 110px;
+    left: 0;
     width: 100%;
-    height: 520px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: grab;
+    touch-action: none;
+    user-select: none;
   }
   .fullheight-ruler-viewport:active { cursor: grabbing; }
 
   .ruler-interactive-canvas {
     width: 100%;
     height: 100%;
+    display: block;
+    pointer-events: none;
   }
 
   .floating-bottom-exit-btn {
     width: 50px;
     height: 50px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(12px);
+    background: transparent;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -259,11 +276,12 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 120;
-    transition: transform 0.12s, background 0.12s;
+    transition: transform 0.12s, opacity 0.12s;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.85));
   }
   .floating-bottom-exit-btn:active {
-    transform: translateX(-50%) scale(0.92);
-    background: rgba(255, 255, 255, 0.20);
+    transform: translateX(-50%) scale(0.90);
+    opacity: 0.8;
   }
 
   /* ── 3. Relaxing Sounds Full Page ── */
@@ -282,27 +300,40 @@
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 94px;
+    padding: 0;
+    margin: 0;
+    padding-bottom: 0px;
+    scrollbar-width: none;
   }
+  .sounds-scroll-list::-webkit-scrollbar { display: none; }
 
+  /* Taller scenic cards (~118px) */
   .scenic-sound-card {
     position: relative;
-    height: 96px;
+    height: 118px;
     width: 100%;
     background-size: cover;
     background-position: center;
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    padding: 0 22px;
     cursor: pointer;
     border-bottom: 1px solid rgba(0, 0, 0, 0.50);
+    transition: transform 0.12s, filter 0.12s;
+  }
+  .scenic-sound-card:active {
+    transform: scale(0.985);
+    filter: brightness(1.15);
+  }
+  .scenic-sound-card:last-child {
+    border-bottom: none;
   }
 
   .scenic-card-overlay {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: linear-gradient(to right, rgba(0,0,0,0.40), rgba(0,0,0,0.08), rgba(0,0,0,0.40));
+    background: linear-gradient(to right, rgba(0,0,0,0.45), rgba(0,0,0,0.12), rgba(0,0,0,0.45));
     pointer-events: none;
   }
 
@@ -313,33 +344,28 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-
-  .scenic-card-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    pointer-events: none;
   }
 
   .scenic-card-title {
-    font-size: 16px;
-    font-weight: 400;
+    font-size: 18px;
+    font-weight: 500;
     color: #ffffff;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+    letter-spacing: 0.2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
   }
 
-  .card-icon-btn {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    cursor: pointer;
+  .scenic-select-badge {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 6px;
-    transition: transform 0.12s, opacity 0.12s;
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
   }
-  .card-icon-btn:active { transform: scale(0.88); opacity: 0.75; }
+
+  .scenic-sound-card.active .scenic-select-badge {
+    opacity: 1;
+  }
 </style>
 </head>
 <body>
@@ -349,15 +375,15 @@
   <div class="scenic-bg-layer" id="scenic-bg"></div>
   <div class="scenic-vignette-overlay"></div>
 
-  <!-- ── 2. Edit Mode View (Solid Black + Top Timer + Hourglass Wavy Lines + Bottom Checkmark) ── -->
+  <!-- ── 2. Edit Mode View (Solid Black + Top Timer + Fluid Waves + Bottom Checkmark) ── -->
   <div class="edit-mode-overlay" id="edit-mode-overlay">
     <div class="edit-top-timer-display" id="edit-top-timer">30:00</div>
 
     <div class="fullheight-ruler-viewport" id="fullheight-ruler-viewport">
-      <canvas class="ruler-interactive-canvas" id="ruler-interactive-canvas" width="390" height="520"></canvas>
+      <canvas class="ruler-interactive-canvas" id="ruler-interactive-canvas"></canvas>
     </div>
 
-    <!-- Floating Confirmation Checkmark Button -->
+    <!-- Floating Confirmation Checkmark Button (At exact bottom 44px) -->
     <button class="floating-bottom-exit-btn" id="exit-edit-btn" title="Confirm Timer">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </button>
@@ -374,41 +400,39 @@
     <!-- Tap Anywhere Zone: Tapping anywhere toggles Play / Pause -->
     <div class="main-tap-touch-zone" id="main-tap-touch-zone" title="Tap anywhere to Play / Pause">
       <div class="center-player-group" id="center-player-group">
-        <div class="title-sound-name" id="display-name">Crickets Night</div>
-
-        <!-- Full Circle Timer View (Centered) -->
+        <!-- Full Circle Timer View (20% Bigger ~316px) -->
         <div class="circular-timer-container" id="circle-container">
-          <svg class="timer-svg" id="timer-svg" viewBox="0 0 240 240">
-            <circle class="track-ring" cx="120" cy="120" r="110"/>
-            <circle class="progress-arc" id="progress-arc" cx="120" cy="120" r="110" stroke-dasharray="691.15" stroke-dashoffset="60"/>
+          <svg class="timer-svg" id="timer-svg" viewBox="0 0 316 316">
+            <circle class="track-ring" cx="158" cy="158" r="144"/>
+            <circle class="progress-arc" id="progress-arc" cx="158" cy="158" r="144" stroke-dasharray="904.78" stroke-dashoffset="75"/>
           </svg>
 
           <!-- Pure Minimal Little Circle Dot Knob -->
           <div class="circle-progress-dot" id="circle-progress-dot"></div>
 
-          <!-- Center Digital Countdown Timer -->
+          <!-- Center Digital Countdown Timer (44px) -->
           <div class="center-digital-time" id="display-time">30:00</div>
         </div>
       </div>
     </div>
 
-    <!-- ── Bottom Action Dock: 3 Clean 50px Buttons (Sounds, Play/Pause, Edit Timer) ── -->
+    <!-- ── Bottom Action Dock: 3 Clean Buttons (Only Play has circle) ── -->
     <div class="bottom-action-dock">
       <div class="playback-controls-bar" id="dock-controls">
-        <!-- 🎵 1. Relaxing Sounds (50px) -->
-        <button class="dock-round-btn" id="open-sounds-btn" title="Relaxing Sounds">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <!-- 🎵 1. Relaxing Sounds (No circle) -->
+        <button class="dock-btn" id="open-sounds-btn" title="Relaxing Sounds">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         </button>
 
-        <!-- ⏵/⏸ 2. Play / Pause Button (50px) -->
-        <button class="dock-round-btn" id="play-pause-btn" title="Play / Pause">
-          <svg id="play-icon" style="display:none;" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          <svg id="pause-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+        <!-- ⏵/⏸ 2. Play / Pause Button (No circle) -->
+        <button class="dock-btn" id="play-pause-btn" title="Play / Pause">
+          <svg id="play-icon" style="display:none;" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg id="pause-icon" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
         </button>
 
-        <!-- ✏️ 3. Edit Timer Button on the far right (50px) -->
-        <button class="dock-round-btn" id="edit-timer-btn" title="Edit Timer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <!-- ✏️ 3. Edit Timer Button (No circle) -->
+        <button class="dock-btn" id="edit-timer-btn" title="Edit Timer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         </button>
       </div>
     </div>
@@ -418,7 +442,7 @@
   <div class="sounds-page-view" id="sounds-page">
     <div class="sounds-scroll-list" id="sounds-list"></div>
 
-    <!-- Floating Exit (X) Button (50px, subtle glass) -->
+    <!-- Floating Exit (X) Button (At exact bottom 44px matching checkmark) -->
     <button class="floating-bottom-exit-btn" id="close-sounds-btn" title="Close">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
@@ -442,6 +466,8 @@ const SOUND_BANNERS = [
   { id: 'tropical-jungle', name: 'Tropical Jungle', file: 'Sounds/jungle.mp3', img: 'Images/tropical-jungle.jpg' },
   { id: 'evening-frogs', name: 'Evening Frogs', file: 'Sounds/frog.mp3', img: 'Images/evening-frogs.jpg' },
   { id: 'cat-purr', name: 'Cat Purring', file: 'Sounds/cat-purring.mp3', img: 'Images/cat-purr.jpg' },
+  { id: 'wind-in-trees', name: 'Wind in Trees', file: 'Sounds/wind-in-trees.mp3', img: 'Images/gentle-wind.jpg' },
+  { id: 'dune-breeze', name: 'Desert Dune Breeze', file: 'Sounds/wind.mp3', img: 'Images/dune-breeze.jpg' },
   { id: 'howling-wind', name: 'Howling Winter Gale', file: 'Sounds/howling-wind.mp3', img: 'Images/howling-wind.jpg' },
   { id: 'warm-cafe', name: 'Warm Coffee House', file: 'Sounds/cafe.mp3', img: 'Images/warm-cafe.jpg' },
   { id: 'quiet-library', name: 'Quiet Library', file: 'Sounds/library.mp3', img: 'Images/quiet-library.jpg' },
@@ -450,19 +476,18 @@ const SOUND_BANNERS = [
   { id: 'deep-underwater', name: 'Deep Underwater', file: 'Sounds/underwater.mp3', img: 'Images/deep-underwater.jpg' },
   { id: 'coastal-seagulls', name: 'Coastal Seagulls', file: 'Sounds/seagulls.mp3', img: 'Images/coastal-seagulls.jpg' },
   { id: 'walk-leaves', name: 'Walk on Leaves', file: 'Sounds/walk-on-leaves.mp3', img: 'Images/walk-leaves.jpg' },
-  { id: 'water-droplets', name: 'Water Droplets', file: 'Sounds/droplets.mp3', img: 'Images/water-droplets.jpg' },
-  { id: 'wind-chimes', name: 'Wind Chimes', file: 'Sounds/wind-chimes.mp3', img: 'Images/wind-chimes.jpg' },
-  { id: 'rowing-boat', name: 'Rowing Boat', file: 'Sounds/rowing-boat.mp3', img: 'Images/rowing-boat.jpg' },
-  { id: 'boiling-water', name: 'Boiling Water', file: 'Sounds/boiling-water.mp3', img: 'Images/boiling-water.jpg' },
-  { id: 'peaceful-lake', name: 'Peaceful Lake', file: 'Sounds/lake.mp3', img: 'Images/peaceful-lake.jpg' }
+  { id: 'water-droplets', name: 'Water Droplets', file: 'Sounds/droplets.mp3', img: 'Images/water-droplets.jpg' }
 ];
 
 let activeIdx = 0;
 let isPlaying = true;
-let isEditing = false;
-let remainingSeconds = 1800; // 30 minutes default
-let totalDuration = 1800;
-const MAX_TIME = 14400; // 4 hours
+let totalDuration = 1800; // 30 minutes default
+let remainingSeconds = 1800;
+let isDraggingVertical = false;
+let isEditingMode = false;
+let previewingIdx = null;
+let initialIdx = 0;
+let wasPlayingBeforeSheet = true;
 
 const audioElement = new Audio();
 audioElement.loop = true;
@@ -479,29 +504,31 @@ const pauseIcon = document.getElementById('pause-icon');
 const editModeOverlay = document.getElementById('edit-mode-overlay');
 const editTopTimer = document.getElementById('edit-top-timer');
 const exitEditBtn = document.getElementById('exit-edit-btn');
+const mainPlayerContent = document.getElementById('main-player-content');
 const rulerCanvas = document.getElementById('ruler-interactive-canvas');
+const rulerCtx = rulerCanvas ? rulerCanvas.getContext('2d') : null;
 
 const soundsPage = document.getElementById('sounds-page');
 const soundsList = document.getElementById('sounds-list');
 
 // ── Time Formatter without Leading Zero on Hours (e.g. 30:00, 1:15:00) ──
-function formatTime(secs) {
-  const total = Math.max(0, Math.floor(secs));
+function formatNoExtraZeroHours(seconds) {
+  const total = Math.max(0, Math.floor(seconds));
   const hrs = Math.floor(total / 3600);
   const mins = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-  const pad = (n) => String(n).padStart(2, '0');
+  const secs = total % 60;
   if (hrs > 0) {
-    return `${hrs}:${pad(mins)}:${pad(s)}`;
+    return `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  } else {
+    return `${mins}:${String(secs).padStart(2, '0')}`;
   }
-  return `${pad(mins)}:${pad(s)}`;
 }
 
 // ── Render Active Sound ──
 function renderActiveSound() {
   const item = SOUND_BANNERS[activeIdx];
+  if (displayName) displayName.textContent = item.name;
   scenicBg.style.backgroundImage = `url('${item.img}')`;
-  displayName.textContent = item.name;
 
   if (audioElement.src !== location.origin + '/' + item.file && !audioElement.src.endsWith(item.file)) {
     audioElement.src = item.file;
@@ -509,229 +536,273 @@ function renderActiveSound() {
 
   if (isPlaying) {
     audioElement.play().catch(() => {});
-    playIcon.style.display = 'none';
-    pauseIcon.style.display = 'block';
   } else {
     audioElement.pause();
-    playIcon.style.display = 'block';
-    pauseIcon.style.display = 'none';
   }
 }
 
-// ── Update Circular Clock & Digital Display ──
-const CIRCLE_RADIUS = 110;
-const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS; // 691.15
-
-function updateTimerDisplays() {
-  const timeStr = formatTime(remainingSeconds);
-  displayTime.textContent = timeStr;
-  editTopTimer.textContent = timeStr;
-
-  const progress = Math.max(0, Math.min(1, remainingSeconds / MAX_TIME));
-  const offset = CIRCUMFERENCE * (1 - progress);
-  progressArc.style.strokeDashoffset = offset;
-
-  // Position Dot Knob around circle
-  const angle = (progress * 360 - 90) * (Math.PI / 180);
-  const cx = 120 + CIRCLE_RADIUS * Math.cos(angle);
-  const cy = 120 + CIRCLE_RADIUS * Math.sin(angle);
-  progressDot.style.left = `${cx}px`;
-  progressDot.style.top = `${cy}px`;
-}
+// ── Update Circular Clock & Digital Display (316px diameter) ──
+const CIRCLE_RADIUS = 144;
+const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS; // ~904.78
+const MAX_TIME = 14400; // 4 hours
 
 function updateCircularDisplayOnly() {
-  const timeStr = formatTime(remainingSeconds);
-  displayTime.textContent = timeStr;
-  editTopTimer.textContent = timeStr;
-
   const progress = Math.max(0, Math.min(1, remainingSeconds / MAX_TIME));
-  const offset = CIRCUMFERENCE * (1 - progress);
-  progressArc.style.strokeDashoffset = offset;
+  const formatted = formatNoExtraZeroHours(remainingSeconds);
 
-  const angle = (progress * 360 - 90) * (Math.PI / 180);
-  const cx = 120 + CIRCLE_RADIUS * Math.cos(angle);
-  const cy = 120 + CIRCLE_RADIUS * Math.sin(angle);
-  progressDot.style.left = `${cx}px`;
-  progressDot.style.top = `${cy}px`;
+  if (progressArc) {
+    const offset = CIRCLE_CIRCUMFERENCE * (1 - progress);
+    progressArc.style.strokeDashoffset = offset;
+  }
+
+  const angleRad = (progress * 360 - 90) * (Math.PI / 180);
+  const cx = 158, cy = 158;
+  const kx = cx + CIRCLE_RADIUS * Math.cos(angleRad);
+  const ky = cy + CIRCLE_RADIUS * Math.sin(angleRad);
+
+  if (progressDot) {
+    progressDot.style.left = `${kx}px`;
+    progressDot.style.top = `${ky}px`;
+  }
+  displayTime.textContent = formatted;
+  editTopTimer.textContent = formatted;
 }
 
-// ── Countdown Timer Interval ──
-setInterval(() => {
-  if (isPlaying && !isEditing && remainingSeconds > 0) {
-    remainingSeconds -= 1;
-    updateTimerDisplays();
-    if (remainingSeconds <= 0) {
-      isPlaying = false;
-      audioElement.pause();
-      renderActiveSound();
-    }
-  }
-}, 1000);
+function updateTimerDisplays() {
+  updateCircularDisplayOnly();
+  playIcon.style.display = isPlaying ? 'none' : 'block';
+  pauseIcon.style.display = isPlaying ? 'block' : 'none';
+}
 
-// ── Toggle Play / Pause ──
 function togglePlay() {
   isPlaying = !isPlaying;
   if (isPlaying && remainingSeconds <= 0) {
     remainingSeconds = 1800;
   }
-  renderActiveSound();
+  if (isPlaying) {
+    audioElement.play().catch(() => {});
+  } else {
+    audioElement.pause();
+  }
+  updateTimerDisplays();
 }
 
-// Tap anywhere on the main screen to Play / Pause
-document.getElementById('main-tap-touch-zone').addEventListener('click', () => {
-  togglePlay();
-});
+// ── Interactive Fluid Wave Measuring Lines Engine (60fps Canvas) ──
+function setupCanvasDPI() {
+  if (!rulerCanvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = rulerCanvas.getBoundingClientRect();
+  const width = rect.width || 390;
+  const height = rect.height || 520;
+  rulerCanvas.width = width * dpr;
+  rulerCanvas.height = height * dpr;
+  if (rulerCtx) {
+    rulerCtx.setTransform(1, 0, 0, 1, 0, 0);
+    rulerCtx.scale(dpr, dpr);
+  }
+}
+window.addEventListener('resize', setupCanvasDPI);
+setupCanvasDPI();
 
-// Dock Play / Pause Button
-document.getElementById('play-pause-btn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  togglePlay();
-});
-
-// ── Edit Mode & Canvas Hourglass Wavy Lines ──
-let animFrameId = null;
-let isDraggingVertical = false;
+let smoothSeconds = remainingSeconds;
+let scrollVelocity = 0;
+let isPointerActive = false;
 let pointerCanvasX = 195;
 let pointerCanvasY = 260;
-let isPointerActive = false;
-let scrollVelocity = 0;
-let ripples = [];
+let animStartTime = performance.now();
+
+// Subtle floating shimmer particles along the focal beam
+const NUM_PARTICLES = 16;
+const particles = Array.from({ length: NUM_PARTICLES }, () => ({
+  x: 80 + Math.random() * 230,
+  y: 260 + (Math.random() - 0.5) * 70,
+  vx: (Math.random() - 0.5) * 0.25,
+  vy: (Math.random() - 0.5) * 0.15,
+  radius: 1.0 + Math.random() * 1.5,
+  alpha: 0.2 + Math.random() * 0.5,
+  phase: Math.random() * Math.PI * 2
+}));
+
+// Expanding touch ripples
+let activeRipples = [];
 
 function addRipple(x, y) {
-  ripples.push({ x, y, radius: 0, maxRadius: 160, opacity: 0.65 });
+  activeRipples.push({
+    x: x,
+    y: y,
+    radius: 4,
+    maxRadius: 160,
+    speed: 3.2,
+    alpha: 0.75
+  });
 }
 
-function renderRulerCanvas(timestamp) {
-  if (!rulerCanvas) return;
-  const ctx = rulerCanvas.getContext('2d');
-  const w = rulerCanvas.width;
-  const h = rulerCanvas.height;
-  const midX = w / 2;
-  const midY = h / 2;
-  const t = timestamp * 0.001;
+function renderInteractiveRulerFrame(now) {
+  if (!rulerCtx || !rulerCanvas) return;
 
-  ctx.clearRect(0, 0, w, h);
+  const dpr = window.devicePixelRatio || 1;
+  const width = rulerCanvas.width / dpr;
+  const height = rulerCanvas.height / dpr;
+  const cx = width / 2;
+  const cy = height / 2;
+  const t = (now - animStartTime) * 0.001;
 
-  // Velocity dampening
-  scrollVelocity *= 0.92;
+  // Clear background
+  rulerCtx.clearRect(0, 0, width, height);
+
+  // Smooth inertial transition for timer
+  smoothSeconds += (remainingSeconds - smoothSeconds) * 0.28;
+  scrollVelocity *= 0.88;
   if (Math.abs(scrollVelocity) < 0.001) scrollVelocity = 0;
 
-  // 1. Center Ambient Aura Glow
-  const glowGrad = ctx.createRadialGradient(midX, midY, 10, midX, midY, 160);
-  glowGrad.addColorStop(0, 'rgba(255, 255, 255, 0.14)');
-  glowGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
-  glowGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  ctx.fillStyle = glowGrad;
-  ctx.fillRect(0, midY - 80, w, 160);
+  // ── 1. Render Center Focal Aura Glow ──
+  const focalGlow = rulerCtx.createRadialGradient(cx, cy, 10, cx, cy, 140);
+  focalGlow.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+  focalGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  rulerCtx.fillStyle = focalGlow;
+  rulerCtx.fillRect(0, cy - 60, width, 120);
 
-  // 2. Ripples
-  for (let r = ripples.length - 1; r >= 0; r--) {
-    const rip = ripples[r];
-    rip.radius += 3.5;
-    rip.opacity *= 0.94;
-    if (rip.opacity < 0.01 || rip.radius > rip.maxRadius) {
-      ripples.splice(r, 1);
-      continue;
+  // Center Reticle Accent Guides on Left & Right
+  rulerCtx.fillStyle = 'rgba(255, 255, 255, 0.40)';
+  rulerCtx.fillRect(20, cy - 0.75, 8, 1.5);
+  rulerCtx.fillRect(width - 28, cy - 0.75, 8, 1.5);
+
+  // ── 2. Render Floating Shimmer Particles along the Center Focal Zone ──
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if (p.x < 50) p.x = width - 50;
+    if (p.x > width - 50) p.x = 50;
+    if (p.y < cy - 65) p.y = cy + 65;
+    if (p.y > cy + 65) p.y = cy - 65;
+
+    const pDist = Math.abs(p.y - cy);
+    const pFade = Math.max(0, 1 - pDist / 65);
+    const pPulse = 0.5 + 0.5 * Math.sin(t * 2.5 + p.phase);
+    rulerCtx.beginPath();
+    rulerCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    rulerCtx.fillStyle = `rgba(255, 255, 255, ${p.alpha * pFade * pPulse})`;
+    rulerCtx.shadowBlur = 6;
+    rulerCtx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+    rulerCtx.fill();
+    rulerCtx.shadowBlur = 0;
+  });
+
+  // ── 3. Update & Draw Active Ripple Waves ──
+  for (let r = activeRipples.length - 1; r >= 0; r--) {
+    const rip = activeRipples[r];
+    rip.radius += rip.speed;
+    rip.alpha *= 0.95;
+
+    rulerCtx.beginPath();
+    rulerCtx.arc(rip.x, rip.y, rip.radius, 0, Math.PI * 2);
+    rulerCtx.strokeStyle = `rgba(255, 255, 255, ${rip.alpha * 0.25})`;
+    rulerCtx.lineWidth = 1.5;
+    rulerCtx.stroke();
+
+    if (rip.alpha < 0.02 || rip.radius > rip.maxRadius) {
+      activeRipples.splice(r, 1);
     }
-    ctx.strokeStyle = `rgba(255, 255, 255, ${rip.opacity * 0.35})`;
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.arc(rip.x, rip.y, rip.radius, 0, Math.PI * 2);
-    ctx.stroke();
   }
 
-  // 3. Shimmer Particles (26 particles)
-  for (let i = 0; i < 26; i++) {
-    const seed = i * 137.5;
-    const baseX = ((Math.sin(seed) * 0.5 + 0.5) * (w - 80)) + 40;
-    const baseY = midY + Math.cos(seed * 1.3) * 60;
-    const driftY = Math.sin(t * 1.8 + seed) * 14.0 - scrollVelocity * 0.45;
-    const driftX = Math.cos(t * 1.4 + seed) * 8.0;
-    const pX = Math.max(20, Math.min(w - 20, baseX + driftX));
-    const pY = baseY + driftY;
-    const dist = Math.abs(pY - midY);
-    const fade = Math.max(0.0, 1.0 - dist / 85.0);
-    const pulse = 0.5 + 0.5 * Math.sin(t * 2.8 + seed);
-    const pRadius = 1.0 + pulse * 1.2;
+  // ── 4. Render Animated Organic Fluid Wave Measuring Lines (Always Full Height to Checkmark) ──
+  const lineSpacing = 18;
+  const numLines = Math.ceil(height / lineSpacing) + 4;
+  const offsetPx = (smoothSeconds * (18 / 90)) % lineSpacing;
 
-    ctx.fillStyle = `rgba(255, 255, 255, ${0.45 * fade * pulse})`;
-    ctx.beginPath();
-    ctx.arc(pX, pY, pRadius, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  for (let i = -2; i <= numLines; i++) {
+    const yPos = i * lineSpacing - offsetPx;
+    if (yPos < -20 || yPos > height + 20) continue;
 
-  // 4. Hourglass Wavy Lines (Wide at top & bottom ~180px, Narrow at waist ~75px)
-  const lineSpacing = 7.0;
-  const numLines = Math.floor(h / lineSpacing);
+    const distFromCenter = Math.abs(yPos - cy);
+    const focus = Math.max(0, Math.exp(-Math.pow(distFromCenter / 95, 2)));
 
-  for (let i = 0; i < numLines; i++) {
-    const y = i * lineSpacing;
-    const distToCenter = Math.abs(y - midY);
-    const normDist = distToCenter / (h / 2); // 0 at center, 1 at top/bottom
+    // Smooth elegant bottleneck width profile (65px at ends -> 170px in center)
+    const lineWidth = 65 + focus * 105;
+    const numPts = 24;
+    const xStart = cx - lineWidth / 2;
 
-    // Hourglass profile: narrow in the middle, smoothly widening toward ends
-    const hourglassCurve = Math.pow(normDist, 1.7);
-    const baseLineWidth = 75 + hourglassCurve * 110;
+    rulerCtx.beginPath();
+    for (let p = 0; p <= numPts; p++) {
+      const u = p / numPts;
+      const x = xStart + u * lineWidth;
+      const relX = (x - cx) / (lineWidth / 2);
+      const envelope = Math.max(0, 1 - relX * relX);
 
-    // Organic wavy undulating movement
-    const waveFreq = 0.032;
-    const ambientWave = Math.sin(t * 2.4 + y * waveFreq) * (4.0 * (1 - normDist * 0.5) + 2.0);
+      const wave = Math.sin(t * 2.8 + yPos * 0.035 + relX * 2.2) * (2.0 + focus * 5.0) * envelope;
 
-    // Interactive pointer deflection
-    let pointerDeflect = 0;
-    if (isPointerActive) {
-      const dy = y - pointerCanvasY;
-      const dx = midX - pointerCanvasX;
-      const pDist = Math.sqrt(dx * dx + dy * dy);
-      if (pDist < 130) {
-        const factor = 1 - pDist / 130;
-        pointerDeflect = Math.sin(factor * Math.PI) * (dx * 0.38);
+      let pointerDeflect = 0;
+      if (isPointerActive) {
+        const dx = x - pointerCanvasX;
+        const dy = yPos - pointerCanvasY;
+        const distToPoint = Math.hypot(dx, dy);
+        if (distToPoint < 110) {
+          const force = (1 - distToPoint / 110);
+          pointerDeflect = force * Math.max(-25, Math.min(25, pointerCanvasY - yPos)) * 0.35 * envelope;
+        }
+      }
+
+      const clampedVelocity = Math.max(-10, Math.min(10, scrollVelocity));
+      const velocityBow = -clampedVelocity * focus * envelope * 2.5;
+      const finalY = yPos + wave + pointerDeflect + velocityBow;
+
+      if (p === 0) {
+        rulerCtx.moveTo(x, finalY);
+      } else {
+        rulerCtx.lineTo(x, finalY);
       }
     }
 
-    // Velocity inertia bowing
-    const velocityDeflect = scrollVelocity * Math.cos(normDist * Math.PI * 0.5) * 1.4;
+    const lineAlpha = 0.12 + focus * 0.88;
+    rulerCtx.strokeStyle = `rgba(255, 255, 255, ${lineAlpha})`;
+    rulerCtx.lineWidth = 1.0 + focus * 0.7;
+    rulerCtx.lineCap = 'round';
 
-    const currentMidX = midX + ambientWave + pointerDeflect + velocityDeflect;
-    const xLeft = currentMidX - baseLineWidth / 2;
-    const xRight = currentMidX + baseLineWidth / 2;
+    if (focus > 0.35) {
+      rulerCtx.shadowColor = focus > 0.85 ? 'rgba(255, 255, 255, 0.90)' : 'rgba(255, 255, 255, 0.45)';
+      rulerCtx.shadowBlur = focus > 0.85 ? 8 : 4 * focus;
+    } else {
+      rulerCtx.shadowBlur = 0;
+    }
 
-    // Subtle brightness fade from center outward
-    const centerFocus = Math.exp(-Math.pow(normDist * 1.8, 2));
-    const alpha = Math.max(0.16, Math.min(0.95, 0.22 + centerFocus * 0.72));
-    const strokeWidth = 1.0 + centerFocus * 0.6;
-
-    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-    ctx.lineWidth = strokeWidth;
-    ctx.beginPath();
-    ctx.moveTo(xLeft, y);
-    ctx.lineTo(xRight, y);
-    ctx.stroke();
+    rulerCtx.stroke();
+    rulerCtx.shadowBlur = 0;
   }
 
-  if (isEditing) {
-    animFrameId = requestAnimationFrame(renderRulerCanvas);
-  }
+  document.getElementById('edit-top-timer').textContent = formatNoExtraZeroHours(remainingSeconds);
+  requestAnimationFrame(renderInteractiveRulerFrame);
 }
 
-// ── Open / Close Edit Mode ──
-document.getElementById('edit-timer-btn').addEventListener('click', (e) => {
+requestAnimationFrame(renderInteractiveRulerFrame);
+
+// ── Edit Button: Switches between Main Player and Edit Mode Overlay ──
+const editBtn = document.getElementById('edit-timer-btn');
+
+function toggleEditMode(enable) {
+  isEditingMode = enable !== undefined ? enable : !isEditingMode;
+  if (isEditingMode) {
+    mainPlayerContent.style.display = 'none';
+    editModeOverlay.classList.add('active');
+    setupCanvasDPI();
+  } else {
+    mainPlayerContent.style.display = 'flex';
+    editModeOverlay.classList.remove('active');
+  }
+  updateTimerDisplays();
+}
+
+editBtn.addEventListener('click', (e) => {
   e.stopPropagation();
-  isEditing = true;
-  editTopTimer.textContent = formatTime(remainingSeconds);
-  editModeOverlay.classList.add('active');
-  animFrameId = requestAnimationFrame(renderRulerCanvas);
+  toggleEditMode(true);
 });
 
 exitEditBtn.addEventListener('click', (e) => {
   e.stopPropagation();
-  isEditing = false;
-  editModeOverlay.classList.remove('active');
-  if (animFrameId) cancelAnimationFrame(animFrameId);
-  updateTimerDisplays();
+  toggleEditMode(false);
 });
 
-// ── Drag Up/Down on Hourglass Lines with Velocity & Ripples ──
+// ── Drag Up/Down on Full-Height Measuring Lines with Fluid Clamped Gesture ──
 const rulerViewport = document.getElementById('fullheight-ruler-viewport');
 let lastPointerY = 0;
 
@@ -756,11 +827,12 @@ function handlePointerDown(e) {
   const onMove = (me) => {
     if (!isDraggingVertical) return;
     const currentY = me.touches ? me.touches[0].clientY : me.clientY;
-    const deltaY = lastPointerY - currentY;
+    const rawDeltaY = lastPointerY - currentY;
+    const deltaY = Math.max(-20, Math.min(20, rawDeltaY));
     lastPointerY = currentY;
 
-    scrollVelocity = deltaY * 0.85;
-    const changeInSeconds = deltaY * 14;
+    scrollVelocity = deltaY * 0.75;
+    const changeInSeconds = deltaY * 10;
     remainingSeconds = Math.max(60, Math.min(MAX_TIME, remainingSeconds + changeInSeconds));
     totalDuration = remainingSeconds;
 
@@ -795,83 +867,73 @@ rulerViewport.addEventListener('mouseleave', () => {
   if (!isDraggingVertical) isPointerActive = false;
 });
 
-// ── Render Sounds Sheet with 1-to-1 HD Cards ──
-let previewingIdx = null;
-let initialIdx = 0;
-let wasPlayingBeforeSheet = true;
+// ── Play / Pause Button in Dock ──
+document.getElementById('play-pause-btn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  togglePlay();
+});
 
+// ── Tap Anywhere on Main Screen to Pause / Play ──
+document.getElementById('main-tap-touch-zone').addEventListener('click', (e) => {
+  togglePlay();
+});
+
+// ── Render Sounds Sheet with 1-to-1 HD Taller Cards (118px) ──
 function renderSoundsSheet() {
   soundsList.innerHTML = '';
   SOUND_BANNERS.forEach((item, i) => {
-    const isThisPreviewing = previewingIdx === i;
+    const isThisActive = activeIdx === i;
     const card = document.createElement('div');
-    card.className = 'scenic-sound-card';
+    card.className = `scenic-sound-card ${isThisActive ? 'active' : ''}`;
     card.style.backgroundImage = `url('${item.img}')`;
 
     card.innerHTML = `
       <div class="scenic-card-overlay"></div>
       <div class="scenic-card-content">
-        <div class="scenic-card-left">
-          <button class="card-icon-btn" data-action="preview" title="Preview Sound">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="${isThisPreviewing ? '#ffffff' : 'none'}" stroke="currentColor" stroke-width="2">
-              ${isThisPreviewing ? '<rect x="4" y="4" width="16" height="16" rx="2"/>' : '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>'}
-            </svg>
-          </button>
-          <div class="scenic-card-title">${item.name}</div>
+        <div class="scenic-card-title">${item.name}</div>
+        <div class="scenic-select-badge" title="Selected">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
-        <button class="card-icon-btn" data-action="play" title="Play Sound">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        </button>
       </div>
     `;
 
-    card.querySelector('[data-action="preview"]').addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (previewingIdx === i) {
-        previewingIdx = null;
-        audioElement.pause();
-      } else {
-        previewingIdx = i;
-        audioElement.src = item.file;
-        audioElement.play().catch(() => {});
-      }
-      renderSoundsSheet();
-    });
-
-    const triggerPlay = () => {
-      previewingIdx = null;
+    // Clicking anywhere on the card/title/select badge selects and plays automatically
+    card.addEventListener('click', () => {
       activeIdx = i;
       isPlaying = true;
       renderActiveSound();
       updateTimerDisplays();
       soundsPage.classList.remove('active');
-    };
+    });
 
-    card.addEventListener('click', triggerPlay);
     soundsList.appendChild(card);
   });
 }
 
 document.getElementById('open-sounds-btn').addEventListener('click', () => {
-  initialIdx = activeIdx;
-  wasPlayingBeforeSheet = isPlaying;
-  previewingIdx = null;
   renderSoundsSheet();
   soundsPage.classList.add('active');
 });
 
 document.getElementById('close-sounds-btn').addEventListener('click', () => {
-  if (previewingIdx !== null) {
-    previewingIdx = null;
-    activeIdx = initialIdx;
-    renderActiveSound();
-    if (!wasPlayingBeforeSheet) {
-      isPlaying = false;
-      audioElement.pause();
-    }
-  }
   soundsPage.classList.remove('active');
 });
+
+// Timer countdown loop (Stops automatically when isPlaying is false)
+setInterval(() => {
+  if (isPlaying && !isDraggingVertical && !isEditingMode) {
+    if (remainingSeconds > 0) {
+      remainingSeconds -= 1;
+      updateTimerDisplays();
+    } else {
+      isPlaying = false;
+      audioElement.pause();
+      updateTimerDisplays();
+    }
+  }
+}, 1000);
 
 // Initial Render
 renderActiveSound();

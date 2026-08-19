@@ -19,5 +19,5 @@ public struct MainTabView: View {
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [GroundingSession.self, GAD7Assessment.self], inMemory: true)
+        .modelContainer(for: [GroundingSession.self], inMemory: true)
 }
