@@ -112,21 +112,6 @@
     .contact-section p:last-child {
       margin-bottom: 0;
     }
-    .btn-purge {
-      background-color: #FFFFFF;
-      border: 1px solid #DC2626;
-      color: #DC2626;
-      padding: 8px 16px;
-      border-radius: 4px;
-      font-size: 13.5px;
-      font-weight: 500;
-      cursor: pointer;
-      margin-top: 10px;
-      display: inline-block;
-    }
-    .btn-purge:hover {
-      background-color: #FEF2F2;
-    }
     a {
       color: #2563EB;
       text-decoration: none;
@@ -252,16 +237,12 @@
     <h3>6. Children's Privacy (COPPA Compliance)</h3>
     <p>Calmpal does not knowingly collect or solicit personal information from children under the age of 13. Because the application does not collect personal data from any user, it is compliant with the Children's Online Privacy Protection Act (COPPA) and international child privacy regulations.</p>
 
-    <h3>7. Data Subject Rights & Resetting Data</h3>
-    <p>Under GDPR, CCPA/CPRA, and Canadian PIPEDA/PIPA laws, users have the right to access, rectify, and delete their stored data at any time without restriction:</p>
+    <h3>7. Data Subject Rights & Data Deletion</h3>
+    <p>Under GDPR, CCPA/CPRA, and Canadian PIPEDA/PIPA regulations, users possess the right to access, export, or permanently delete their personal data. Because Calmpal operates entirely on-device and does not transmit, store, or maintain any user data on remote servers or cloud databases:</p>
     <ul>
-      <li><strong>Web Browser Cache Reset:</strong> Click the button below to immediately purge all saved sound configurations, volume levels, and local storage cache from this browser.</li>
-      <li><strong>iOS App Data Reset:</strong> All timer configurations and session history reside strictly inside your iPhone's sandboxed local storage. You can reset app data at any time by resetting your timer inside the app or removing the application from your device.</li>
+      <li><strong>Immediate Local Deletion:</strong> All sound selections, volume preferences, and timer durations are stored exclusively in your iPhone's local sandbox storage. You have complete control over this data and can permanently delete it at any time simply by removing or uninstalling the Calmpal application from your iOS device.</li>
+      <li><strong>No Account Deletion Request Needed:</strong> Because Calmpal does not require user accounts, emails, or logins, there is no remote account profile or database record to request deletion for.</li>
     </ul>
-    <div style="margin-top: 14px; margin-bottom: 24px;">
-      <button class="btn-purge" onclick="purgeAllData()">Clear Local Browser Data & Cache</button>
-      <span id="purge-status" style="font-size: 13px; color: #16A34A; margin-left: 12px; display: none; font-weight: 500;">Local storage and cache successfully cleared.</span>
-    </div>
 
     <h3>8. Privacy Inquiries & Contact</h3>
     <p>For any privacy-related questions, data inquiries, or developer feedback, please contact the developer directly:</p>
@@ -327,22 +308,6 @@
       © 2026 Calmpal. All rights reserved. • Vancouver, BC, Canada
     </footer>
   </div>
-
-  <script>
-    function purgeAllData() {
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-      } catch (e) {}
-      var statusEl = document.getElementById('purge-status');
-      if (statusEl) {
-        statusEl.style.display = 'inline';
-        setTimeout(function() {
-          statusEl.style.display = 'none';
-        }, 3000);
-      }
-    }
-  </script>
 
 </body>
 </html>
