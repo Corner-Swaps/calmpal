@@ -259,12 +259,12 @@
       <span id="purge-status" style="font-size: 13px; color: #16A34A; margin-left: 12px; display: none; font-weight: 500;">Local data successfully cleared.</span>
     </div>
 
-    <h3>8. Data Protection Officer & Regulatory Inquiries</h3>
-    <p>For privacy-related questions, data subject requests, or regulatory inquiries, contact our Data Protection Officer:</p>
+    <h3>8. Privacy Inquiries & Contact</h3>
+    <p>For any privacy-related questions or data requests, please contact the developer directly:</p>
     <p>
-      <strong>Data Protection Officer:</strong> Slava Goloubov<br>
+      <strong>Developer / Publisher:</strong> Slava Goloubov<br>
       <strong>Email:</strong> <a href="mailto:Goloubov@gmail.com">Goloubov@gmail.com</a><br>
-      <strong>Jurisdiction:</strong> Vancouver, British Columbia, Canada
+      <strong>Location:</strong> Vancouver, British Columbia, Canada
     </p>
 
     <!-- Section: Terms of Service & EULA -->
@@ -326,14 +326,16 @@
 
   <script>
     function purgeAllData() {
-      localStorage.clear();
-      sessionStorage.clear();
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (e) {}
       var statusEl = document.getElementById('purge-status');
       if (statusEl) {
         statusEl.style.display = 'inline';
         setTimeout(function() {
           statusEl.style.display = 'none';
-        }, 2500);
+        }, 3000);
       }
     }
   </script>
