@@ -3,537 +3,288 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calmpal – Support, Privacy Policy & Terms of Service</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Calmpal - Support, Privacy Policy & Terms</title>
   <style>
-    :root {
-      --bg: #ffffff;
-      --text-main: #111827;
-      --text-muted: #4b5563;
-      --text-subtle: #9ca3af;
-      --border: #e5e7eb;
-      --border-dark: #d1d5db;
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --danger: #dc2626;
-      --danger-bg: #fef2f2;
-    }
-
-    * {
-      box-sizing: border-box;
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #FFFFFF;
+      color: #111827;
       margin: 0;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
       padding: 0;
     }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text-main);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      padding: 0 16px;
-    }
-
-    .container {
-      max-width: 780px;
-      margin: 0 auto;
-      padding: 48px 0 80px;
-    }
-
-    /* ── Header ── */
-    header {
-      margin-bottom: 32px;
-      padding-bottom: 24px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .brand-title {
+    h1 {
       font-size: 28px;
       font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
-
-    .brand-subtitle {
-      font-size: 15px;
-      color: var(--text-muted);
-    }
-
-    /* ── Clean Text Navigation (No Pills) ── */
-    .tab-nav {
-      display: flex;
-      gap: 32px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 40px;
-    }
-
-    .tab-link {
-      background: none;
-      border: none;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text-muted);
-      padding: 12px 0;
-      cursor: pointer;
-      position: relative;
-      transition: color 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .tab-link:hover {
-      color: var(--text-main);
-    }
-
-    .tab-link.active {
-      color: var(--text-main);
-      font-weight: 600;
-    }
-
-    .tab-link.active::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background-color: var(--text-main);
-    }
-
-    /* ── Tab Panes ── */
-    .tab-pane {
-      display: none;
-    }
-
-    .tab-pane.active {
-      display: block;
-    }
-
-    /* ── Typography & Content ── */
-    h2 {
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: var(--text-main);
-      margin-top: 36px;
-      margin-bottom: 14px;
-    }
-
-    h2:first-of-type {
+      color: #111827;
       margin-top: 0;
-    }
-
-    h3 {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-main);
-      margin-bottom: 6px;
-    }
-
-    p {
-      font-size: 15px;
-      color: var(--text-muted);
-      margin-bottom: 16px;
-    }
-
-    ul {
-      padding-left: 20px;
-      margin-bottom: 18px;
-    }
-
-    li {
-      font-size: 15px;
-      color: var(--text-muted);
       margin-bottom: 8px;
     }
-
+    .subtitle {
+      font-size: 15px;
+      color: #4B5563;
+      margin-bottom: 28px;
+    }
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      border-bottom: 1px solid #E5E7EB;
+      padding-bottom: 8px;
+      margin-top: 36px;
+      margin-bottom: 16px;
+    }
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1F2937;
+      margin-top: 16px;
+      margin-bottom: 4px;
+    }
+    p, li {
+      font-size: 14px;
+      color: #4B5563;
+      margin-bottom: 12px;
+    }
+    ul {
+      padding-left: 20px;
+      margin-bottom: 16px;
+    }
     strong {
-      color: var(--text-main);
+      color: #111827;
       font-weight: 600;
     }
-
-    a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* ── FAQ Section ── */
     .faq-item {
-      padding: 20px 0;
-      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
     }
-
-    .faq-item:first-of-type {
-      padding-top: 0;
+    .faq-item h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1F2937;
+      margin-top: 0;
+      margin-bottom: 4px;
     }
-
-    .faq-item:last-of-type {
-      border-bottom: none;
-    }
-
     .faq-item p {
-      margin-bottom: 0;
+      font-size: 14px;
+      color: #4B5563;
+      margin: 0;
     }
-
-    /* ── Table ── */
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-      margin: 20px 0;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 14px;
+      font-size: 13.5px;
+      margin: 16px 0;
+    }
+    th, td {
+      border: 1px solid #E5E7EB;
+      padding: 8px 12px;
       text-align: left;
     }
-
     th {
-      background-color: #f9fafb;
-      font-weight: 600;
-      color: var(--text-main);
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
+      background-color: #F9FAFB;
+      color: #111827;
     }
-
     td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      color: var(--text-muted);
+      color: #4B5563;
     }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    /* ── Cards & Callouts ── */
     .card {
-      border: 1px solid var(--border);
+      background-color: #F9FAFB;
+      border: 1px solid #E5E7EB;
       border-radius: 8px;
-      padding: 20px 24px;
-      margin: 28px 0;
-      background-color: #f9fafb;
+      padding: 16px;
+      margin: 20px 0;
     }
-
     .card h3 {
-      margin-bottom: 8px;
+      margin-top: 0;
+      margin-bottom: 6px;
     }
-
-    .btn-danger {
-      background: none;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      padding: 8px 16px;
+    .card p {
+      margin-bottom: 0;
+    }
+    .btn-purge {
+      background-color: #FFFFFF;
+      border: 1px solid #DC2626;
+      color: #DC2626;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       margin-top: 10px;
-      transition: background-color 0.15s;
     }
-
-    .btn-danger:hover {
-      background-color: var(--danger-bg);
+    .btn-purge:hover {
+      background-color: #FEF2F2;
     }
-
-    /* ── Footer ── */
+    a {
+      color: #2563EB;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
     footer {
-      margin-top: 64px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1px solid #E5E7EB;
       font-size: 13px;
-      color: var(--text-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    footer a {
-      color: var(--text-muted);
-    }
-
-    footer a:hover {
-      color: var(--text-main);
-    }
-
-    @media (max-width: 600px) {
-      .container { padding: 32px 0 60px; }
-      .brand-title { font-size: 24px; }
-      .tab-nav { gap: 20px; overflow-x: auto; }
-      .tab-link { font-size: 14px; }
-      footer { flex-direction: column; align-items: flex-start; }
+      color: #6B7280;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  
-  <!-- Header -->
-  <header>
-    <h1 class="brand-title">Calmpal</h1>
-    <p class="brand-subtitle">Relaxing Nature Sounds & Sleep Timer — Official Support, Privacy Policy & Terms</p>
-  </header>
+  <div class="container">
+    <h1>Calmpal Support & Privacy Policy</h1>
+    <div class="subtitle">Official App Support, FAQs, Privacy Policy & Terms of Service</div>
 
-  <!-- Clean Underline Tabs (No Pills) -->
-  <nav class="tab-nav" role="tablist">
-    <button class="tab-link active" id="tab-support" onclick="switchTab('support')" role="tab" aria-selected="true">
-      Support & FAQ
-    </button>
-    <button class="tab-link" id="tab-privacy" onclick="switchTab('privacy')" role="tab" aria-selected="false">
-      Privacy Policy
-    </button>
-    <button class="tab-link" id="tab-terms" onclick="switchTab('terms')" role="tab" aria-selected="false">
-      Terms of Service
-    </button>
-  </nav>
+    <!-- About Calmpal -->
+    <h2>About Calmpal</h2>
+    <p>Calmpal is a privacy-first, atmospheric nature sounds and sleep timer application for iOS. It is engineered to support focus, meditation, relaxation, and deep sleep through high-fidelity, seamlessly looped ambient soundscapes.</p>
+    <p>Key features include:</p>
+    <ul>
+      <li>21+ High-Definition Ambient Audio Tracks (Gentle Rain, Ocean Waves, Cozy Campfire, Crickets Night, Forest River, and more)</li>
+      <li>Custom Fluid Sleep Timer with seamless background audio playback</li>
+      <li>Distraction-Free Zen Mode for pure visual and auditory immersion</li>
+      <li>100% On-Device, Offline-First Architecture with zero tracking or telemetry</li>
+      <li>Full integration with Lock Screen media controls and AirPods hardware playback</li>
+    </ul>
 
-  <!-- ========================================================================= -->
-  <!-- TAB 1: SUPPORT & FAQ                                                      -->
-  <!-- ========================================================================= -->
-  <section class="tab-pane active" id="pane-support" role="tabpanel">
+    <!-- Frequently Asked Questions -->
     <h2>Frequently Asked Questions</h2>
-
+    
     <div class="faq-item">
       <h3>How do I start or pause audio?</h3>
-      <p>Tap anywhere on the screen or tap the center play/pause button on the dock. You can also use your AirPods hardware controls, Lock Screen controls, or iOS Control Center to play and pause seamlessly.</p>
+      <p>Tap anywhere on the screen or tap the center play button on the dock. You can also control playback directly from your Lock Screen, AirPods, or iOS Control Center.</p>
     </div>
 
     <div class="faq-item">
       <h3>Does Calmpal support background playback?</h3>
-      <p>Yes. Calmpal continues playing high-fidelity ambient nature sounds even when you lock your iPhone screen or switch to another app.</p>
+      <p>Yes. Calmpal continues playing ambient soundscapes when you switch apps or lock your device.</p>
     </div>
 
     <div class="faq-item">
       <h3>How do I adjust the sleep timer?</h3>
-      <p>Tap the pencil icon on the dock to enter Edit Mode. Drag the measuring lines up or down to set your desired countdown (1 minute up to 4 hours), then tap the checkmark to confirm.</p>
+      <p>Tap the pencil icon on the bottom dock to enter Edit Mode. Drag the measuring lines up or down to set your desired countdown (from 1 minute up to 4 hours), then tap the checkmark to confirm.</p>
     </div>
 
     <div class="faq-item">
-      <h3>How do I change the ambient sound?</h3>
-      <p>Tap the music note icon on the dock to open the Relaxing Sounds library, or tap the left (‹) and right (›) arrows to quickly skip between soundscapes.</p>
+      <h3>How do I switch soundscapes?</h3>
+      <p>Tap the music note icon on the dock to open the full Sound Library, or use the left and right arrows to quickly skip between sounds.</p>
     </div>
 
     <div class="faq-item">
       <h3>What is Zen Mode?</h3>
-      <p>Tap the eye icon at the very top of your screen to hide all interface elements for a distraction-free, pure nature immersion.</p>
+      <p>Tap the eye icon at the top of the screen to hide all buttons and timer rings for a completely clean, photographic backdrop.</p>
     </div>
 
-    <h2>Contact Support</h2>
-    <p>If you have any questions, feedback, or need technical assistance, please email our developer team directly:</p>
-    <div class="card">
-      <h3>Developer Support</h3>
-      <p>Email: <a href="mailto:Goloubov@gmail.com"><strong>Goloubov@gmail.com</strong></a></p>
-      <p style="margin-bottom: 0;">Location: Vancouver, British Columbia, Canada</p>
-    </div>
-  </section>
+    <!-- Privacy Policy -->
+    <h2>Privacy Policy & Data Governance</h2>
+    <p>Last Updated: August 19, 2026</p>
+    <p>Calmpal is built with a <strong>privacy-first, on-device architecture</strong>. We do not track you, sell your data, or transmit your session history.</p>
 
-  <!-- ========================================================================= -->
-  <!-- TAB 2: PRIVACY POLICY                                                     -->
-  <!-- ========================================================================= -->
-  <section class="tab-pane" id="pane-privacy" role="tabpanel">
-    <p style="font-size: 13px; color: var(--text-subtle); margin-bottom: 24px;">Last Updated: August 19, 2026 • Compliant with BC PIPA, PIPEDA, CCPA/CPRA, GDPR & Apple Guidelines</p>
+    <h3>1. Zero Data Selling Guarantee</h3>
+    <p>We <strong>NEVER</strong> sell, rent, monetize, or trade your personal information, listening history, or session data to data brokers, advertisers, or third parties under CCPA/CPRA § 1798.120 and GDPR Article 21.</p>
 
-    <h2>1. Executive Summary & Zero Data Selling Guarantee</h2>
-    <p>Calmpal is built with a <strong>privacy-first, on-device architecture</strong>. We guarantee unconditionally:</p>
-    <ul>
-      <li><strong>Zero Data Selling:</strong> We NEVER sell, rent, monetize, or trade your personal information, listening history, or session data to data brokers, advertisers, or third parties under CCPA/CPRA § 1798.120 and GDPR Article 21.</li>
-      <li><strong>No Tracking Cookies or SDKs:</strong> We do not deploy cross-site tracking pixels, third-party advertising cookies, or fingerprinting scripts.</li>
-      <li><strong>On-Device Processing:</strong> Sleep timer countdowns, audio playback, and volume settings are processed locally on your device.</li>
-    </ul>
+    <h3>2. Minimal On-Device Processing</h3>
+    <p>Calmpal processes only minimal, strictly essential technical preferences stored locally on your device:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Data Category</th>
+          <th>Purpose</th>
+          <th>Storage Location</th>
+          <th>Retention</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Sound & Timer Preferences</strong></td>
+          <td>Persists active sound choice and custom duration between sessions.</td>
+          <td>Local Device Storage (UserDefaults)</td>
+          <td>Until cleared by user.</td>
+        </tr>
+        <tr>
+          <td><strong>Diagnostic Crash Logs</strong> (Optional)</td>
+          <td>Identifies audio engine runtime faults to maintain stability.</td>
+          <td>Anonymized (Apple App Store)</td>
+          <td>30 days rolling.</td>
+        </tr>
+      </tbody>
+    </table>
 
-    <h2>2. Applicable Legal Frameworks</h2>
-    <p>This policy complies with all applicable privacy legislation:</p>
-    <ul>
-      <li><strong>British Columbia PIPA:</strong> Personal Information Protection Act (SBC 2003, c. 63).</li>
-      <li><strong>Canadian PIPEDA:</strong> Personal Information Protection and Electronic Documents Act (S.C. 2000, c. 5).</li>
-      <li><strong>California CCPA/CPRA:</strong> California Consumer Privacy Act as amended by the California Privacy Rights Act (Cal. Civ. Code § 1798.100 et seq.).</li>
-      <li><strong>European Union GDPR:</strong> General Data Protection Regulation (EU 2016/679).</li>
-    </ul>
+    <h3>3. Zero Remote AI Model Training</h3>
+    <p>Your listening sessions, timer countdowns, and preferences are <strong>never transmitted to or used to train external AI models</strong>. All audio synthesis and timer logic execute 100% locally on your iPhone.</p>
 
-    <h2>3. Information We Process</h2>
-    <p>Calmpal processes only minimal technical data stored locally on your device:</p>
-    
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Data Category</th>
-            <th>Purpose</th>
-            <th>Storage Location</th>
-            <th>Retention</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Sound & Timer Preferences</strong></td>
-            <td>Persists active sound choice and custom duration.</td>
-            <td>Local Device Storage (UserDefaults / localStorage)</td>
-            <td>Until cleared by user.</td>
-          </tr>
-          <tr>
-            <td><strong>Crash & Diagnostic Logs</strong> (Optional)</td>
-            <td>Identifies runtime faults to maintain stability.</td>
-            <td>Anonymized (Apple App Store)</td>
-            <td>30 days rolling.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h2>4. On-Device Processing & Zero Data Transmission</h2>
-    <p>In full transparency:</p>
-    <ul>
-      <li><strong>100% Local Logic:</strong> Audio playback, timers, haptic waveforms, and settings run entirely on your local device.</li>
-      <li><strong>No AI Model Training:</strong> Your listening sessions and preferences are <strong>never transmitted to or used to train external AI models</strong>.</li>
-      <li><strong>No Remote Profiling:</strong> We do not build user profiles, track behavioral histories, or monetize user activity.</li>
-    </ul>
-
-    <h2>5. Authorized Third-Party Processors</h2>
+    <h3>4. Third-Party Service Processors</h3>
     <p>We work exclusively with certified infrastructure providers:</p>
     <ul>
       <li><strong>Apple Inc. (App Store):</strong> Native iOS app binary distribution and localized crash reporting (ISO 27001 / GDPR compliant).</li>
-      <li><strong>Google LLC (Fonts):</strong> CDN typography hosting (EU-US DPF / ISO 27001 compliant).</li>
+      <li><strong>Google LLC (Fonts):</strong> Typography delivery (EU-US DPF / ISO 27001 compliant).</li>
     </ul>
 
-    <h2>6. Right to Erasure & Data Purge</h2>
-    <p>Under GDPR Article 17 and CCPA § 1798.105, you have the right to permanently erase your data at any time without administrative delay.</p>
-    
+    <h3>5. One-Click Local Data Erasure</h3>
+    <p>Under GDPR Article 17 and CCPA § 1798.105, you have the right to permanently erase your data at any time.</p>
     <div class="card">
       <h3>One-Click Local Data Purge</h3>
       <p>Clicking the button below instantly clears all saved sound configurations and cached state from this browser.</p>
-      <button class="btn-danger" onclick="purgeAllData()">Purge All Local Data Now</button>
-      <p id="purge-status" style="font-size: 13px; color: #16a34a; margin-top: 8px; display: none; font-weight: 500;">✓ All local data successfully cleared.</p>
+      <button class="btn-purge" onclick="purgeAllData()">Purge All Local Data Now</button>
+      <p id="purge-status" style="font-size: 13px; color: #16A34A; margin-top: 8px; display: none; font-weight: 500;">✓ All local data successfully cleared.</p>
     </div>
 
-    <h2>7. Billing & Free Service Disclosures</h2>
-    <p>Calmpal is provided 100% free of charge:</p>
-    <ul>
-      <li><strong>No Auto-Renewing Subscriptions:</strong> There are no recurring subscription fees, automatic renewals, or hidden monthly billing.</li>
-      <li><strong>No Payment Info Collected:</strong> We do not request, process, or store credit card numbers, bank accounts, or financial credentials.</li>
-    </ul>
+    <!-- Terms of Service & EULA -->
+    <h2>Terms of Service & EULA</h2>
+    <p>Last Updated: August 19, 2026</p>
 
-    <h2>8. Data Protection Officer Contact</h2>
-    <p>For any privacy inquiries or regulatory questions, please contact our Data Protection Officer:</p>
-    <p>
-      <strong>Data Protection Officer:</strong> Slava Goloubov<br>
-      <strong>Email:</strong> <a href="mailto:Goloubov@gmail.com">Goloubov@gmail.com</a><br>
-      <strong>Jurisdiction:</strong> Vancouver, British Columbia, Canada
-    </p>
-  </section>
+    <h3>1. Acceptance of Terms</h3>
+    <p>By downloading, installing, accessing, or using Calmpal, you agree to be bound by these Terms of Service and End User License Agreement. If you do not agree, do not install or use the app.</p>
 
-  <!-- ========================================================================= -->
-  <!-- TAB 3: TERMS OF SERVICE                                                   -->
-  <!-- ========================================================================= -->
-  <section class="tab-pane" id="pane-terms" role="tabpanel">
-    <p style="font-size: 13px; color: var(--text-subtle); margin-bottom: 24px;">Last Updated: August 19, 2026 • Governing Calmpal Web & Mobile Applications</p>
+    <h3>2. Scope of License</h3>
+    <p>We grant you a personal, revocable, non-exclusive, non-transferable license to use Calmpal for personal, non-commercial relaxation and sleep timer purposes on compatible Apple devices.</p>
 
-    <h2>1. Acceptance of Terms</h2>
-    <p>By downloading, installing, accessing, or using the <strong>Calmpal</strong> application or website, you agree to be bound by these Terms of Service and End User License Agreement ("Agreement"). If you do not agree to these terms, do not install or use Calmpal.</p>
+    <h3>3. Wellness & Safety Disclaimer (Not Medical Advice)</h3>
+    <p>Calmpal is an ambient soundscape player and timer designed solely for relaxation and mindfulness. It is <strong>not a medical device</strong> and is not intended to diagnose, treat, cure, or prevent any medical condition or sleep disorder. Never use audio features at dangerous volume levels or while operating motor vehicles.</p>
 
-    <h2>2. License Grant & Permitted Use</h2>
-    <p>We grant you a personal, revocable, non-exclusive, non-transferable, and royalty-free license to use Calmpal solely for your personal, non-commercial relaxation, focus, and sleep timer purposes on compatible devices owned or controlled by you.</p>
-    <p>You agree not to:</p>
-    <ul>
-      <li>Decompile, reverse engineer, disassemble, or attempt to derive the source code of the App.</li>
-      <li>Redistribute, sublicense, rent, lease, or commercially exploit the ambient audio tracks, graphics, or code.</li>
-      <li>Use the App in any manner that violates applicable local, national, or international laws.</li>
-    </ul>
+    <h3>4. Apple App Store Standard Terms</h3>
+    <p>This agreement is between you and Calmpal, not Apple Inc. Apple is not responsible for maintenance or support. Apple and its subsidiaries are third-party beneficiaries of this agreement.</p>
 
-    <h2>3. Wellness Disclaimer (Not Medical Advice)</h2>
-    <p>Calmpal is an atmospheric nature sounds player and sleep timer application designed solely for relaxation, focus, and mindfulness. It is <strong>not a medical device</strong> and is not intended to diagnose, treat, cure, or prevent any medical condition, sleep disorder, or mental health illness.</p>
-    <ul>
-      <li>Never use audio features at extreme volume levels that could impair hearing.</li>
-      <li>Never use the App while driving, operating heavy machinery, or performing activities requiring full auditory attention.</li>
-    </ul>
+    <h3>5. Governing Law</h3>
+    <p>This agreement is governed by the laws of the Province of British Columbia and the federal laws of Canada applicable therein.</p>
 
-    <h2>4. Privacy & Data Governance</h2>
-    <p>Your privacy is central to Calmpal's architecture. As detailed in our Privacy Policy:</p>
-    <ul>
-      <li>Calmpal operates on a <strong>100% on-device, local-first</strong> architecture.</li>
-      <li>We do not collect, sell, monetize, or transmit your personal data, timers, or listening preferences to any cloud database or third-party advertising network.</li>
-    </ul>
-
-    <h2>5. Intellectual Property Rights</h2>
-    <p>All trademarks, logos, audio recordings, user interface designs, and code comprising Calmpal are the proprietary property of Calmpal and its licensors. All rights not expressly granted to you under this Agreement are reserved.</p>
-
-    <h2>6. Disclaimer of Warranties & Limitation of Liability</h2>
-    <p>Calmpal is provided on an <strong>"AS IS"</strong> and <strong>"AS AVAILABLE"</strong> basis without warranties of any kind, whether express, implied, or statutory, including warranties of merchantability, fitness for a particular purpose, and non-infringement.</p>
-    <p>To the maximum extent permitted by applicable law, Calmpal and its developers shall not be liable for any direct, indirect, incidental, consequential, special, or exemplary damages arising out of or in connection with your access to or use of the App.</p>
-
-    <h2>7. Apple App Store Specific Terms</h2>
-    <p>This Agreement is concluded solely between you and Calmpal, not with Apple Inc. ("Apple"). However:</p>
-    <ul>
-      <li>Apple has no obligation whatsoever to furnish any maintenance or support services with respect to the App.</li>
-      <li>In the event of any failure of the App to conform to any applicable warranty, you may notify Apple, and Apple may refund the purchase price (if any); to the maximum extent permitted by applicable law, Apple will have no other warranty obligation whatsoever.</li>
-      <li>Apple and Apple's subsidiaries are third-party beneficiaries of this Agreement and shall have the right to enforce this Agreement against you.</li>
-    </ul>
-
-    <h2>8. Governing Law & Jurisdiction</h2>
-    <p>This Agreement shall be governed by and construed in accordance with the laws of the Province of British Columbia and the federal laws of Canada applicable therein, without giving effect to any choice of law principles.</p>
-
-    <h2>9. Contact & Inquiries</h2>
-    <p>If you have any questions, feedback, or legal inquiries regarding these Terms, please contact us:</p>
-    <p>
-      <strong>Developer & Publisher:</strong> Slava Goloubov<br>
-      <strong>Email:</strong> <a href="mailto:Goloubov@gmail.com">Goloubov@gmail.com</a><br>
-      <strong>Location:</strong> Vancouver, British Columbia, Canada
-    </p>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <div>
-      <a href="index.html">← Web Player</a>
+    <!-- Contact Support -->
+    <h2>Contact Support</h2>
+    <p>For technical support, feedback, or privacy inquiries, please contact our team directly:</p>
+    <div class="card">
+      <h3>Developer & Publisher</h3>
+      <p>Slava Goloubov</p>
+      <p>Email: <a href="mailto:Goloubov@gmail.com"><strong>Goloubov@gmail.com</strong></a></p>
+      <p>Location: Vancouver, British Columbia, Canada</p>
     </div>
-    <div>
+
+    <!-- Footer -->
+    <footer>
       © 2026 Calmpal. All rights reserved. • Vancouver, BC, Canada
-    </div>
-  </footer>
+    </footer>
+  </div>
 
-</div>
-
-<script>
-function switchTab(tabKey) {
-  const tabs = ['support', 'privacy', 'terms'];
-  if (!tabs.includes(tabKey)) tabKey = 'support';
-
-  tabs.forEach(t => {
-    const btn = document.getElementById('tab-' + t);
-    const pane = document.getElementById('pane-' + t);
-    if (btn && pane) {
-      const isActive = (t === tabKey);
-      btn.classList.toggle('active', isActive);
-      btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      pane.classList.toggle('active', isActive);
+  <script>
+    function purgeAllData() {
+      localStorage.clear();
+      sessionStorage.clear();
+      const statusEl = document.getElementById('purge-status');
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        setTimeout(() => {
+          statusEl.style.display = 'none';
+        }, 2500);
+      }
     }
-  });
-}
-
-function purgeAllData() {
-  localStorage.clear();
-  sessionStorage.clear();
-  const statusEl = document.getElementById('purge-status');
-  if (statusEl) {
-    statusEl.style.display = 'block';
-    setTimeout(() => {
-      statusEl.style.display = 'none';
-    }, 2500);
-  }
-}
-</script>
+  </script>
 
 </body>
 </html>
