@@ -771,10 +771,12 @@ function renderInteractiveRulerFrame(now) {
   }
 
   document.getElementById('edit-top-timer').textContent = formatNoExtraZeroHours(remainingSeconds);
-  requestAnimationFrame(renderInteractiveRulerFrame);
+  if (isEditingMode) {
+    rulerAnimId = requestAnimationFrame(renderInteractiveRulerFrame);
+  }
 }
 
-requestAnimationFrame(renderInteractiveRulerFrame);
+let rulerAnimId = null;
 
 // ── Edit Button: Switches between Main Player and Edit Mode Overlay ──
 const editBtn = document.getElementById('edit-timer-btn');
@@ -785,9 +787,15 @@ function toggleEditMode(enable) {
     mainPlayerContent.style.display = 'none';
     editModeOverlay.classList.add('active');
     setupCanvasDPI();
+    if (rulerAnimId) cancelAnimationFrame(rulerAnimId);
+    rulerAnimId = requestAnimationFrame(renderInteractiveRulerFrame);
   } else {
     mainPlayerContent.style.display = 'flex';
     editModeOverlay.classList.remove('active');
+    if (rulerAnimId) {
+      cancelAnimationFrame(rulerAnimId);
+      rulerAnimId = null;
+    }
   }
   updateTimerDisplays();
 }

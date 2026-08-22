@@ -70,6 +70,8 @@ public final class HapticManager: NSObject {
     /// The persistent smoothed state variables for the low-pass filter.
     private var smoothedIntensity: Float = 0.0
     private var smoothedSharpness: Float = 0.0
+    private var lastSentIntensity: Float = -1.0
+    private var lastSentSharpness: Float = -1.0
     
     // MARK: - Initialization
     
@@ -258,6 +260,8 @@ public final class HapticManager: NSObject {
         targetSharpness = 0.0
         smoothedIntensity = 0.0
         smoothedSharpness = 0.0
+        lastSentIntensity = -1.0
+        lastSentSharpness = -1.0
         currentIntensity = 0.0
         currentSharpness = 0.0
         setupHapticEngine()
@@ -322,17 +326,32 @@ public final class HapticManager: NSObject {
         smoothedIntensity = (alpha * targetIntensity) + ((1.0 - alpha) * smoothedIntensity)
         smoothedSharpness = (alpha * targetSharpness) + ((1.0 - alpha) * smoothedSharpness)
         
+        // Snap to target if very close to prevent endless micro-variations
+        if abs(smoothedIntensity - targetIntensity) < 0.001 {
+            smoothedIntensity = targetIntensity
+        }
+        if abs(smoothedSharpness - targetSharpness) < 0.001 {
+            smoothedSharpness = targetSharpness
+        }
+        
         // Clamp parameters to the strict physical boundaries [0.0...1.0] of CoreHaptics
         let finalIntensity = max(0.0, min(1.0, smoothedIntensity))
         let finalSharpness = max(0.0, min(1.0, smoothedSharpness))
         
-        // Update observed outputs for SwiftUI view sync
-        self.currentIntensity = finalIntensity
-        self.currentSharpness = finalSharpness
+        // Only trigger @Observable mutations and stream to hardware if values have meaningfully changed
+        let deltaIntensity = abs(finalIntensity - lastSentIntensity)
+        let deltaSharpness = abs(finalSharpness - lastSentSharpness)
         
-        // 2. Stream dynamic parameters to the pattern player
-        if isHardwareSupported && player != nil {
-            updateDynamicParameters(intensity: finalIntensity, sharpness: finalSharpness)
+        if deltaIntensity > 0.002 || deltaSharpness > 0.002 {
+            self.currentIntensity = finalIntensity
+            self.currentSharpness = finalSharpness
+            self.lastSentIntensity = finalIntensity
+            self.lastSentSharpness = finalSharpness
+            
+            // 2. Stream dynamic parameters to the pattern player
+            if isHardwareSupported && player != nil {
+                updateDynamicParameters(intensity: finalIntensity, sharpness: finalSharpness)
+            }
         }
     }
     

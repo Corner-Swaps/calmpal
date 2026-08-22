@@ -88,9 +88,10 @@ public struct GroundingScreenView: View {
     @State private var activeOverlay: ActiveScreenOverlay = .none
     @State private var isDraggingTimer: Bool = false
     @State private var isZenMode: Bool = false
+    @State private var isVisualizerMode: Bool = false
     @State private var timerEndTimestamp: Date? = Date().addingTimeInterval(600.0)
 
-    private let timerTicker = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+    private let timerTicker = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
     public init() {}
 
@@ -100,7 +101,11 @@ public struct GroundingScreenView: View {
             let screenHeight = screenGeo.size.height
 
             ZStack(alignment: .bottom) {
-                // ── Deep Atmospheric Fullscreen Backdrop ──
+                // ── Solid Deep Black Base Canvas ──
+                Color.black
+                    .ignoresSafeArea()
+
+                // ── Deep Atmospheric Fullscreen Backdrop (Fades out in Particle Visualizer Mode) ──
                 let activeBanner = bannerFor(profile: activeProfile)
 
                 Image(activeBanner.imageName)
@@ -120,55 +125,90 @@ public struct GroundingScreenView: View {
                         )
                         .ignoresSafeArea()
                     )
+                    .opacity(isVisualizerMode ? 0.0 : 1.0)
+                    .animation(.easeInOut(duration: 0.40), value: isVisualizerMode)
 
                 // ── Normal Mode: Main Player Interface ──
                 if activeOverlay == .none {
                     ZStack {
-                        // Background tap gesture: Always toggles play/pause (both normal and Zen mode)
+                        // Background tap gesture: Always toggles play/pause (normal, Zen, and Visualizer modes)
                         Color.clear
                             .contentShape(Rectangle())
                             .onTapGesture {
                                 togglePlayPause()
                             }
 
-                        // Top Zen / Immersion Button just below Dynamic Island
-                        // Equipped with a large invisible circular hit area (~84pt)
+                        // Top Navigation Toolbar just below Dynamic Island
+                        // Hosts both the Eye Icon (Zen Mode) and Particle Wave Icon (Audio Visualizer Mode)
                         VStack {
-                            Button(action: {
-                                HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                withAnimation(.easeInOut(duration: 0.35)) {
-                                    isZenMode.toggle()
+                            HStack(spacing: 24) {
+                                // 1. Eye Button (Zen Mode - Fullscreen Image Immersion)
+                                Button(action: {
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                    withAnimation(.easeInOut(duration: 0.35)) {
+                                        if isVisualizerMode { isVisualizerMode = false }
+                                        isZenMode.toggle()
+                                    }
+                                }) {
+                                    Image(systemName: isZenMode ? "eye" : "eye.slash")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.white.opacity(isZenMode ? 0.95 : 0.55))
+                                        .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 2)
+                                        .frame(width: 64, height: 64)
+                                        .contentShape(Circle())
                                 }
-                            }) {
-                                Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.white.opacity(isZenMode ? 0.40 : 0.65))
-                                    .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 2)
-                                    .frame(width: 84, height: 84)
-                                    .contentShape(Circle())
+                                .buttonStyle(.plain)
+
+                                // 2. Particle Wave Visualizer Button (Audio-Reactive Radial Wave Mode)
+                                Button(action: {
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                    withAnimation(.easeInOut(duration: 0.35)) {
+                                        if isZenMode { isZenMode = false }
+                                        isVisualizerMode.toggle()
+                                    }
+                                }) {
+                                    Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(isVisualizerMode ? Color(red: 0.35, green: 0.95, blue: 0.65) : .white.opacity(0.55))
+                                        .shadow(color: isVisualizerMode ? Color(red: 0.35, green: 0.95, blue: 0.65).opacity(0.85) : Color.black.opacity(0.8), radius: 8, x: 0, y: 2)
+                                        .frame(width: 64, height: 64)
+                                        .contentShape(Circle())
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                             .padding(.top, 38)
 
                             Spacer()
                         }
                         .zIndex(20)
 
-                        // Main Clock & Bottom Controls (All disappear in Zen Mode)
+                        // Main Center Stage & Bottom Controls
                         VStack(spacing: 0) {
                             Spacer()
 
-                            // Original Clean Circular Timer Ring (Fades in Zen Mode)
-                            FullCircularTimerView(
-                                remainingSeconds: $remainingTimerSeconds,
-                                totalDuration: $totalTimerDuration,
-                                isPlaying: isPlaying,
-                                timerEndTimestamp: timerEndTimestamp
-                            )
-                            .frame(width: 318, height: 318)
-                            .offset(y: 20)
-                            .opacity(isZenMode ? 0 : 1)
-                            .animation(.easeInOut(duration: 0.35), value: isZenMode)
+                            if !isZenMode {
+                                if isVisualizerMode {
+                                    // ── Circular Audio-Reactive Wave & Particle Visualizer ──
+                                    CircularParticleWaveVisualizerView(
+                                        soundTitle: activeBanner.title,
+                                        isPlaying: isPlaying
+                                    )
+                                    .frame(width: 320, height: 320)
+                                    .offset(y: 20)
+                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                } else {
+                                    // ── Original Clean Circular Timer Ring ──
+                                    FullCircularTimerView(
+                                        remainingSeconds: $remainingTimerSeconds,
+                                        totalDuration: $totalTimerDuration,
+                                        isPlaying: isPlaying,
+                                        timerEndTimestamp: timerEndTimestamp
+                                    )
+                                    .frame(width: 318, height: 318)
+                                    .offset(y: 20)
+                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                }
+                            }
 
                             Spacer()
 
@@ -234,9 +274,9 @@ public struct GroundingScreenView: View {
                                 .buttonStyle(.plain)
                             }
                             .padding(.bottom, 36)
-                            .opacity(isZenMode ? 0 : 1)
-                            .animation(.easeInOut(duration: 0.35), value: isZenMode)
-                            .allowsHitTesting(!isZenMode)
+                            .opacity((isZenMode || isVisualizerMode) ? 0 : 1)
+                            .animation(.easeInOut(duration: 0.35), value: isZenMode || isVisualizerMode)
+                            .allowsHitTesting(!isZenMode && !isVisualizerMode)
                         }
                     }
                     .frame(width: screenWidth, height: screenHeight)
@@ -434,61 +474,229 @@ private struct FullCircularTimerView: View {
     let timerEndTimestamp: Date?
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
-            let now = timeline.date
-            let currentRemaining: Double = {
-                if isPlaying, let end = timerEndTimestamp {
-                    return max(0.0, end.timeIntervalSince(now))
-                }
-                return remainingSeconds
-            }()
+        if isPlaying {
+            TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
+                timerBody(at: timeline.date)
+            }
+        } else {
+            timerBody(at: Date())
+        }
+    }
 
-            let progress: Double = {
-                guard totalDuration > 0 else { return 1.0 }
-                return max(0.0, min(1.0, currentRemaining / totalDuration))
-            }()
+    @ViewBuilder
+    private func timerBody(at now: Date) -> some View {
+        let currentRemaining: Double = {
+            if isPlaying, let end = timerEndTimestamp {
+                return max(0.0, end.timeIntervalSince(now))
+            }
+            return remainingSeconds
+        }()
 
-            GeometryReader { geo in
-                let size = min(geo.size.width, geo.size.height)
-                let radius = size / 2
-                let center = CGPoint(x: size / 2, y: size / 2)
+        let progress: Double = {
+            guard totalDuration > 0 else { return 1.0 }
+            return max(0.0, min(1.0, currentRemaining / totalDuration))
+        }()
 
-                let angle = (progress * 360.0) - 90.0
-                let rad = angle * .pi / 180.0
-                let tickX = center.x + (radius - 10) * CGFloat(cos(rad))
-                let tickY = center.y + (radius - 10) * CGFloat(sin(rad))
+        GeometryReader { geo in
+            let size = min(geo.size.width, geo.size.height)
+            let radius = size / 2
+            let center = CGPoint(x: size / 2, y: size / 2)
 
-                ZStack {
-                    // Background Track Ring
-                    Circle()
-                        .stroke(Color.white.opacity(0.16), lineWidth: 4.0)
-                        .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+            let angle = (progress * 360.0) - 90.0
+            let rad = angle * .pi / 180.0
+            let tickX = center.x + (radius - 10) * CGFloat(cos(rad))
+            let tickY = center.y + (radius - 10) * CGFloat(sin(rad))
 
-                    // Foreground Animated Smooth Flowing Remaining Arc
-                    Circle()
-                        .trim(from: 0.0, to: CGFloat(progress))
-                        .stroke(
-                            Color.white,
-                            style: StrokeStyle(lineWidth: 4.5, lineCap: .round)
+            ZStack {
+                // Background Track Ring
+                Circle()
+                    .stroke(Color.white.opacity(0.16), lineWidth: 4.0)
+                    .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+
+                // Foreground Animated Smooth Flowing Remaining Arc
+                Circle()
+                    .trim(from: 0.0, to: CGFloat(progress))
+                    .stroke(
+                        Color.white,
+                        style: StrokeStyle(lineWidth: 4.5, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+
+                // Minimal Little White Dot (Smooth 60/120fps continuous glide)
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 10, height: 10)
+                    .shadow(color: Color.white.opacity(0.85), radius: 3, x: 0, y: 0)
+                    .position(x: tickX, y: tickY)
+
+                // Center Digital Countdown (Exact 44pt rounded light font)
+                Text(formatNoLeadingZeroHours(currentRemaining))
+                    .font(.system(size: 44, weight: .light, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundColor(.white)
+                    .shadow(color: Color.black.opacity(0.90), radius: 8, x: 0, y: 3)
+            }
+        }
+    }
+}
+
+// MARK: ── 2. Circular Audio-Reactive Wave & Particle Visualizer ──────────────
+
+private struct CircularParticleWaveVisualizerView: View {
+    let soundTitle: String
+    let isPlaying: Bool
+
+    var body: some View {
+        if isPlaying {
+            TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
+                visualizerBody(at: timeline.date)
+            }
+        } else {
+            visualizerBody(at: Date())
+        }
+    }
+
+    @ViewBuilder
+    private func visualizerBody(at now: Date) -> some View {
+        let time = now.timeIntervalSinceReferenceDate
+        let rawLevel = isPlaying ? CGFloat(AudioManager.shared.audioLevel) : 0.0
+        let freqs = isPlaying ? AudioManager.shared.audioFrequencies : Array(repeating: 0.0, count: 16)
+
+        GeometryReader { geo in
+            let size = min(geo.size.width, geo.size.height)
+            let baseRadius: CGFloat = size * 0.38
+
+            ZStack {
+                // ── 1. Core Luminous Breathing Glow ──
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color(red: 0.30, green: 0.95, blue: 0.65).opacity(0.12 + Double(rawLevel) * 0.28),
+                                Color(red: 0.20, green: 0.80, blue: 0.90).opacity(0.06 + Double(rawLevel) * 0.12),
+                                Color.clear
+                            ],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: baseRadius * 1.35
                         )
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+                    )
+                    .frame(width: baseRadius * 2.7, height: baseRadius * 2.7)
 
-                    // Minimal Little White Dot (Smooth 60/120fps continuous glide)
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 10, height: 10)
-                        .shadow(color: Color.white.opacity(0.85), radius: 3, x: 0, y: 0)
-                        .position(x: tickX, y: tickY)
+                // ── 2. Canvas for Circular Fluid Waves & Orbiting Particles ──
+                Canvas { context, canvasSize in
+                    let cX = canvasSize.width / 2
+                    let cY = canvasSize.height / 2
 
-                    // Center Digital Countdown (Exact 44pt rounded light font)
-                    Text(formatNoLeadingZeroHours(currentRemaining))
-                        .font(.system(size: 44, weight: .light, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundColor(.white)
-                        .shadow(color: Color.black.opacity(0.90), radius: 8, x: 0, y: 3)
+                    // ── A. 4 Concentric Fluid Wave Rings (Radially Wrapped Fluid Waves) ──
+                    let numRings = 4
+                    let steps = 80
+
+                    for k in 0..<numRings {
+                        let ringFraction = CGFloat(k) / CGFloat(numRings - 1)
+                        let ringBaseR = baseRadius * (0.65 + ringFraction * 0.38)
+                        let speedMult = 1.6 + Double(k) * 0.35
+                        let direction: Double = (k % 2 == 0) ? 1.0 : -1.0
+
+                        var wavePath = Path()
+
+                        for s in 0...steps {
+                            let theta = (Double(s) / Double(steps)) * 2.0 * .pi
+
+                            // Harmonic radial wave oscillation
+                            let w1 = sin(theta * 3.0 + time * speedMult * direction) * (3.5 + Double(k) * 1.8)
+                            let w2 = cos(theta * 6.0 - time * 2.1 * direction) * (2.2 + Double(k) * 1.2)
+                            let w3 = sin(theta * 9.0 + time * 3.4) * (Double(rawLevel) * (14.0 + Double(k) * 6.0))
+
+                            // Map angle theta to frequency bands (16 bands)
+                            let bandIndex = Int((theta / (2.0 * .pi)) * 16.0) % 16
+                            let bandEnergy = CGFloat(freqs[bandIndex]) * (18.0 + CGFloat(k) * 6.0)
+
+                            let radialDisplacement = CGFloat(w1 + w2 + w3) + bandEnergy
+                            let r = ringBaseR + radialDisplacement
+
+                            let pX = cX + r * CGFloat(cos(theta))
+                            let pY = cY + r * CGFloat(sin(theta))
+
+                            if s == 0 {
+                                wavePath.move(to: CGPoint(x: pX, y: pY))
+                            } else {
+                                wavePath.addLine(to: CGPoint(x: pX, y: pY))
+                            }
+                        }
+                        wavePath.closeSubpath()
+
+                        // Ring Colors: Shimmering emerald to cyan-white
+                        let alpha = Double(0.25 + ringFraction * 0.65) * (0.6 + Double(rawLevel) * 0.4)
+                        let ringColor = Color(
+                            red: 0.35 + 0.50 * Double(ringFraction),
+                            green: 0.95,
+                            blue: 0.65 + 0.30 * Double(ringFraction),
+                            opacity: alpha
+                        )
+
+                        let strokeWidth: CGFloat = (1.2 + ringFraction * 1.2) + rawLevel * 1.8
+
+                        context.stroke(
+                            wavePath,
+                            with: .color(ringColor),
+                            style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round, lineJoin: .round)
+                        )
+                    }
+
+                    // ── B. Orbiting Constellation Particles (36 Reactive Floating Particles) ──
+                    let numParticles = 36
+                    for i in 0..<numParticles {
+                        let seed = Double(i) * 137.508
+                        let baseTheta = (Double(i) / Double(numParticles)) * 2.0 * .pi
+                        let orbitSpeed = (0.12 + 0.08 * sin(seed)) * ((i % 2 == 0) ? 1.0 : -1.0)
+                        let currentTheta = baseTheta + time * orbitSpeed
+
+                        let driftR = sin(time * 1.8 + seed) * 14.0
+                        let audioBurst = rawLevel * 36.0 * CGFloat(0.5 + 0.5 * sin(seed * 2.0))
+                        let pRadiusDist = baseRadius * 1.08 + CGFloat(driftR) + audioBurst
+
+                        let pX = cX + pRadiusDist * CGFloat(cos(currentTheta))
+                        let pY = cY + pRadiusDist * CGFloat(sin(currentTheta))
+
+                        let pulse = 0.5 + 0.5 * sin(time * 2.8 + seed)
+                        let dotSize: CGFloat = (1.4 + CGFloat(pulse) * 1.6) + rawLevel * 2.0
+                        let pAlpha = (0.30 + 0.55 * pulse) * Double(0.5 + 0.5 * rawLevel)
+
+                        let particleRect = CGRect(x: pX - dotSize, y: pY - dotSize, width: dotSize * 2, height: dotSize * 2)
+                        let dotColor = Color(
+                            red: 0.45 + 0.40 * sin(seed),
+                            green: 1.0,
+                            blue: 0.70 + 0.25 * cos(seed),
+                            opacity: pAlpha
+                        )
+
+                        context.fill(
+                            Path(ellipseIn: particleRect),
+                            with: .color(dotColor)
+                        )
+                    }
+                }
+                .frame(width: size, height: size)
+
+                // ── 3. Center Soundscape Title & Dynamic Audio Wave Icon ──
+                VStack(spacing: 6) {
+                    Image(systemName: isPlaying ? "waveform" : "waveform.slash")
+                        .font(.system(size: 24, weight: .light))
+                        .foregroundColor(Color(red: 0.35, green: 0.95, blue: 0.65))
+                        .scaleEffect(1.0 + rawLevel * 0.30)
+                        .shadow(color: Color(red: 0.35, green: 0.95, blue: 0.65).opacity(0.8), radius: 8, x: 0, y: 0)
+                        .animation(.easeOut(duration: 0.08), value: rawLevel)
+
+                    Text(soundTitle.uppercased())
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .tracking(3.0)
+                        .foregroundColor(.white.opacity(0.85))
+                        .shadow(color: Color.black.opacity(0.90), radius: 6, x: 0, y: 2)
                 }
             }
+            .frame(width: geo.size.width, height: geo.size.height)
         }
     }
 }
@@ -531,7 +739,7 @@ private struct TallFusedMeasuringLinesView: View {
                     )
 
                     // ── 2. Floating Shimmer Particles along Center Focal Zone ──
-                    let numParticles = 16
+                    let numParticles = 12
                     for i in 0..<numParticles {
                         let seed = Double(i) * 137.5
                         let baseX = (CGFloat(sin(seed)) * 0.5 + 0.5) * (width - 80) + 40
@@ -583,7 +791,7 @@ private struct TallFusedMeasuringLinesView: View {
                         let smoothEdgeFade = sin(Double(edgeFade) * .pi / 2.0)
 
                         let lineWidth = (65.0 + CGFloat(focus) * 110.0) * (0.4 + 0.6 * CGFloat(smoothEdgeFade))
-                        let numPts = 16
+                        let numPts = 12
                         let xStart = midX - lineWidth / 2
 
                         var linePath = Path()

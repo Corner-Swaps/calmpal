@@ -142,6 +142,10 @@ public final class AudioManager {
 
     public private(set) var isAudioPlaying: Bool = false
 
+    // Real-time audio energy and frequency spectrum for visualizers
+    public private(set) var audioLevel: Float = 0.0
+    public private(set) var audioFrequencies: [Float] = Array(repeating: 0.0, count: 16)
+
     private let audioEngine = AVAudioEngine()
     private let playerNode  = AVAudioPlayerNode()
     private var fadeTask: Task<Void, Never>?
@@ -347,6 +351,51 @@ public final class AudioManager {
         audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: fmt)
         if let buf = bufferForProfile(activeProfile) {
             playerNode.scheduleBuffer(buf, at: nil, options: .loops, completionHandler: nil)
+        }
+        setupAudioTap()
+    }
+
+    private func setupAudioTap() {
+        let mixer = audioEngine.mainMixerNode
+        mixer.removeTap(onBus: 0)
+        let bufferSize: AVAudioFrameCount = 1024
+        mixer.installTap(onBus: 0, bufferSize: bufferSize, format: nil) { [weak self] buffer, time in
+            guard let self = self, self.isAudioPlaying else {
+                DispatchQueue.main.async {
+                    self?.audioLevel = 0.0
+                }
+                return
+            }
+            guard let channelData = buffer.floatChannelData?[0] else { return }
+            let frameLength = Int(buffer.frameLength)
+            guard frameLength > 0 else { return }
+
+            var sum: Float = 0.0
+            for i in 0..<frameLength {
+                let sample = channelData[i]
+                sum += sample * sample
+            }
+            let rms = sqrt(sum / Float(frameLength))
+            let normalized = min(1.0, max(0.0, rms * 4.8))
+
+            let chunkSize = max(1, frameLength / 16)
+            var bands = [Float](repeating: 0.0, count: 16)
+            for b in 0..<16 {
+                var bSum: Float = 0.0
+                let start = b * chunkSize
+                let end = min(frameLength, start + chunkSize)
+                for i in start..<end {
+                    bSum += abs(channelData[i])
+                }
+                bands[b] = min(1.0, (bSum / Float(chunkSize)) * 4.2)
+            }
+
+            DispatchQueue.main.async {
+                self.audioLevel = self.audioLevel * 0.35 + normalized * 0.65
+                for b in 0..<16 {
+                    self.audioFrequencies[b] = self.audioFrequencies[b] * 0.45 + bands[b] * 0.55
+                }
+            }
         }
     }
 
@@ -584,8 +633,13 @@ public final class AudioManager {
 
     private func fadeVolume(to target: Float, duration: Double, completion: (() -> Void)? = nil) {
         fadeTask?.cancel()
+        if duration < 0.05 {
+            playerNode.volume = target
+            completion?()
+            return
+        }
         fadeTask = Task { @MainActor in
-            let steps = 20
+            let steps = max(4, min(20, Int(duration * 20.0)))
             let interval = duration / Double(steps)
             let start = playerNode.volume
             let diff  = target - start
