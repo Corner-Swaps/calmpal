@@ -480,7 +480,7 @@ const SOUND_BANNERS = [
 ];
 
 let activeIdx = 0;
-let isPlaying = true;
+let isPlaying = false;
 let totalDuration = 1800; // 30 minutes default
 let remainingSeconds = 1800;
 let isDraggingVertical = false;
@@ -944,6 +944,8 @@ setInterval(() => {
 }, 1000);
 
 // Initial Render
+renderSoundsSheet();
+soundsPage.classList.add('active');
 renderActiveSound();
 updateTimerDisplays();
 </script>

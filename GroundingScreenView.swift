@@ -84,12 +84,12 @@ public struct GroundingScreenView: View {
     @State private var activeProfile: SoundProfile = .nightCrickets
     @State private var remainingTimerSeconds: TimeInterval = 600.0 // Default 10 min
     @State private var totalTimerDuration: TimeInterval = 600.0    // Total selected span
-    @State private var isPlaying: Bool = true
-    @State private var activeOverlay: ActiveScreenOverlay = .none
+    @State private var isPlaying: Bool = false
+    @State private var activeOverlay: ActiveScreenOverlay = .soundSelection
     @State private var isDraggingTimer: Bool = false
     @State private var isZenMode: Bool = false
     @State private var isVisualizerMode: Bool = false
-    @State private var timerEndTimestamp: Date? = Date().addingTimeInterval(600.0)
+    @State private var timerEndTimestamp: Date? = nil
 
     private let timerTicker = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
