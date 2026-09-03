@@ -202,12 +202,9 @@ public final class HapticManager: NSObject {
     // MARK: - Public Control Interface
     
     /// Starts the haptic engine, spins up the continuous pattern player,
-    /// starts background ambient audio, and unpauses the 60Hz physics update loop.
+    /// and unpauses the 60Hz physics update loop.
     public func start() {
         guard !isEngineRunning else { return }
-        
-        // Start background ambient audio to maintain lifecycle
-        AudioManager.shared.start()
         
         if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil {
             isEngineRunning = true
@@ -230,14 +227,11 @@ public final class HapticManager: NSObject {
         displayLinkWrapper.value?.isPaused = false
     }
     
-    /// Stops the haptic engine, pauses the 60Hz physics update loop, and stops audio.
+    /// Stops the haptic engine and pauses the 60Hz physics update loop.
     public func stop() {
         guard isEngineRunning else { return }
         
         displayLinkWrapper.value?.isPaused = true
-        
-        // Stop background ambient audio
-        AudioManager.shared.stop()
         
         if isHardwareSupported {
             do {

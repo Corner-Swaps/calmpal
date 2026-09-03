@@ -85,7 +85,7 @@ public struct GroundingScreenView: View {
     @State private var remainingTimerSeconds: TimeInterval = 600.0 // Default 10 min
     @State private var totalTimerDuration: TimeInterval = 600.0    // Total selected span
     @State private var isPlaying: Bool = false
-    @State private var activeOverlay: ActiveScreenOverlay = .soundSelection
+    @State private var activeOverlay: ActiveScreenOverlay = .none
     @State private var isDraggingTimer: Bool = false
     @State private var isZenMode: Bool = false
     @State private var isVisualizerMode: Bool = false
@@ -141,12 +141,15 @@ public struct GroundingScreenView: View {
                         // Top Navigation Toolbar just below Dynamic Island
                         // Hosts both the Eye Icon (Zen Mode) and Particle Wave Icon (Audio Visualizer Mode)
                         VStack {
-                            HStack(spacing: 24) {
+                            HStack(spacing: 8) {
                                 // 1. Eye Button (Zen Mode - Fullscreen Image Immersion)
                                 Button(action: {
                                     HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
                                     withAnimation(.easeInOut(duration: 0.35)) {
-                                        if isVisualizerMode { isVisualizerMode = false }
+                                        if isVisualizerMode {
+                                            isVisualizerMode = false
+                                            HapticManager.shared.stop()
+                                        }
                                         isZenMode.toggle()
                                     }
                                 }) {
@@ -154,7 +157,7 @@ public struct GroundingScreenView: View {
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(.white.opacity(isZenMode ? 0.95 : 0.55))
                                         .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 2)
-                                        .frame(width: 64, height: 64)
+                                        .frame(width: 44, height: 44)
                                         .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
@@ -165,13 +168,18 @@ public struct GroundingScreenView: View {
                                     withAnimation(.easeInOut(duration: 0.35)) {
                                         if isZenMode { isZenMode = false }
                                         isVisualizerMode.toggle()
+                                        if isVisualizerMode && isPlaying {
+                                            HapticManager.shared.start()
+                                        } else {
+                                            HapticManager.shared.stop()
+                                        }
                                     }
                                 }) {
                                     Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
-                                        .font(.system(size: 20, weight: .semibold))
-                                        .foregroundColor(isVisualizerMode ? Color(red: 0.35, green: 0.95, blue: 0.65) : .white.opacity(0.55))
-                                        .shadow(color: isVisualizerMode ? Color(red: 0.35, green: 0.95, blue: 0.65).opacity(0.85) : Color.black.opacity(0.8), radius: 8, x: 0, y: 2)
-                                        .frame(width: 64, height: 64)
+                                        .font(.system(size: 20, weight: .medium))
+                                        .foregroundColor(.white.opacity(isVisualizerMode ? 0.95 : 0.55))
+                                        .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 2)
+                                        .frame(width: 44, height: 44)
                                         .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
@@ -190,7 +198,6 @@ public struct GroundingScreenView: View {
                                 if isVisualizerMode {
                                     // ── Circular Audio-Reactive Wave & Particle Visualizer ──
                                     CircularParticleWaveVisualizerView(
-                                        soundTitle: activeBanner.title,
                                         isPlaying: isPlaying
                                     )
                                     .frame(width: 320, height: 320)
@@ -544,7 +551,6 @@ private struct FullCircularTimerView: View {
 // MARK: ── 2. Circular Audio-Reactive Wave & Particle Visualizer ──────────────
 
 private struct CircularParticleWaveVisualizerView: View {
-    let soundTitle: String
     let isPlaying: Bool
 
     var body: some View {
@@ -563,18 +569,21 @@ private struct CircularParticleWaveVisualizerView: View {
         let rawLevel = isPlaying ? CGFloat(AudioManager.shared.audioLevel) : 0.0
         let freqs = isPlaying ? AudioManager.shared.audioFrequencies : Array(repeating: 0.0, count: 16)
 
+        // Real-time tactile vibration driven directly by the audio energy and frequency spectrum
+        let _ = updateHaptics(rawLevel: rawLevel, freqs: freqs)
+
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
             let baseRadius: CGFloat = size * 0.38
 
             ZStack {
-                // ── 1. Core Luminous Breathing Glow ──
+                // ── 1. Core Luminous Breathing Glow (Clean Silver-Grey & White) ──
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color(red: 0.30, green: 0.95, blue: 0.65).opacity(0.12 + Double(rawLevel) * 0.28),
-                                Color(red: 0.20, green: 0.80, blue: 0.90).opacity(0.06 + Double(rawLevel) * 0.12),
+                                Color.white.opacity(0.12 + Double(rawLevel) * 0.25),
+                                Color(white: 0.70).opacity(0.05 + Double(rawLevel) * 0.10),
                                 Color.clear
                             ],
                             center: .center,
@@ -584,7 +593,7 @@ private struct CircularParticleWaveVisualizerView: View {
                     )
                     .frame(width: baseRadius * 2.7, height: baseRadius * 2.7)
 
-                // ── 2. Canvas for Circular Fluid Waves & Orbiting Particles ──
+                // ── 2. Canvas for Circular Fluid Waves & Orbiting Particles (Grey & White) ──
                 Canvas { context, canvasSize in
                     let cX = canvasSize.width / 2
                     let cY = canvasSize.height / 2
@@ -627,14 +636,10 @@ private struct CircularParticleWaveVisualizerView: View {
                         }
                         wavePath.closeSubpath()
 
-                        // Ring Colors: Shimmering emerald to cyan-white
+                        // Ring Colors: Shimmering translucent white to silver-grey
                         let alpha = Double(0.25 + ringFraction * 0.65) * (0.6 + Double(rawLevel) * 0.4)
-                        let ringColor = Color(
-                            red: 0.35 + 0.50 * Double(ringFraction),
-                            green: 0.95,
-                            blue: 0.65 + 0.30 * Double(ringFraction),
-                            opacity: alpha
-                        )
+                        let brightness = 0.75 + 0.25 * Double(ringFraction)
+                        let ringColor = Color(white: brightness, opacity: alpha)
 
                         let strokeWidth: CGFloat = (1.2 + ringFraction * 1.2) + rawLevel * 1.8
 
@@ -665,12 +670,8 @@ private struct CircularParticleWaveVisualizerView: View {
                         let pAlpha = (0.30 + 0.55 * pulse) * Double(0.5 + 0.5 * rawLevel)
 
                         let particleRect = CGRect(x: pX - dotSize, y: pY - dotSize, width: dotSize * 2, height: dotSize * 2)
-                        let dotColor = Color(
-                            red: 0.45 + 0.40 * sin(seed),
-                            green: 1.0,
-                            blue: 0.70 + 0.25 * cos(seed),
-                            opacity: pAlpha
-                        )
+                        let dotBrightness = 0.80 + 0.20 * sin(seed)
+                        let dotColor = Color(white: dotBrightness, opacity: pAlpha)
 
                         context.fill(
                             Path(ellipseIn: particleRect),
@@ -679,24 +680,37 @@ private struct CircularParticleWaveVisualizerView: View {
                     }
                 }
                 .frame(width: size, height: size)
-
-                // ── 3. Center Soundscape Title & Dynamic Audio Wave Icon ──
-                VStack(spacing: 6) {
-                    Image(systemName: isPlaying ? "waveform" : "waveform.slash")
-                        .font(.system(size: 24, weight: .light))
-                        .foregroundColor(Color(red: 0.35, green: 0.95, blue: 0.65))
-                        .scaleEffect(1.0 + rawLevel * 0.30)
-                        .shadow(color: Color(red: 0.35, green: 0.95, blue: 0.65).opacity(0.8), radius: 8, x: 0, y: 0)
-                        .animation(.easeOut(duration: 0.08), value: rawLevel)
-
-                    Text(soundTitle.uppercased())
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .tracking(3.0)
-                        .foregroundColor(.white.opacity(0.85))
-                        .shadow(color: Color.black.opacity(0.90), radius: 6, x: 0, y: 2)
-                }
             }
             .frame(width: geo.size.width, height: geo.size.height)
+        }
+        .onAppear {
+            if isPlaying {
+                HapticManager.shared.start()
+            }
+        }
+        .onDisappear {
+            HapticManager.shared.stop()
+        }
+        .onChange(of: isPlaying) { _, playing in
+            if playing {
+                HapticManager.shared.start()
+            } else {
+                HapticManager.shared.stop()
+            }
+        }
+    }
+
+    private func updateHaptics(rawLevel: CGFloat, freqs: [Float]) {
+        if isPlaying {
+            let bass = Double(freqs[0] + freqs[1] + freqs[2]) / 3.0
+            let mid = Double(freqs[4] + freqs[5] + freqs[6]) / 3.0
+            let dynamicIntensity = Float(min(1.0, max(0.0, Double(rawLevel) * 0.70 + bass * 0.50)))
+            let dynamicSharpness = Float(min(1.0, max(0.0, 0.15 + mid * 0.60)))
+            HapticManager.shared.targetIntensity = dynamicIntensity
+            HapticManager.shared.targetSharpness = dynamicSharpness
+        } else {
+            HapticManager.shared.targetIntensity = 0.0
+            HapticManager.shared.targetSharpness = 0.0
         }
     }
 }
