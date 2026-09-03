@@ -699,8 +699,9 @@ private struct CircularParticleWaveVisualizerView: View {
 
     private func updateHaptics(level: CGFloat, bass: CGFloat, mid: CGFloat, treble: CGFloat) {
         if isPlaying {
-            let dynamicIntensity = Float(min(1.0, max(0.0, Double(level) * 0.70 + Double(bass) * 0.50)))
-            let dynamicSharpness = Float(min(1.0, max(0.0, 0.12 + Double(treble) * 0.60 + Double(mid) * 0.28)))
+            // Enhanced gain mapping for distinct, tangible physical vibration in hand
+            let dynamicIntensity = Float(min(1.0, max(0.20, Double(level) * 1.35 + Double(bass) * 0.75)))
+            let dynamicSharpness = Float(min(1.0, max(0.15, 0.20 + Double(treble) * 0.65 + Double(mid) * 0.35)))
             HapticManager.shared.targetIntensity = dynamicIntensity
             HapticManager.shared.targetSharpness = dynamicSharpness
         } else {

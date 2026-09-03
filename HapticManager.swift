@@ -58,7 +58,7 @@ public final class HapticManager: NSObject {
     // MARK: - Private State & Engine Components
     
     private var engine: CHHapticEngine?
-    private var player: CHHapticPatternPlayer?
+    private var player: CHHapticAdvancedPatternPlayer?
     private let displayLinkWrapper = DisplayLinkWrapper()
     private var displayLinkProxy: DisplayLinkProxy?
     private var wasEngineRunningBeforeBackground = false
@@ -160,6 +160,8 @@ public final class HapticManager: NSObject {
         while attempts < maxAttempts {
             do {
                 let hapticEngine = try CHHapticEngine()
+                hapticEngine.playsHapticsOnly = true
+                hapticEngine.isAutoShutdownEnabled = false
                 
                 // Handle cases where the audio/haptic subsystem is stopped by the OS
                 // (e.g., incoming call, alarm, Siri, or lock screen change).
@@ -263,7 +265,7 @@ public final class HapticManager: NSObject {
     
     // MARK: - Continuous Pattern Construction
     
-    /// Prepares and runs a continuous haptic hum pattern.
+    /// Prepares and runs a continuous haptic hum pattern with looping.
     /// This acts as the physical canvas onto which touch-derived parameters are mapped.
     private func rebuildContinuousPlayer() throws {
         guard let engine = engine else {
@@ -274,19 +276,21 @@ public final class HapticManager: NSObject {
         let intensityParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1.0)
         let sharpnessParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0.5)
         
-        // Setup the continuous tactile event with a very long duration (1 hour)
+        // Setup continuous tactile event with seamless loop
         let continuousEvent = CHHapticEvent(
             eventType: .hapticContinuous,
             parameters: [intensityParam, sharpnessParam],
             relativeTime: 0.0,
-            duration: 3600.0
+            duration: 100.0
         )
         
         let pattern = try CHHapticPattern(events: [continuousEvent], parameters: [])
-        let continuousPlayer = try engine.makePlayer(with: pattern)
+        let advancedPlayer = try engine.makeAdvancedPlayer(with: pattern)
+        advancedPlayer.loopEnabled = true
+        advancedPlayer.playbackRate = 1.0
         
-        try continuousPlayer.start(atTime: CHHapticTimeImmediate)
-        self.player = continuousPlayer
+        try advancedPlayer.start(atTime: CHHapticTimeImmediate)
+        self.player = advancedPlayer
     }
     
     // MARK: - Physics & Throttling Loop (60Hz)
