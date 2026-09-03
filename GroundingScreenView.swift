@@ -259,15 +259,15 @@ public struct GroundingScreenView: View {
 
                             Spacer()
 
-                            // Bottom Dock Controls: [‹ Prev] [🎵 Sounds] [⏵/⏸ Play/Pause] [✏️ Edit] [› Next] (+7% Size)
-                            HStack(spacing: 24) {
+                            // Bottom Dock Controls in a Sleek Frosted Glass Pill
+                            HStack(spacing: 12) {
                                 // ‹ 1. Previous Sound Track
                                 Button(action: { selectPreviousSound() }) {
                                     Image(systemName: "chevron.left")
-                                        .font(.system(size: 21.4, weight: .semibold))
-                                        .foregroundColor(.white)
-                                        .frame(width: 47, height: 47)
-                                        .contentShape(Rectangle())
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.white.opacity(0.85))
+                                        .frame(width: 40, height: 40)
+                                        .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
 
@@ -277,21 +277,22 @@ public struct GroundingScreenView: View {
                                     activeOverlay = .soundSelection
                                 }) {
                                     Image(systemName: "music.note")
-                                        .font(.system(size: 22.5, weight: .medium))
-                                        .foregroundColor(.white)
-                                        .frame(width: 47, height: 47)
-                                        .contentShape(Rectangle())
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.85))
+                                        .frame(width: 40, height: 40)
+                                        .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
 
-                                // ⏵/⏸ 3. Play / Pause Button
+                                // ⏵/⏸ 3. Play / Pause Hero Button
                                 Button(action: { togglePlayPause() }) {
                                     Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                                        .font(.system(size: 28, weight: .bold))
+                                        .font(.system(size: 20, weight: .bold))
                                         .foregroundColor(.white)
-                                        .frame(width: 47, height: 47)
+                                        .frame(width: 48, height: 48)
+                                        .background(Circle().fill(Color.white.opacity(0.18)))
                                         .offset(x: isPlaying ? 0 : 1.5)
-                                        .contentShape(Rectangle())
+                                        .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
 
@@ -303,23 +304,34 @@ public struct GroundingScreenView: View {
                                     }
                                 }) {
                                     Image(systemName: "pencil")
-                                        .font(.system(size: 21.4, weight: .medium))
-                                        .foregroundColor(.white)
-                                        .frame(width: 47, height: 47)
-                                        .contentShape(Rectangle())
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.85))
+                                        .frame(width: 40, height: 40)
+                                        .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
 
                                 // › 5. Next Sound Track
                                 Button(action: { selectNextSound() }) {
                                     Image(systemName: "chevron.right")
-                                        .font(.system(size: 21.4, weight: .semibold))
-                                        .foregroundColor(.white)
-                                        .frame(width: 47, height: 47)
-                                        .contentShape(Rectangle())
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.white.opacity(0.85))
+                                        .frame(width: 40, height: 40)
+                                        .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
                             }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(Color.black.opacity(0.35))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.white.opacity(0.18), lineWidth: 1.0)
+                                    )
+                                    .shadow(color: Color.black.opacity(0.40), radius: 10, x: 0, y: 4)
+                            )
                             .padding(.bottom, 36)
                             .opacity((isZenMode || isVisualizerMode) ? 0 : 1)
                             .animation(.easeInOut(duration: 0.35), value: isZenMode || isVisualizerMode)
@@ -588,7 +600,7 @@ private struct FullCircularTimerView: View {
     }
 }
 
-// MARK: ── 2. Organic Celestial Multi-Wave & Particle Symphony Visualizer ──
+// MARK: ── 2. Pure Organic Fluid Wave Circle Visualizer ───────────────────
 
 private struct CircularParticleWaveVisualizerView: View {
     let isPlaying: Bool
@@ -616,13 +628,12 @@ private struct CircularParticleWaveVisualizerView: View {
         let rawBass = isPlaying ? CGFloat(audio.audioBass) : 0.0
         let rawMid = isPlaying ? CGFloat(audio.audioMid) : 0.0
         let rawTreble = isPlaying ? CGFloat(audio.audioTreble) : 0.0
-        let freqs = isPlaying ? audio.audioFrequencies : Array(repeating: Float(0.0), count: 16)
 
-        // Continuous low-pass temporal damping (eliminates all jitter & buffer jumps)
-        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.22
-        let bass = smoothedBass + (rawBass - smoothedBass) * 0.20
-        let mid = smoothedMid + (rawMid - smoothedMid) * 0.22
-        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.24
+        // Silky exponential smoothing for fluid, natural acoustic response
+        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.16
+        let bass = smoothedBass + (rawBass - smoothedBass) * 0.14
+        let mid = smoothedMid + (rawMid - smoothedMid) * 0.16
+        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.18
 
         // Synchronize tactile vibrations using sound-specific sensory profiles
         let _ = updateSoundHaptics(time: time, level: level, bass: bass, mid: mid, treble: treble)
@@ -633,40 +644,38 @@ private struct CircularParticleWaveVisualizerView: View {
 
             ZStack {
                 // ── 1. Volumetric Luminous Breathing Nebula (Swelling Core Aura) ──
-                let glowScale = 1.0 + Double(bass) * 0.35 + Double(level) * 0.28
+                let glowScale = 1.0 + Double(bass) * 0.32 + Double(level) * 0.26
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.white.opacity(0.18 + Double(level) * 0.32 + Double(bass) * 0.22),
-                                Color(white: 0.75).opacity(0.07 + Double(level) * 0.16),
+                                Color.white.opacity(0.18 + Double(level) * 0.30 + Double(bass) * 0.20),
+                                Color(white: 0.75).opacity(0.06 + Double(level) * 0.14),
                                 Color.clear
                             ],
                             center: .center,
-                            startRadius: 6,
-                            endRadius: baseRadius * 1.32 * CGFloat(glowScale)
+                            startRadius: 8,
+                            endRadius: baseRadius * 1.30 * CGFloat(glowScale)
                         )
                     )
                     .frame(width: baseRadius * 2.7 * CGFloat(glowScale), height: baseRadius * 2.7 * CGFloat(glowScale))
 
-                // ── 2. Canvas: 5 Layered Fluid Waves & 96 Interactive Celestial Particles ──
+                // ── 2. Canvas: 4 Concentric Bold Organic Fluid Wave Rings ──
                 Canvas { context, canvasSize in
                     let cX = canvasSize.width / 2
                     let cY = canvasSize.height / 2
 
-                    // ════════════════════════════════════════════════════════════
-                    // A. 5 CONCENTRIC ORGANIC FLUID HARMONIC WAVES
-                    // ════════════════════════════════════════════════════════════
-                    let numWaves = 5
-                    let waveSteps = 120
+                    let numWaves = 4
+                    let waveSteps = 140
 
                     for k in 0..<numWaves {
                         let kFrac = CGFloat(k) / CGFloat(numWaves - 1)
-                        let ringBaseR = baseRadius * (0.46 + kFrac * 0.50) + level * (16.0 + CGFloat(k) * 6.0)
+                        // Base ring radius dynamically breathes with overall sound loudness
+                        let ringBaseR = baseRadius * (0.50 + kFrac * 0.46) + level * (18.0 + CGFloat(k) * 7.0)
                         
-                        let speed1 = (1.20 + Double(k) * 0.25)
-                        let speed2 = (1.60 - Double(k) * 0.20)
-                        let speed3 = (2.10 + Double(k) * 0.30)
+                        let speed1 = (1.10 + Double(k) * 0.22)
+                        let speed2 = (1.45 - Double(k) * 0.18)
+                        let speed3 = (1.90 + Double(k) * 0.26)
                         let dir: Double = (k % 2 == 0) ? 1.0 : -1.0
 
                         var wavePath = Path()
@@ -674,11 +683,11 @@ private struct CircularParticleWaveVisualizerView: View {
                         for s in 0...waveSteps {
                             let theta = (Double(s) / Double(waveSteps)) * 2.0 * .pi
 
-                            // Multi-harmonic natural fluid equations driven by audio frequencies
-                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (Double(bass) * (24.0 + Double(k) * 8.0) + (3.0 + Double(k) * 1.2))
-                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (Double(mid) * (18.0 + Double(k) * 6.0) + (2.0 + Double(k) * 0.8))
-                            let h3 = sin(5.0 * theta + time * speed3 * dir) * (Double(treble) * (14.0 + Double(k) * 5.0) + 1.0)
-                            let h4 = cos(theta * 1.0 + time * 0.6) * (Double(level) * (10.0 + Double(k) * 4.0))
+                            // Multi-harmonic fluid wave equations with smooth acoustic coupling
+                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (Double(bass) * (26.0 + Double(k) * 8.0) + (3.2 + Double(k) * 1.4))
+                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (Double(mid) * (18.0 + Double(k) * 6.0) + (2.0 + Double(k) * 1.0))
+                            let h3 = sin(4.0 * theta + time * speed3 * dir) * (Double(treble) * (12.0 + Double(k) * 4.5) + 1.2)
+                            let h4 = cos(theta * 1.0 + time * 0.55) * (Double(level) * (9.0 + Double(k) * 3.5))
 
                             let displacement = CGFloat(h1 + h2 + h3 + h4)
                             let r = ringBaseR + displacement
@@ -694,49 +703,18 @@ private struct CircularParticleWaveVisualizerView: View {
                         }
                         wavePath.closeSubpath()
 
-                        // Layered Monochromatic Silver/White Palette
-                        let alpha = Double(0.24 + kFrac * 0.58) * (0.65 + Double(level) * 0.35)
-                        let brightness = 0.80 + 0.20 * Double(kFrac)
+                        // Layered Monochromatic Silver/White Palette with Thicker, More Prominent Lines
+                        let alpha = Double(0.32 + kFrac * 0.58) * (0.70 + Double(level) * 0.30)
+                        let brightness = 0.82 + 0.18 * Double(kFrac)
                         let ringColor = Color(white: brightness, opacity: min(1.0, alpha))
-                        let lineWidth: CGFloat = (1.2 + kFrac * 1.4) + level * 1.6
+                        
+                        // Thicker line width for clear, bold visibility
+                        let lineWidth: CGFloat = (2.4 + kFrac * 2.0) + level * 2.6
 
                         context.stroke(
                             wavePath,
                             with: .color(ringColor),
                             style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
-                        )
-                    }
-
-                    // ════════════════════════════════════════════════════════════
-                    // B. 96 LIVING ACOUSTIC CELESTIAL PARTICLES
-                    // ════════════════════════════════════════════════════════════
-                    let numParticles = 96
-                    for i in 0..<numParticles {
-                        let goldenAngle = Double(i) * 2.399963229728653 // Fibonacci golden distribution
-                        let shell = sqrt(Double(i + 1) / Double(numParticles)) // Uniform organic disc density
-                        let orbitSpeed = (0.35 + Double(i % 6) * 0.12) * (i % 2 == 0 ? 1.0 : -1.0)
-                        let currentAngle = goldenAngle + time * orbitSpeed * (0.45 + Double(level) * 1.6)
-
-                        // Particle frequency sensitivity
-                        let bandIdx = i % 16
-                        let bandEnergy = CGFloat(freqs[bandIdx])
-
-                        // Dynamic audio bursts: particles expand outward with frequency hits & transients
-                        let burst = bandEnergy * (36.0 + level * 24.0) + bass * 14.0 * CGFloat(cos(currentAngle))
-                        let pRadius = baseRadius * (0.36 + CGFloat(shell) * 0.68) + burst
-
-                        let pX = cX + pRadius * CGFloat(cos(currentAngle))
-                        let pY = cY + pRadius * CGFloat(sin(currentAngle))
-
-                        let pSize: CGFloat = 1.0 + CGFloat(shell) * 2.0 + bandEnergy * 3.2 + level * 1.6
-                        let pAlpha = 0.25 + Double(bandEnergy) * 0.65 + Double(level) * 0.30
-
-                        let particleRect = CGRect(x: pX - pSize, y: pY - pSize, width: pSize * 2, height: pSize * 2)
-                        
-                        // Render glowing starlight particle
-                        context.fill(
-                            Path(ellipseIn: particleRect),
-                            with: .color(Color.white.opacity(min(1.0, pAlpha)))
                         )
                     }
                 }
