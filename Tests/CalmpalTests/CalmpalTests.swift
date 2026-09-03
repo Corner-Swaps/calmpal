@@ -154,6 +154,7 @@ final class CalmpalTests: XCTestCase {
             XCTAssertFalse(banner.id.isEmpty)
             XCTAssertFalse(banner.title.isEmpty)
             XCTAssertFalse(banner.imageName.isEmpty)
+            XCTAssertFalse(banner.thumbnailImageName.isEmpty)
             let matched = bannerFor(profile: banner.profile)
             XCTAssertEqual(matched.profile, banner.profile)
         }

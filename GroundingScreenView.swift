@@ -25,6 +25,10 @@ public struct SoundBannerTheme: Identifiable, Equatable {
     public let imageName: String
     public let previewAlignment: Alignment
 
+    public var thumbnailImageName: String {
+        "\(imageName)-thumb"
+    }
+
     public init(
         id: String,
         profile: SoundProfile,
@@ -159,7 +163,7 @@ public struct GroundingScreenView: View {
                                 }
                             }) {
                                 Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                    .font(.system(size: 20, weight: .medium))
+                                    .font(.system(size: 18, weight: .medium))
                                     .foregroundColor(isZenMode ? Color(white: 0.55).opacity(0.85) : Color.white.opacity(0.85))
                                     .shadow(color: Color.black.opacity(isZenMode ? 0.40 : 0.85), radius: 6, x: 0, y: 2)
                                     .frame(width: 44, height: 44)
@@ -877,8 +881,8 @@ private struct RelaxingSoundsFullView: View {
                             onSelectSound(banner.profile)
                         }) {
                             ZStack(alignment: .bottom) {
-                                // 1. Sound Scenic Background Picture
-                                Image(banner.imageName)
+                                // 1. Sound Scenic Background Picture (Ultra-fast pre-cached thumbnail)
+                                Image(banner.thumbnailImageName)
                                     .resizable()
                                     .scaledToFill()
                                     .frame(width: screenWidth, height: cardHeight, alignment: banner.previewAlignment)
