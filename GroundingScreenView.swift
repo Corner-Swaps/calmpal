@@ -66,7 +66,23 @@ public let allSoundBanners: [SoundBannerTheme] = [
     SoundBannerTheme(id: "rain-canopy", profile: .rainCanopy, title: "Rain on Leaves", imageName: "rain-canopy"),
     SoundBannerTheme(id: "deep-underwater", profile: .deepUnderwater, title: "Deep Underwater", imageName: "deep-underwater"),
     SoundBannerTheme(id: "tropical-jungle", profile: .tropicalJungle, title: "Tropical Jungle", imageName: "tropical-jungle"),
-    SoundBannerTheme(id: "night-village", profile: .nightVillage, title: "Quiet Mountain Village", imageName: "night-village")
+    SoundBannerTheme(id: "night-village", profile: .nightVillage, title: "Quiet Mountain Village", imageName: "night-village"),
+    SoundBannerTheme(id: "forest-birds", profile: .forestBirdsong, title: "Morning Birds", imageName: "forest-birds"),
+    SoundBannerTheme(id: "water-droplets", profile: .waterDroplets, title: "Water Droplets", imageName: "water-droplets"),
+    SoundBannerTheme(id: "walk-leaves", profile: .walkOnLeaves, title: "Walk on Leaves", imageName: "walk-leaves"),
+    SoundBannerTheme(id: "warm-cafe", profile: .warmCafe, title: "Warm Coffee House", imageName: "warm-cafe"),
+
+    // ── 10 Additional Serene Soundscapes (Placed at the bottom) ───────────────
+    SoundBannerTheme(id: "singing-bowl", profile: .singingBowl, title: "Tibetan Singing Bowl", imageName: "singing-bowl"),
+    SoundBannerTheme(id: "wind-chimes", profile: .windChimes, title: "Wind Chimes", imageName: "wind-chimes"),
+    SoundBannerTheme(id: "scenic-train", profile: .scenicTrain, title: "Scenic Train", imageName: "scenic-train"),
+    SoundBannerTheme(id: "rain-on-tent", profile: .rainOnTent, title: "Rain on Tent", imageName: "rain-on-tent"),
+    SoundBannerTheme(id: "snowy-forest", profile: .snowyForest, title: "Snowy Forest Walk", imageName: "snowy-forest"),
+    SoundBannerTheme(id: "ocean-whale", profile: .oceanWhale, title: "Whale Song", imageName: "ocean-whale"),
+    SoundBannerTheme(id: "antique-clock", profile: .antiqueClock, title: "Antique Clock", imageName: "antique-clock"),
+    SoundBannerTheme(id: "night-owl", profile: .nightOwl, title: "Night Owl", imageName: "night-owl"),
+    SoundBannerTheme(id: "rain-on-car", profile: .rainOnCar, title: "Rain on Car Window", imageName: "rain-on-car"),
+    SoundBannerTheme(id: "gentle-sailboat", profile: .gentleSailboat, title: "Gentle Sailboat", imageName: "gentle-sailboat")
 ]
 
 public func bannerFor(profile: SoundProfile) -> SoundBannerTheme {
@@ -150,8 +166,8 @@ public struct GroundingScreenView: View {
                             }) {
                                 Image(systemName: isZenMode ? "eye" : "eye.slash")
                                     .font(.system(size: 20, weight: .medium))
-                                    .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.65))
-                                    .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                    .foregroundColor(isZenMode ? Color(white: 0.55).opacity(0.85) : Color.white.opacity(0.85))
+                                    .shadow(color: Color.black.opacity(isZenMode ? 0.40 : 0.85), radius: 6, x: 0, y: 2)
                                     .frame(width: 44, height: 44)
                                     .contentShape(Rectangle())
                             }
