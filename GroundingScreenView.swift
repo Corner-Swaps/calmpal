@@ -52,17 +52,15 @@ public let allSoundBanners: [SoundBannerTheme] = [
     SoundBannerTheme(id: "gentle-rain", profile: .gentleRain, title: "Gentle Rain", imageName: "gentle-rain"),
     SoundBannerTheme(id: "ocean-waves", profile: .oceanWaves, title: "Peaceful Ocean", imageName: "ocean-waves"),
     SoundBannerTheme(id: "wind-in-trees", profile: .windInTrees, title: "Wind in Trees", imageName: "gentle-wind"),
-    SoundBannerTheme(id: "rain-window", profile: .rainOnWindow, title: "Rain on Window", imageName: "rain-window"),
     SoundBannerTheme(id: "waterfall", profile: .waterfall, title: "Forest Waterfall", imageName: "waterfall"),
-
     SoundBannerTheme(id: "flowing-river", profile: .forestRiver, title: "Flowing River", imageName: "flowing-river"),
+
     SoundBannerTheme(id: "evening-frogs", profile: .eveningFrogs, title: "Evening Frogs", imageName: "evening-frogs"),
     SoundBannerTheme(id: "cat-purr", profile: .catPurring, title: "Cat Purring", imageName: "cat-purr"),
-    SoundBannerTheme(id: "heavy-rain", profile: .heavyRain, title: "Heavy Downpour", imageName: "heavy-rain"),
     SoundBannerTheme(id: "temple-sanctuary", profile: .templeSanctuary, title: "Sacred Temple", imageName: "temple-sanctuary"),
-
     SoundBannerTheme(id: "coastal-seagulls", profile: .coastalSeagulls, title: "Coastal Seagulls", imageName: "coastal-seagulls", previewAlignment: .bottom),
     SoundBannerTheme(id: "howling-wind", profile: .howlingWind, title: "Howling Winter Gale", imageName: "howling-wind", previewAlignment: .bottom),
+
     SoundBannerTheme(id: "rain-canopy", profile: .rainCanopy, title: "Rain on Leaves", imageName: "rain-canopy"),
     SoundBannerTheme(id: "deep-underwater", profile: .deepUnderwater, title: "Deep Underwater", imageName: "deep-underwater"),
     SoundBannerTheme(id: "tropical-jungle", profile: .tropicalJungle, title: "Tropical Jungle", imageName: "tropical-jungle"),
@@ -71,17 +69,14 @@ public let allSoundBanners: [SoundBannerTheme] = [
     SoundBannerTheme(id: "walk-leaves", profile: .walkOnLeaves, title: "Walk on Leaves", imageName: "walk-leaves"),
     SoundBannerTheme(id: "warm-cafe", profile: .warmCafe, title: "Warm Coffee House", imageName: "warm-cafe"),
 
-    // ── 10 Additional Serene Soundscapes (Placed at the bottom) ───────────────
+    // ── Additional Serene Soundscapes (Placed at the bottom) ──────────────────
     SoundBannerTheme(id: "singing-bowl", profile: .singingBowl, title: "Tibetan Singing Bowl", imageName: "singing-bowl"),
     SoundBannerTheme(id: "wind-chimes", profile: .windChimes, title: "Wind Chimes", imageName: "wind-chimes"),
     SoundBannerTheme(id: "scenic-train", profile: .scenicTrain, title: "Scenic Train", imageName: "scenic-train"),
     SoundBannerTheme(id: "rain-on-tent", profile: .rainOnTent, title: "Rain on Tent", imageName: "rain-on-tent"),
-    SoundBannerTheme(id: "snowy-forest", profile: .snowyForest, title: "Snowy Forest Walk", imageName: "snowy-forest"),
     SoundBannerTheme(id: "ocean-whale", profile: .oceanWhale, title: "Whale Song", imageName: "ocean-whale"),
-    SoundBannerTheme(id: "night-owl", profile: .nightOwl, title: "Night Owl", imageName: "night-owl"),
     SoundBannerTheme(id: "rain-on-car", profile: .rainOnCar, title: "Rain on Car Window", imageName: "rain-on-car"),
-    SoundBannerTheme(id: "gentle-sailboat", profile: .gentleSailboat, title: "Gentle Sailboat", imageName: "gentle-sailboat"),
-    SoundBannerTheme(id: "rain-on-umbrella", profile: .rainOnUmbrella, title: "Rain on Umbrella", imageName: "rain-on-umbrella")
+    SoundBannerTheme(id: "gentle-sailboat", profile: .gentleSailboat, title: "Gentle Sailboat", imageName: "gentle-sailboat")
 ]
 
 public func bannerFor(profile: SoundProfile) -> SoundBannerTheme {
