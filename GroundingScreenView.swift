@@ -567,7 +567,7 @@ private struct FullCircularTimerView: View {
     }
 }
 
-// MARK: ── 2. SiriWave Multi-Harmonic Smooth Fluid Wave Visualizer ─────────
+// MARK: ── 2. Radial Acoustic Spectrum Equalizer & Liquid Halo Visualizer ────
 
 private struct CircularParticleWaveVisualizerView: View {
     let isPlaying: Bool
@@ -576,8 +576,6 @@ private struct CircularParticleWaveVisualizerView: View {
     @State private var smoothedBass: CGFloat = 0.0
     @State private var smoothedMid: CGFloat = 0.0
     @State private var smoothedTreble: CGFloat = 0.0
-    @State private var accumulatedPhase: Double = 0.0
-    @State private var lastFrameTime: TimeInterval = 0.0
 
     var body: some View {
         if isPlaying {
@@ -597,101 +595,121 @@ private struct CircularParticleWaveVisualizerView: View {
         let rawBass = isPlaying ? CGFloat(audio.audioBass) : 0.0
         let rawMid = isPlaying ? CGFloat(audio.audioMid) : 0.0
         let rawTreble = isPlaying ? CGFloat(audio.audioTreble) : 0.0
+        let freqs = isPlaying ? audio.audioFrequencies : Array(repeating: Float(0.0), count: 16)
 
         // Continuous low-pass temporal damping (eliminates all jitter & buffer jumps)
-        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.22
-        let bass = smoothedBass + (rawBass - smoothedBass) * 0.20
-        let mid = smoothedMid + (rawMid - smoothedMid) * 0.22
-        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.24
-
-        // Audio-driven phase velocity: moves fast when sound energy increases, calm when quiet
-        let dt = lastFrameTime > 0 ? min(0.08, time - lastFrameTime) : 0.016
-        let motionSpeed = isPlaying ? Double(0.25 + level * 3.20 + bass * 1.80) : 0.10
-        let currentPhase = accumulatedPhase + dt * motionSpeed
+        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.24
+        let bass = smoothedBass + (rawBass - smoothedBass) * 0.22
+        let mid = smoothedMid + (rawMid - smoothedMid) * 0.24
+        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.26
 
         // Synchronize tactile vibrations using sound-specific sensory profiles
         let _ = updateSoundHaptics(time: time, level: level, bass: bass, mid: mid, treble: treble)
 
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
-            // Increased radius for a larger, more prominent presence
+            // Prominent, expansive center stage
             let baseRadius: CGFloat = size * 0.44
 
             ZStack {
                 // ── 1. Core Luminous Breathing Glow (Reacts directly to volume & bass) ──
-                let glowScale = 1.0 + Double(bass) * 0.32 + Double(level) * 0.26
+                let glowScale = 1.0 + Double(bass) * 0.35 + Double(level) * 0.28
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.white.opacity(0.14 + Double(level) * 0.30 + Double(bass) * 0.18),
-                                Color(white: 0.72).opacity(0.05 + Double(level) * 0.14),
+                                Color.white.opacity(0.16 + Double(level) * 0.32 + Double(bass) * 0.20),
+                                Color(white: 0.72).opacity(0.06 + Double(level) * 0.16),
                                 Color.clear
                             ],
                             center: .center,
-                            startRadius: 8,
-                            endRadius: baseRadius * 1.25 * CGFloat(glowScale)
+                            startRadius: 6,
+                            endRadius: baseRadius * 1.30 * CGFloat(glowScale)
                         )
                     )
-                    .frame(width: baseRadius * 2.6 * CGFloat(glowScale), height: baseRadius * 2.6 * CGFloat(glowScale))
+                    .frame(width: baseRadius * 2.7 * CGFloat(glowScale), height: baseRadius * 2.7 * CGFloat(glowScale))
 
-                // ── 2. Canvas for 4 Concentric Audio-Synchronized Fluid Waves ──
+                // ── 2. Canvas for Radial Acoustic Equalizer Rays & Inner Liquid Halo ──
                 Canvas { context, canvasSize in
                     let cX = canvasSize.width / 2
                     let cY = canvasSize.height / 2
 
-                    let numRings = 4
-                    let steps = 120 // Ultra-high resolution smooth contour
+                    // ── A. Inner Fluid Halo Rings ──
+                    let innerR1 = baseRadius * 0.54 + bass * 14.0 + level * 8.0
+                    let innerR2 = baseRadius * 0.72 + level * 10.0
 
-                    for k in 0..<numRings {
-                        let kFraction = CGFloat(k) / CGFloat(numRings - 1)
-                        // Base ring radius dynamically expands with audio volume
-                        let ringBaseR = baseRadius * (0.58 + kFraction * 0.38) + level * (18.0 + CGFloat(k) * 8.0)
+                    var halo1 = Path()
+                    var halo2 = Path()
+                    let haloSteps = 90
+
+                    for s in 0...haloSteps {
+                        let theta = (Double(s) / Double(haloSteps)) * 2.0 * .pi
+                        let harmonic = sin(theta * 2.0 + time * 0.8) * Double(bass) * 4.0
                         
-                        let dir: Double = (k % 2 == 0) ? 1.0 : -1.0
+                        let r1 = innerR1 + CGFloat(harmonic)
+                        let p1X = cX + r1 * CGFloat(cos(theta))
+                        let p1Y = cY + r1 * CGFloat(sin(theta))
+                        
+                        let p2X = cX + innerR2 * CGFloat(cos(theta))
+                        let p2Y = cY + innerR2 * CGFloat(sin(theta))
 
-                        var wavePath = Path()
-
-                        for s in 0...steps {
-                            let theta = (Double(s) / Double(steps)) * 2.0 * .pi
-
-                            // 1. Deep Bass Swell: 2-lobe dipole harmonic directly driven by bass energy
-                            let h1 = sin(2.0 * theta + currentPhase * 1.4 * dir) * (Double(bass) * (26.0 + Double(k) * 10.0))
-                            
-                            // 2. Mid Frequencies: 3-lobe organic ripple directly driven by mid energy
-                            let h2 = cos(3.0 * theta - currentPhase * 1.8 * dir) * (Double(mid) * (20.0 + Double(k) * 8.0))
-                            
-                            // 3. Treble / Chirp / Rain Drops: 4-lobe fine ripple directly driven by high frequencies
-                            let h3 = sin(4.0 * theta + currentPhase * 2.4 * dir) * (Double(treble) * (14.0 + Double(k) * 6.0))
-                            
-                            // Subtle resting breath pulse
-                            let breath = sin(currentPhase * 0.75 + Double(k) * 0.50) * (1.2 + Double(level) * 3.5)
-
-                            let radialDisplacement = CGFloat(h1 + h2 + h3 + breath)
-                            let r = ringBaseR + radialDisplacement
-
-                            let pX = cX + r * CGFloat(cos(theta))
-                            let pY = cY + r * CGFloat(sin(theta))
-
-                            if s == 0 {
-                                wavePath.move(to: CGPoint(x: pX, y: pY))
-                            } else {
-                                wavePath.addLine(to: CGPoint(x: pX, y: pY))
-                            }
+                        if s == 0 {
+                            halo1.move(to: CGPoint(x: p1X, y: p1Y))
+                            halo2.move(to: CGPoint(x: p2X, y: p2Y))
+                        } else {
+                            halo1.addLine(to: CGPoint(x: p1X, y: p1Y))
+                            halo2.addLine(to: CGPoint(x: p2X, y: p2Y))
                         }
-                        wavePath.closeSubpath()
+                    }
+                    halo1.closeSubpath()
+                    halo2.closeSubpath()
 
-                        // Silver & Pure White Monochrome Palette with Layered Depth
-                        let alpha = Double(0.30 + kFraction * 0.58) * (0.65 + Double(level) * 0.35)
-                        let brightness = 0.80 + 0.20 * Double(kFraction)
-                        let ringColor = Color(white: brightness, opacity: min(1.0, alpha))
+                    context.stroke(
+                        halo1,
+                        with: .color(Color(white: 0.85, opacity: 0.30 + Double(bass) * 0.35 + Double(level) * 0.20)),
+                        style: StrokeStyle(lineWidth: 1.2 + bass * 1.5, lineCap: .round)
+                    )
+                    context.stroke(
+                        halo2,
+                        with: .color(Color.white.opacity(0.40 + Double(level) * 0.40)),
+                        style: StrokeStyle(lineWidth: 1.4 + level * 1.8, lineCap: .round)
+                    )
 
-                        let strokeWidth: CGFloat = (1.4 + kFraction * 1.2) + level * 1.8
+                    // ── B. 72 Radial Acoustic Equalizer Beams (Direct 1-to-1 Audio Reaction) ──
+                    let numBeams = 72
+                    for i in 0..<numBeams {
+                        let frac = Double(i) / Double(numBeams)
+                        let theta = frac * 2.0 * .pi
+
+                        // Symmetrically map angle to the 16 Accelerate FFT frequency bands
+                        let bandFrac = abs(sin(theta)) * 15.0
+                        let b0 = Int(bandFrac)
+                        let b1 = min(15, b0 + 1)
+                        let interp = Float(bandFrac - Double(b0))
+                        let bandVal = CGFloat(freqs[b0] * (1.0 - interp) + freqs[b1] * interp)
+
+                        // Beam length extends outward in direct lockstep with sound energy
+                        let rStart = innerR2 + 2.0
+                        let dynamicLength = 3.0 + bandVal * (42.0 + level * 28.0) + (isPlaying ? level * 8.0 : 0.0)
+                        let rEnd = rStart + dynamicLength
+
+                        let cosT = CGFloat(cos(theta))
+                        let sinT = CGFloat(sin(theta))
+
+                        let pStart = CGPoint(x: cX + rStart * cosT, y: cY + rStart * sinT)
+                        let pEnd = CGPoint(x: cX + rEnd * cosT, y: cY + rEnd * sinT)
+
+                        var beamPath = Path()
+                        beamPath.move(to: pStart)
+                        beamPath.addLine(to: pEnd)
+
+                        let beamAlpha = 0.32 + Double(bandVal) * 0.60 + Double(level) * 0.25
+                        let beamWidth: CGFloat = 2.0 + bandVal * 1.4 + level * 0.8
 
                         context.stroke(
-                            wavePath,
-                            with: .color(ringColor),
-                            style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round, lineJoin: .round)
+                            beamPath,
+                            with: .color(Color.white.opacity(min(1.0, beamAlpha))),
+                            style: StrokeStyle(lineWidth: beamWidth, lineCap: .round)
                         )
                     }
                 }
