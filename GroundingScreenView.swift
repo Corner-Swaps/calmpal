@@ -567,10 +567,15 @@ private struct FullCircularTimerView: View {
     }
 }
 
-// MARK: ── 2. Circular Audio-Reactive Fluid Wave Visualizer ──────────────────
+// MARK: ── 2. SiriWave Multi-Harmonic Smooth Fluid Wave Visualizer ─────────
 
 private struct CircularParticleWaveVisualizerView: View {
     let isPlaying: Bool
+
+    @State private var smoothedLevel: CGFloat = 0.0
+    @State private var smoothedBass: CGFloat = 0.0
+    @State private var smoothedMid: CGFloat = 0.0
+    @State private var smoothedTreble: CGFloat = 0.0
 
     var body: some View {
         if isPlaying {
@@ -586,28 +591,33 @@ private struct CircularParticleWaveVisualizerView: View {
     private func visualizerBody(at now: Date) -> some View {
         let time = now.timeIntervalSinceReferenceDate
         let audio = AudioManager.shared
-        let level = isPlaying ? CGFloat(audio.audioLevel) : 0.0
-        let bass = isPlaying ? CGFloat(audio.audioBass) : 0.0
-        let mid = isPlaying ? CGFloat(audio.audioMid) : 0.0
-        let treble = isPlaying ? CGFloat(audio.audioTreble) : 0.0
-        let freqs = isPlaying ? audio.audioFrequencies : Array(repeating: Float(0.0), count: 16)
+        let rawLevel = isPlaying ? CGFloat(audio.audioLevel) : 0.0
+        let rawBass = isPlaying ? CGFloat(audio.audioBass) : 0.0
+        let rawMid = isPlaying ? CGFloat(audio.audioMid) : 0.0
+        let rawTreble = isPlaying ? CGFloat(audio.audioTreble) : 0.0
 
-        // Real-time tactile vibration driven smoothly by the sound
-        let _ = updateHaptics(level: level, bass: bass, mid: mid, treble: treble)
+        // Continuous low-pass temporal damping (eliminates all jitter & buffer jumps)
+        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.18
+        let bass = smoothedBass + (rawBass - smoothedBass) * 0.15
+        let mid = smoothedMid + (rawMid - smoothedMid) * 0.18
+        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.20
+
+        // Synchronize tactile vibrations using sound-specific sensory profiles
+        let _ = updateSoundHaptics(time: time, level: level, bass: bass, mid: mid, treble: treble)
 
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
             let baseRadius: CGFloat = size * 0.38
 
             ZStack {
-                // ── 1. Core Luminous Breathing Glow (Reacts softly to Bass and Volume) ──
-                let glowScale = 1.0 + Double(bass) * 0.25 + Double(level) * 0.20
+                // ── 1. Core Luminous Breathing Glow (Organic, calm pulsation) ──
+                let glowScale = 1.0 + Double(bass) * 0.28 + Double(level) * 0.22
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.white.opacity(0.12 + Double(level) * 0.28 + Double(bass) * 0.15),
-                                Color(white: 0.70).opacity(0.05 + Double(level) * 0.12),
+                                Color.white.opacity(0.14 + Double(level) * 0.28 + Double(bass) * 0.16),
+                                Color(white: 0.72).opacity(0.05 + Double(level) * 0.12),
                                 Color.clear
                             ],
                             center: .center,
@@ -617,38 +627,42 @@ private struct CircularParticleWaveVisualizerView: View {
                     )
                     .frame(width: baseRadius * 2.8 * CGFloat(glowScale), height: baseRadius * 2.8 * CGFloat(glowScale))
 
-                // ── 2. Canvas for 4 Concentric Silky Fluid Wave Rings (Without Dots) ──
+                // ── 2. Canvas for 4 Concentric Multi-Harmonic Fluid Waves (Zero Discontinuities) ──
                 Canvas { context, canvasSize in
                     let cX = canvasSize.width / 2
                     let cY = canvasSize.height / 2
 
                     let numRings = 4
-                    let steps = 90
+                    let steps = 120 // Ultra-high resolution 120-point smooth contour
 
                     for k in 0..<numRings {
-                        let ringFraction = CGFloat(k) / CGFloat(numRings - 1)
-                        let ringBaseR = baseRadius * (0.66 + ringFraction * 0.38)
-                        let speedMult = 1.4 + Double(k) * 0.30
-                        let direction: Double = (k % 2 == 0) ? 1.0 : -1.0
+                        let kFraction = CGFloat(k) / CGFloat(numRings - 1)
+                        let ringBaseR = baseRadius * (0.65 + kFraction * 0.38)
+                        
+                        // Harmonically tuned phase speeds for organic liquid motion
+                        let speed1 = 1.15 + Double(k) * 0.28
+                        let speed2 = 1.55 - Double(k) * 0.22
+                        let speed3 = 0.85 + Double(k) * 0.32
+                        let dir: Double = (k % 2 == 0) ? 1.0 : -1.0
 
                         var wavePath = Path()
 
                         for s in 0...steps {
                             let theta = (Double(s) / Double(steps)) * 2.0 * .pi
 
-                            // Smooth harmonic fluid flow
-                            let w1 = sin(theta * 3.0 + time * speedMult * direction) * (3.2 + Double(k) * 1.6)
-                            let w2 = cos(theta * 5.0 - time * 1.8 * direction) * (2.0 + Double(k) * 1.0)
+                            // Harmonic 1: 2-lobe dipole harmonic (deep resonance & bass)
+                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (3.6 + Double(k) * 1.6 + Double(bass) * (16.0 + Double(k) * 6.0))
                             
-                            // Audio-reactive fluid modulation (Noise interaction)
-                            let audioWarp = sin(theta * (6.0 + Double(k) * 2.0) + time * 2.2 * direction) * (Double(level) * (14.0 + Double(k) * 6.0))
+                            // Harmonic 2: 3-lobe organic ripple (mids & vocal/nature timbre)
+                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (2.2 + Double(k) * 1.1 + Double(mid) * (12.0 + Double(k) * 5.0))
                             
-                            // Interpolated frequency band energy & bass swelling
-                            let bandIdx = Int((theta / (2.0 * .pi)) * 15.0) % 16
-                            let bandEnergy = CGFloat(freqs[bandIdx]) * (16.0 + CGFloat(k) * 6.0)
-                            let bassPulse = CGFloat(bass) * (10.0 + CGFloat(k) * 5.0) * (0.6 + 0.4 * CGFloat(cos(theta)))
+                            // Harmonic 3: 4-lobe fine fluid wave (high frequencies & air)
+                            let h3 = sin(4.0 * theta + time * speed3 * dir) * (1.2 + Double(treble) * (8.0 + Double(k) * 3.5))
+                            
+                            // Subtle rhythmic breath swell
+                            let breath = sin(time * 0.85 + Double(k) * 0.55) * (1.6 + Double(level) * 4.5)
 
-                            let radialDisplacement = CGFloat(w1 + w2) + CGFloat(audioWarp) + bandEnergy + bassPulse
+                            let radialDisplacement = CGFloat(h1 + h2 + h3 + breath)
                             let r = ringBaseR + radialDisplacement
 
                             let pX = cX + r * CGFloat(cos(theta))
@@ -662,12 +676,12 @@ private struct CircularParticleWaveVisualizerView: View {
                         }
                         wavePath.closeSubpath()
 
-                        // Monochrome Palette: Silvery white to pure white with organic alpha
-                        let alpha = Double(0.28 + ringFraction * 0.60) * (0.60 + Double(level) * 0.40)
-                        let brightness = 0.78 + 0.22 * Double(ringFraction)
+                        // Silver & Pure White Monochrome Palette with Layered Depth
+                        let alpha = Double(0.28 + kFraction * 0.60) * (0.65 + Double(level) * 0.35)
+                        let brightness = 0.80 + 0.20 * Double(kFraction)
                         let ringColor = Color(white: brightness, opacity: min(1.0, alpha))
 
-                        let strokeWidth: CGFloat = (1.3 + ringFraction * 1.2) + level * 1.8
+                        let strokeWidth: CGFloat = (1.4 + kFraction * 1.2) + level * 1.6
 
                         context.stroke(
                             wavePath,
@@ -697,13 +711,17 @@ private struct CircularParticleWaveVisualizerView: View {
         }
     }
 
-    private func updateHaptics(level: CGFloat, bass: CGFloat, mid: CGFloat, treble: CGFloat) {
+    private func updateSoundHaptics(time: TimeInterval, level: CGFloat, bass: CGFloat, mid: CGFloat, treble: CGFloat) {
         if isPlaying {
-            // Enhanced gain mapping for distinct, tangible physical vibration in hand
-            let dynamicIntensity = Float(min(1.0, max(0.20, Double(level) * 1.35 + Double(bass) * 0.75)))
-            let dynamicSharpness = Float(min(1.0, max(0.15, 0.20 + Double(treble) * 0.65 + Double(mid) * 0.35)))
-            HapticManager.shared.targetIntensity = dynamicIntensity
-            HapticManager.shared.targetSharpness = dynamicSharpness
+            let profile = AudioManager.shared.activeProfile.hapticProfile
+            let breathingMod = Float(0.5 + 0.5 * sin(time * profile.pulseFrequency * 2.0 * .pi))
+            
+            // Tailored tactile symphony for the active soundscape
+            let targetIntensity = profile.baseIntensity + Float(level) * profile.dynamicGain + Float(bass) * 0.32 * breathingMod
+            let targetSharpness = profile.baseSharpness + Float(treble) * 0.28 + Float(mid) * 0.12
+            
+            HapticManager.shared.targetIntensity = min(1.0, max(0.20, targetIntensity))
+            HapticManager.shared.targetSharpness = min(1.0, max(0.10, targetSharpness))
         } else {
             HapticManager.shared.targetIntensity = 0.0
             HapticManager.shared.targetSharpness = 0.0

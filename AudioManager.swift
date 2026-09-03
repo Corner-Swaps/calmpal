@@ -117,6 +117,62 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
 
     public var frequencyValue: Double? { nil }
 
+    // MARK: – Sound-Specific Sensory Haptic Profiles
+    public var hapticProfile: SoundHapticProfile {
+        switch self {
+        case .nightCrickets:
+            return SoundHapticProfile(baseIntensity: 0.36, baseSharpness: 0.78, dynamicGain: 0.85, pulseFrequency: 0.35)
+        case .duneBreeze:
+            return SoundHapticProfile(baseIntensity: 0.38, baseSharpness: 0.22, dynamicGain: 0.75, pulseFrequency: 0.20)
+        case .cozyCampfire:
+            return SoundHapticProfile(baseIntensity: 0.44, baseSharpness: 0.52, dynamicGain: 0.90, pulseFrequency: 0.30)
+        case .quietLibrary:
+            return SoundHapticProfile(baseIntensity: 0.28, baseSharpness: 0.16, dynamicGain: 0.50, pulseFrequency: 0.15)
+        case .rollingThunder:
+            return SoundHapticProfile(baseIntensity: 0.65, baseSharpness: 0.15, dynamicGain: 1.15, pulseFrequency: 0.18)
+        case .oceanWaves:
+            return SoundHapticProfile(baseIntensity: 0.52, baseSharpness: 0.22, dynamicGain: 0.95, pulseFrequency: 0.18)
+        case .gentleRain:
+            return SoundHapticProfile(baseIntensity: 0.35, baseSharpness: 0.54, dynamicGain: 0.80, pulseFrequency: 0.25)
+        case .rainOnWindow:
+            return SoundHapticProfile(baseIntensity: 0.38, baseSharpness: 0.60, dynamicGain: 0.85, pulseFrequency: 0.28)
+        case .waterfall:
+            return SoundHapticProfile(baseIntensity: 0.50, baseSharpness: 0.35, dynamicGain: 0.90, pulseFrequency: 0.22)
+        case .forestRiver:
+            return SoundHapticProfile(baseIntensity: 0.42, baseSharpness: 0.38, dynamicGain: 0.80, pulseFrequency: 0.25)
+        case .catPurring:
+            return SoundHapticProfile(baseIntensity: 0.58, baseSharpness: 0.30, dynamicGain: 0.75, pulseFrequency: 24.0)
+        case .eveningFrogs:
+            return SoundHapticProfile(baseIntensity: 0.40, baseSharpness: 0.48, dynamicGain: 0.80, pulseFrequency: 0.32)
+        case .heavyRain:
+            return SoundHapticProfile(baseIntensity: 0.55, baseSharpness: 0.42, dynamicGain: 0.95, pulseFrequency: 0.22)
+        case .templeSanctuary:
+            return SoundHapticProfile(baseIntensity: 0.35, baseSharpness: 0.18, dynamicGain: 0.60, pulseFrequency: 0.16)
+        case .coastalSeagulls:
+            return SoundHapticProfile(baseIntensity: 0.45, baseSharpness: 0.48, dynamicGain: 0.85, pulseFrequency: 0.20)
+        case .howlingWind:
+            return SoundHapticProfile(baseIntensity: 0.48, baseSharpness: 0.28, dynamicGain: 0.90, pulseFrequency: 0.22)
+        case .rainCanopy:
+            return SoundHapticProfile(baseIntensity: 0.40, baseSharpness: 0.58, dynamicGain: 0.82, pulseFrequency: 0.25)
+        case .deepUnderwater:
+            return SoundHapticProfile(baseIntensity: 0.60, baseSharpness: 0.12, dynamicGain: 0.95, pulseFrequency: 0.15)
+        case .tropicalJungle:
+            return SoundHapticProfile(baseIntensity: 0.44, baseSharpness: 0.62, dynamicGain: 0.85, pulseFrequency: 0.30)
+        case .nightVillage:
+            return SoundHapticProfile(baseIntensity: 0.30, baseSharpness: 0.22, dynamicGain: 0.60, pulseFrequency: 0.18)
+        case .forestBirdsong:
+            return SoundHapticProfile(baseIntensity: 0.38, baseSharpness: 0.72, dynamicGain: 0.80, pulseFrequency: 0.35)
+        case .windInTrees:
+            return SoundHapticProfile(baseIntensity: 0.38, baseSharpness: 0.32, dynamicGain: 0.80, pulseFrequency: 0.22)
+        case .warmCafe:
+            return SoundHapticProfile(baseIntensity: 0.35, baseSharpness: 0.38, dynamicGain: 0.70, pulseFrequency: 0.25)
+        case .walkOnLeaves:
+            return SoundHapticProfile(baseIntensity: 0.42, baseSharpness: 0.68, dynamicGain: 0.85, pulseFrequency: 0.30)
+        case .waterDroplets:
+            return SoundHapticProfile(baseIntensity: 0.38, baseSharpness: 0.75, dynamicGain: 0.85, pulseFrequency: 0.40)
+        }
+    }
+
     public var shortName: String {
         switch self {
         case .gentleRain, .rainOnWindow, .rainCanopy, .heavyRain, .rollingThunder:
@@ -130,6 +186,20 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
         case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater:
             return "Ambient"
         }
+    }
+}
+
+public struct SoundHapticProfile: Sendable {
+    public let baseIntensity: Float
+    public let baseSharpness: Float
+    public let dynamicGain: Float
+    public let pulseFrequency: Double
+    
+    public init(baseIntensity: Float, baseSharpness: Float, dynamicGain: Float, pulseFrequency: Double = 0.25) {
+        self.baseIntensity = baseIntensity
+        self.baseSharpness = baseSharpness
+        self.dynamicGain = dynamicGain
+        self.pulseFrequency = pulseFrequency
     }
 }
 
