@@ -567,7 +567,7 @@ private struct FullCircularTimerView: View {
     }
 }
 
-// MARK: ── 2. Radial Acoustic Spectrum Equalizer & Liquid Halo Visualizer ────
+// MARK: ── 2. Organic Celestial Multi-Wave & Particle Symphony Visualizer ──
 
 private struct CircularParticleWaveVisualizerView: View {
     let isPlaying: Bool
@@ -598,118 +598,124 @@ private struct CircularParticleWaveVisualizerView: View {
         let freqs = isPlaying ? audio.audioFrequencies : Array(repeating: Float(0.0), count: 16)
 
         // Continuous low-pass temporal damping (eliminates all jitter & buffer jumps)
-        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.24
-        let bass = smoothedBass + (rawBass - smoothedBass) * 0.22
-        let mid = smoothedMid + (rawMid - smoothedMid) * 0.24
-        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.26
+        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.22
+        let bass = smoothedBass + (rawBass - smoothedBass) * 0.20
+        let mid = smoothedMid + (rawMid - smoothedMid) * 0.22
+        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.24
 
         // Synchronize tactile vibrations using sound-specific sensory profiles
         let _ = updateSoundHaptics(time: time, level: level, bass: bass, mid: mid, treble: treble)
 
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
-            // Prominent, expansive center stage
             let baseRadius: CGFloat = size * 0.44
 
             ZStack {
-                // ── 1. Core Luminous Breathing Glow (Reacts directly to volume & bass) ──
+                // ── 1. Volumetric Luminous Breathing Nebula (Swelling Core Aura) ──
                 let glowScale = 1.0 + Double(bass) * 0.35 + Double(level) * 0.28
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.white.opacity(0.16 + Double(level) * 0.32 + Double(bass) * 0.20),
-                                Color(white: 0.72).opacity(0.06 + Double(level) * 0.16),
+                                Color.white.opacity(0.18 + Double(level) * 0.32 + Double(bass) * 0.22),
+                                Color(white: 0.75).opacity(0.07 + Double(level) * 0.16),
                                 Color.clear
                             ],
                             center: .center,
                             startRadius: 6,
-                            endRadius: baseRadius * 1.30 * CGFloat(glowScale)
+                            endRadius: baseRadius * 1.32 * CGFloat(glowScale)
                         )
                     )
                     .frame(width: baseRadius * 2.7 * CGFloat(glowScale), height: baseRadius * 2.7 * CGFloat(glowScale))
 
-                // ── 2. Canvas for Radial Acoustic Equalizer Rays & Inner Liquid Halo ──
+                // ── 2. Canvas: 5 Layered Fluid Waves & 96 Interactive Celestial Particles ──
                 Canvas { context, canvasSize in
                     let cX = canvasSize.width / 2
                     let cY = canvasSize.height / 2
 
-                    // ── A. Inner Fluid Halo Rings ──
-                    let innerR1 = baseRadius * 0.54 + bass * 14.0 + level * 8.0
-                    let innerR2 = baseRadius * 0.72 + level * 10.0
+                    // ════════════════════════════════════════════════════════════
+                    // A. 5 CONCENTRIC ORGANIC FLUID HARMONIC WAVES
+                    // ════════════════════════════════════════════════════════════
+                    let numWaves = 5
+                    let waveSteps = 120
 
-                    var halo1 = Path()
-                    var halo2 = Path()
-                    let haloSteps = 90
-
-                    for s in 0...haloSteps {
-                        let theta = (Double(s) / Double(haloSteps)) * 2.0 * .pi
-                        let harmonic = sin(theta * 2.0 + time * 0.8) * Double(bass) * 4.0
+                    for k in 0..<numWaves {
+                        let kFrac = CGFloat(k) / CGFloat(numWaves - 1)
+                        let ringBaseR = baseRadius * (0.46 + kFrac * 0.50) + level * (16.0 + CGFloat(k) * 6.0)
                         
-                        let r1 = innerR1 + CGFloat(harmonic)
-                        let p1X = cX + r1 * CGFloat(cos(theta))
-                        let p1Y = cY + r1 * CGFloat(sin(theta))
-                        
-                        let p2X = cX + innerR2 * CGFloat(cos(theta))
-                        let p2Y = cY + innerR2 * CGFloat(sin(theta))
+                        let speed1 = (1.20 + Double(k) * 0.25)
+                        let speed2 = (1.60 - Double(k) * 0.20)
+                        let speed3 = (2.10 + Double(k) * 0.30)
+                        let dir: Double = (k % 2 == 0) ? 1.0 : -1.0
 
-                        if s == 0 {
-                            halo1.move(to: CGPoint(x: p1X, y: p1Y))
-                            halo2.move(to: CGPoint(x: p2X, y: p2Y))
-                        } else {
-                            halo1.addLine(to: CGPoint(x: p1X, y: p1Y))
-                            halo2.addLine(to: CGPoint(x: p2X, y: p2Y))
+                        var wavePath = Path()
+
+                        for s in 0...waveSteps {
+                            let theta = (Double(s) / Double(waveSteps)) * 2.0 * .pi
+
+                            // Multi-harmonic natural fluid equations driven by audio frequencies
+                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (Double(bass) * (24.0 + Double(k) * 8.0) + (3.0 + Double(k) * 1.2))
+                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (Double(mid) * (18.0 + Double(k) * 6.0) + (2.0 + Double(k) * 0.8))
+                            let h3 = sin(5.0 * theta + time * speed3 * dir) * (Double(treble) * (14.0 + Double(k) * 5.0) + 1.0)
+                            let h4 = cos(theta * 1.0 + time * 0.6) * (Double(level) * (10.0 + Double(k) * 4.0))
+
+                            let displacement = CGFloat(h1 + h2 + h3 + h4)
+                            let r = ringBaseR + displacement
+
+                            let pX = cX + r * CGFloat(cos(theta))
+                            let pY = cY + r * CGFloat(sin(theta))
+
+                            if s == 0 {
+                                wavePath.move(to: CGPoint(x: pX, y: pY))
+                            } else {
+                                wavePath.addLine(to: CGPoint(x: pX, y: pY))
+                            }
                         }
-                    }
-                    halo1.closeSubpath()
-                    halo2.closeSubpath()
+                        wavePath.closeSubpath()
 
-                    context.stroke(
-                        halo1,
-                        with: .color(Color(white: 0.85, opacity: 0.30 + Double(bass) * 0.35 + Double(level) * 0.20)),
-                        style: StrokeStyle(lineWidth: 1.2 + bass * 1.5, lineCap: .round)
-                    )
-                    context.stroke(
-                        halo2,
-                        with: .color(Color.white.opacity(0.40 + Double(level) * 0.40)),
-                        style: StrokeStyle(lineWidth: 1.4 + level * 1.8, lineCap: .round)
-                    )
-
-                    // ── B. 72 Radial Acoustic Equalizer Beams (Direct 1-to-1 Audio Reaction) ──
-                    let numBeams = 72
-                    for i in 0..<numBeams {
-                        let frac = Double(i) / Double(numBeams)
-                        let theta = frac * 2.0 * .pi
-
-                        // Symmetrically map angle to the 16 Accelerate FFT frequency bands
-                        let bandFrac = abs(sin(theta)) * 15.0
-                        let b0 = Int(bandFrac)
-                        let b1 = min(15, b0 + 1)
-                        let interp = Float(bandFrac - Double(b0))
-                        let bandVal = CGFloat(freqs[b0] * (1.0 - interp) + freqs[b1] * interp)
-
-                        // Beam length extends outward in direct lockstep with sound energy
-                        let rStart = innerR2 + 2.0
-                        let dynamicLength = 3.0 + bandVal * (42.0 + level * 28.0) + (isPlaying ? level * 8.0 : 0.0)
-                        let rEnd = rStart + dynamicLength
-
-                        let cosT = CGFloat(cos(theta))
-                        let sinT = CGFloat(sin(theta))
-
-                        let pStart = CGPoint(x: cX + rStart * cosT, y: cY + rStart * sinT)
-                        let pEnd = CGPoint(x: cX + rEnd * cosT, y: cY + rEnd * sinT)
-
-                        var beamPath = Path()
-                        beamPath.move(to: pStart)
-                        beamPath.addLine(to: pEnd)
-
-                        let beamAlpha = 0.32 + Double(bandVal) * 0.60 + Double(level) * 0.25
-                        let beamWidth: CGFloat = 2.0 + bandVal * 1.4 + level * 0.8
+                        // Layered Monochromatic Silver/White Palette
+                        let alpha = Double(0.24 + kFrac * 0.58) * (0.65 + Double(level) * 0.35)
+                        let brightness = 0.80 + 0.20 * Double(kFrac)
+                        let ringColor = Color(white: brightness, opacity: min(1.0, alpha))
+                        let lineWidth: CGFloat = (1.2 + kFrac * 1.4) + level * 1.6
 
                         context.stroke(
-                            beamPath,
-                            with: .color(Color.white.opacity(min(1.0, beamAlpha))),
-                            style: StrokeStyle(lineWidth: beamWidth, lineCap: .round)
+                            wavePath,
+                            with: .color(ringColor),
+                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
+                        )
+                    }
+
+                    // ════════════════════════════════════════════════════════════
+                    // B. 96 LIVING ACOUSTIC CELESTIAL PARTICLES
+                    // ════════════════════════════════════════════════════════════
+                    let numParticles = 96
+                    for i in 0..<numParticles {
+                        let goldenAngle = Double(i) * 2.399963229728653 // Fibonacci golden distribution
+                        let shell = sqrt(Double(i + 1) / Double(numParticles)) // Uniform organic disc density
+                        let orbitSpeed = (0.35 + Double(i % 6) * 0.12) * (i % 2 == 0 ? 1.0 : -1.0)
+                        let currentAngle = goldenAngle + time * orbitSpeed * (0.45 + Double(level) * 1.6)
+
+                        // Particle frequency sensitivity
+                        let bandIdx = i % 16
+                        let bandEnergy = CGFloat(freqs[bandIdx])
+
+                        // Dynamic audio bursts: particles expand outward with frequency hits & transients
+                        let burst = bandEnergy * (36.0 + level * 24.0) + bass * 14.0 * CGFloat(cos(currentAngle))
+                        let pRadius = baseRadius * (0.36 + CGFloat(shell) * 0.68) + burst
+
+                        let pX = cX + pRadius * CGFloat(cos(currentAngle))
+                        let pY = cY + pRadius * CGFloat(sin(currentAngle))
+
+                        let pSize: CGFloat = 1.0 + CGFloat(shell) * 2.0 + bandEnergy * 3.2 + level * 1.6
+                        let pAlpha = 0.25 + Double(bandEnergy) * 0.65 + Double(level) * 0.30
+
+                        let particleRect = CGRect(x: pX - pSize, y: pY - pSize, width: pSize * 2, height: pSize * 2)
+                        
+                        // Render glowing starlight particle
+                        context.fill(
+                            Path(ellipseIn: particleRect),
+                            with: .color(Color.white.opacity(min(1.0, pAlpha)))
                         )
                     }
                 }
