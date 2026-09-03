@@ -150,7 +150,7 @@ public struct GroundingScreenView: View {
                                     CircularParticleWaveVisualizerView(
                                         isPlaying: isPlaying
                                     )
-                                    .frame(width: 320, height: 320)
+                                    .frame(width: 345, height: 345)
                                     .offset(y: 20)
                                     .transition(.opacity.combined(with: .scale(scale: 0.96)))
                                 } else {
@@ -169,8 +169,8 @@ public struct GroundingScreenView: View {
 
                             Spacer()
 
-                            // Integrated Bottom Dock Controls in a Sleek Frosted Glass Pill
-                            HStack(spacing: 8) {
+                            // Integrated Bottom Dock Controls (No Pill, Centered, Prominent Icons)
+                            HStack(spacing: 11) {
                                 // 👁️ 1. Eye Button (Zen Mode - Fullscreen Immersion)
                                 Button(action: {
                                     HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
@@ -183,9 +183,10 @@ public struct GroundingScreenView: View {
                                     }
                                 }) {
                                     Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                        .font(.system(size: 15, weight: .medium))
-                                        .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.70))
-                                        .frame(width: 38, height: 38)
+                                        .font(.system(size: 21.4, weight: .medium))
+                                        .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.75))
+                                        .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                        .frame(width: 44, height: 44)
                                         .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
@@ -194,9 +195,10 @@ public struct GroundingScreenView: View {
                                     // ‹ 2. Previous Sound Track
                                     Button(action: { selectPreviousSound() }) {
                                         Image(systemName: "chevron.left")
-                                            .font(.system(size: 15, weight: .semibold))
-                                            .foregroundColor(.white.opacity(0.70))
-                                            .frame(width: 38, height: 38)
+                                            .font(.system(size: 20.0, weight: .semibold))
+                                            .foregroundColor(.white.opacity(0.75))
+                                            .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                            .frame(width: 44, height: 44)
                                             .contentShape(Circle())
                                     }
                                     .buttonStyle(.plain)
@@ -208,9 +210,10 @@ public struct GroundingScreenView: View {
                                         activeOverlay = .soundSelection
                                     }) {
                                         Image(systemName: "music.note")
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.70))
-                                            .frame(width: 38, height: 38)
+                                            .font(.system(size: 21.4, weight: .medium))
+                                            .foregroundColor(.white.opacity(0.75))
+                                            .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                            .frame(width: 44, height: 44)
                                             .contentShape(Circle())
                                     }
                                     .buttonStyle(.plain)
@@ -219,9 +222,10 @@ public struct GroundingScreenView: View {
                                     // ⏵/⏸ 4. Play / Pause Button
                                     Button(action: { togglePlayPause() }) {
                                         Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                                            .font(.system(size: 19, weight: .bold))
+                                            .font(.system(size: 26.5, weight: .bold))
                                             .foregroundColor(.white)
-                                            .frame(width: 42, height: 42)
+                                            .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                            .frame(width: 46, height: 44)
                                             .offset(x: isPlaying ? 0 : 1.5)
                                             .contentShape(Circle())
                                     }
@@ -236,9 +240,10 @@ public struct GroundingScreenView: View {
                                         }
                                     }) {
                                         Image(systemName: "pencil")
-                                            .font(.system(size: 15, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.70))
-                                            .frame(width: 38, height: 38)
+                                            .font(.system(size: 21.4, weight: .medium))
+                                            .foregroundColor(.white.opacity(0.75))
+                                            .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                            .frame(width: 44, height: 44)
                                             .contentShape(Circle())
                                     }
                                     .buttonStyle(.plain)
@@ -247,9 +252,10 @@ public struct GroundingScreenView: View {
                                     // › 6. Next Sound Track
                                     Button(action: { selectNextSound() }) {
                                         Image(systemName: "chevron.right")
-                                            .font(.system(size: 15, weight: .semibold))
-                                            .foregroundColor(.white.opacity(0.70))
-                                            .frame(width: 38, height: 38)
+                                            .font(.system(size: 20.0, weight: .semibold))
+                                            .foregroundColor(.white.opacity(0.75))
+                                            .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                            .frame(width: 44, height: 44)
                                             .contentShape(Circle())
                                     }
                                     .buttonStyle(.plain)
@@ -268,26 +274,16 @@ public struct GroundingScreenView: View {
                                         }
                                     }) {
                                         Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
-                                            .font(.system(size: 17, weight: .medium))
-                                            .foregroundColor(.white.opacity(isVisualizerMode ? 1.0 : 0.70))
-                                            .frame(width: 38, height: 38)
+                                            .font(.system(size: 22.5, weight: .medium))
+                                            .foregroundColor(.white.opacity(isVisualizerMode ? 1.0 : 0.75))
+                                            .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                            .frame(width: 44, height: 44)
                                             .contentShape(Circle())
                                     }
                                     .buttonStyle(.plain)
                                     .transition(.opacity.combined(with: .scale))
                                 }
                             }
-                            .padding(.horizontal, isZenMode ? 4 : 8)
-                            .padding(.vertical, 4)
-                            .background(
-                                Capsule()
-                                    .fill(Color.black.opacity(0.35))
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(Color.white.opacity(0.18), lineWidth: 1.0)
-                                    )
-                                    .shadow(color: Color.black.opacity(0.40), radius: 10, x: 0, y: 4)
-                            )
                             .padding(.bottom, 36)
                         }
                     }
@@ -323,7 +319,7 @@ public struct GroundingScreenView: View {
                         }
                         .allowsHitTesting(false) // Let drag touch pass through to the measuring lines
 
-                        // Floating Checkmark Confirmation Button (+7% Size, exact matching 47x47 frame)
+                        // Floating Checkmark Confirmation Button (Matching bottom icons size & alignment)
                         Button(action: {
                             HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
                             if isPlaying {
@@ -332,10 +328,10 @@ public struct GroundingScreenView: View {
                             activeOverlay = .none
                         }) {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 25.7, weight: .bold))
+                                .font(.system(size: 21.4, weight: .bold))
                                 .foregroundColor(.white)
                                 .shadow(color: Color.black.opacity(0.95), radius: 8, x: 0, y: 3)
-                                .frame(width: 47, height: 47)
+                                .frame(width: 44, height: 44)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -593,16 +589,16 @@ private struct CircularParticleWaveVisualizerView: View {
 
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
-            let baseRadius: CGFloat = size * 0.44
+            let baseRadius: CGFloat = size * 0.46
 
             ZStack {
                 // ── 1. Volumetric Luminous Breathing Nebula (Swelling Core Aura) ──
-                let glowScale = 1.0 + Double(bass) * 0.28 + Double(level) * 0.22
+                let glowScale = 1.0 + Double(bass) * 0.30 + Double(level) * 0.24
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.white.opacity(0.14 + Double(level) * 0.24 + Double(bass) * 0.16),
+                                Color.white.opacity(0.14 + Double(level) * 0.26 + Double(bass) * 0.18),
                                 Color(white: 0.72).opacity(0.04 + Double(level) * 0.10),
                                 Color.clear
                             ],
@@ -624,7 +620,7 @@ private struct CircularParticleWaveVisualizerView: View {
                     for k in 0..<numWaves {
                         let kFrac = CGFloat(k) / CGFloat(numWaves - 1)
                         // Base ring radius breathes softly with sound loudness
-                        let ringBaseR = baseRadius * (0.42 + kFrac * 0.52) + level * (14.0 + CGFloat(k) * 4.5)
+                        let ringBaseR = baseRadius * (0.42 + kFrac * 0.52) + level * (16.0 + CGFloat(k) * 5.0)
                         
                         let speed1 = (1.05 + Double(k) * 0.18)
                         let speed2 = (1.35 - Double(k) * 0.14)
@@ -636,11 +632,11 @@ private struct CircularParticleWaveVisualizerView: View {
                         for s in 0...waveSteps {
                             let theta = (Double(s) / Double(waveSteps)) * 2.0 * .pi
 
-                            // Multi-harmonic silk wave equations reacting gracefully to audio bands
-                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (Double(bass) * (18.0 + Double(k) * 5.0) + (2.0 + Double(k) * 0.8))
-                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (Double(mid) * (13.0 + Double(k) * 4.0) + (1.4 + Double(k) * 0.6))
-                            let h3 = sin(5.0 * theta + time * speed3 * dir) * (Double(treble) * (8.5 + Double(k) * 3.0) + 0.8)
-                            let h4 = cos(theta * 1.0 + time * 0.45) * (Double(level) * (6.5 + Double(k) * 2.2))
+                            // Multi-harmonic silk wave equations reacting distinctly to sound profile frequencies
+                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (Double(bass) * (24.0 + Double(k) * 6.0) + (1.8 + Double(k) * 0.6))
+                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (Double(mid) * (18.0 + Double(k) * 5.0) + (1.2 + Double(k) * 0.5))
+                            let h3 = sin(5.0 * theta + time * speed3 * dir) * (Double(treble) * (14.0 + Double(k) * 4.0) + 0.6)
+                            let h4 = cos(theta * 1.0 + time * 0.45) * (Double(level) * (10.0 + Double(k) * 3.0))
 
                             let displacement = CGFloat(h1 + h2 + h3 + h4)
                             let r = ringBaseR + displacement
@@ -967,16 +963,16 @@ private struct RelaxingSoundsFullView: View {
             }
             .ignoresSafeArea(edges: .bottom)
 
-            // Floating Exit (X) Button (+7% Size, exact matching 47x47 frame)
+            // Floating Exit (X) Button (Matching bottom icons size & alignment)
             Button(action: {
                 HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
                 onClose()
             }) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 25.7, weight: .bold))
+                    .font(.system(size: 21.4, weight: .bold))
                     .foregroundColor(.white)
                     .shadow(color: Color.black.opacity(0.95), radius: 8, x: 0, y: 3)
-                    .frame(width: 47, height: 47)
+                    .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
