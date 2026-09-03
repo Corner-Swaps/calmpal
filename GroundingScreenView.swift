@@ -140,70 +140,91 @@ public struct GroundingScreenView: View {
                                 togglePlayPause()
                             }
 
-                        // Top Navigation Toolbar just below Dynamic Island
-                        // Hosts both the Eye Icon (Zen Mode) and Particle Wave Icon (Audio Visualizer Mode) inside a sleek pill
+                        // Top-Right Navigation Toolbar
+                        // Vertical pill hosting Eye (Zen Mode) and Particle Wave (Visualizer Mode)
+                        // Clicking one collapses the other and moves the active icon to the top
                         VStack {
-                            HStack(spacing: 2) {
-                                // 1. Eye Button (Zen Mode - Fullscreen Image Immersion)
-                                Button(action: {
-                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                    withAnimation(.easeInOut(duration: 0.35)) {
-                                        if isVisualizerMode {
-                                            isVisualizerMode = false
-                                            HapticManager.shared.stop()
-                                        }
-                                        isZenMode.toggle()
-                                    }
-                                }) {
-                                    Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                        .font(.system(size: 15, weight: .medium))
-                                        .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.60))
-                                        .frame(width: 36, height: 36)
-                                        .background(isZenMode ? Circle().fill(Color.white.opacity(0.20)) : Circle().fill(Color.clear))
-                                        .contentShape(Circle())
-                                }
-                                .buttonStyle(.plain)
+                            HStack {
+                                Spacer()
 
-                                // Subtle sleek vertical divider
-                                Rectangle()
-                                    .fill(Color.white.opacity(0.18))
-                                    .frame(width: 1, height: 16)
-                                    .padding(.horizontal, 2)
-
-                                // 2. Particle Wave Visualizer Button (Audio-Reactive Radial Wave Mode)
-                                Button(action: {
-                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                    withAnimation(.easeInOut(duration: 0.35)) {
-                                        if isZenMode { isZenMode = false }
-                                        isVisualizerMode.toggle()
-                                        if isVisualizerMode && isPlaying {
-                                            HapticManager.shared.start()
-                                        } else {
-                                            HapticManager.shared.stop()
+                                VStack(spacing: 3) {
+                                    if !isVisualizerMode {
+                                        // 1. Eye Button (Zen Mode - Fullscreen Image Immersion)
+                                        Button(action: {
+                                            HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+                                                if isVisualizerMode {
+                                                    isVisualizerMode = false
+                                                    HapticManager.shared.stop()
+                                                }
+                                                isZenMode.toggle()
+                                            }
+                                        }) {
+                                            Image(systemName: isZenMode ? "eye" : "eye.slash")
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.65))
+                                                .frame(width: 36, height: 36)
+                                                .background(isZenMode ? Circle().fill(Color.white.opacity(0.22)) : Circle().fill(Color.clear))
+                                                .contentShape(Circle())
                                         }
+                                        .buttonStyle(.plain)
+                                        .transition(.asymmetric(
+                                            insertion: .scale(scale: 0.8).combined(with: .opacity),
+                                            removal: .scale(scale: 0.8).combined(with: .opacity)
+                                        ))
                                     }
-                                }) {
-                                    Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundColor(.white.opacity(isVisualizerMode ? 1.0 : 0.60))
-                                        .frame(width: 36, height: 36)
-                                        .background(isVisualizerMode ? Circle().fill(Color.white.opacity(0.20)) : Circle().fill(Color.clear))
-                                        .contentShape(Circle())
+
+                                    if !isZenMode && !isVisualizerMode {
+                                        // Subtle sleek horizontal divider between buttons
+                                        Rectangle()
+                                            .fill(Color.white.opacity(0.18))
+                                            .frame(width: 16, height: 1)
+                                            .padding(.vertical, 1)
+                                            .transition(.opacity)
+                                    }
+
+                                    if !isZenMode {
+                                        // 2. Particle Wave Visualizer Button (Audio-Reactive Wave Mode)
+                                        Button(action: {
+                                            HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+                                                if isZenMode { isZenMode = false }
+                                                isVisualizerMode.toggle()
+                                                if isVisualizerMode && isPlaying {
+                                                    HapticManager.shared.start()
+                                                } else {
+                                                    HapticManager.shared.stop()
+                                                }
+                                            }
+                                        }) {
+                                            Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(.white.opacity(isVisualizerMode ? 1.0 : 0.65))
+                                                .frame(width: 36, height: 36)
+                                                .background(isVisualizerMode ? Circle().fill(Color.white.opacity(0.22)) : Circle().fill(Color.clear))
+                                                .contentShape(Circle())
+                                        }
+                                        .buttonStyle(.plain)
+                                        .transition(.asymmetric(
+                                            insertion: .scale(scale: 0.8).combined(with: .opacity),
+                                            removal: .scale(scale: 0.8).combined(with: .opacity)
+                                        ))
+                                    }
                                 }
-                                .buttonStyle(.plain)
+                                .padding(.horizontal, 3)
+                                .padding(.vertical, 3)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.black.opacity(0.35))
+                                        .overlay(
+                                            Capsule()
+                                                .stroke(Color.white.opacity(0.18), lineWidth: 1.0)
+                                        )
+                                        .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 3)
+                                )
+                                .padding(.trailing, 20)
+                                .padding(.top, 52)
                             }
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(
-                                Capsule()
-                                    .fill(Color.black.opacity(0.35))
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(Color.white.opacity(0.18), lineWidth: 1.0)
-                                    )
-                                    .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 3)
-                            )
-                            .padding(.top, 52)
 
                             Spacer()
                         }
