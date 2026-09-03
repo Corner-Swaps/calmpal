@@ -140,109 +140,19 @@ public struct GroundingScreenView: View {
                                 togglePlayPause()
                             }
 
-                        // Top-Right Navigation Toolbar
-                        // Vertical pill hosting Eye (Zen Mode) and Particle Wave (Visualizer Mode)
-                        // Clicking one collapses the other and moves the active icon to the top
-                        VStack {
-                            HStack {
-                                Spacer()
-
-                                VStack(spacing: 3) {
-                                    if !isVisualizerMode {
-                                        // 1. Eye Button (Zen Mode - Fullscreen Image Immersion)
-                                        Button(action: {
-                                            HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
-                                                if isVisualizerMode {
-                                                    isVisualizerMode = false
-                                                    HapticManager.shared.stop()
-                                                }
-                                                isZenMode.toggle()
-                                            }
-                                        }) {
-                                            Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                                .font(.system(size: 15, weight: .medium))
-                                                .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.65))
-                                                .frame(width: 36, height: 36)
-                                                .background(isZenMode ? Circle().fill(Color.white.opacity(0.22)) : Circle().fill(Color.clear))
-                                                .contentShape(Circle())
-                                        }
-                                        .buttonStyle(.plain)
-                                        .transition(.asymmetric(
-                                            insertion: .scale(scale: 0.8).combined(with: .opacity),
-                                            removal: .scale(scale: 0.8).combined(with: .opacity)
-                                        ))
-                                    }
-
-                                    if !isZenMode && !isVisualizerMode {
-                                        // Subtle sleek horizontal divider between buttons
-                                        Rectangle()
-                                            .fill(Color.white.opacity(0.18))
-                                            .frame(width: 16, height: 1)
-                                            .padding(.vertical, 1)
-                                            .transition(.opacity)
-                                    }
-
-                                    if !isZenMode {
-                                        // 2. Particle Wave Visualizer Button (Audio-Reactive Wave Mode)
-                                        Button(action: {
-                                            HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                            withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
-                                                if isZenMode { isZenMode = false }
-                                                isVisualizerMode.toggle()
-                                                if isVisualizerMode && isPlaying {
-                                                    HapticManager.shared.start()
-                                                } else {
-                                                    HapticManager.shared.stop()
-                                                }
-                                            }
-                                        }) {
-                                            Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
-                                                .font(.system(size: 18, weight: .medium))
-                                                .foregroundColor(.white.opacity(isVisualizerMode ? 1.0 : 0.65))
-                                                .frame(width: 36, height: 36)
-                                                .background(isVisualizerMode ? Circle().fill(Color.white.opacity(0.22)) : Circle().fill(Color.clear))
-                                                .contentShape(Circle())
-                                        }
-                                        .buttonStyle(.plain)
-                                        .transition(.asymmetric(
-                                            insertion: .scale(scale: 0.8).combined(with: .opacity),
-                                            removal: .scale(scale: 0.8).combined(with: .opacity)
-                                        ))
-                                    }
-                                }
-                                .padding(.horizontal, 3)
-                                .padding(.vertical, 3)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.black.opacity(0.35))
-                                        .overlay(
-                                            Capsule()
-                                                .stroke(Color.white.opacity(0.18), lineWidth: 1.0)
-                                        )
-                                        .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 3)
-                                )
-                                .padding(.trailing, 20)
-                                .padding(.top, 52)
-                            }
-
-                            Spacer()
-                        }
-                        .zIndex(20)
-
                         // Main Center Stage & Bottom Controls
                         VStack(spacing: 0) {
                             Spacer()
 
                             if !isZenMode {
                                 if isVisualizerMode {
-                                    // ── Circular Audio-Reactive Wave & Particle Visualizer ──
+                                    // ── Ethereal Silk Ribbon Audio Visualizer ──
                                     CircularParticleWaveVisualizerView(
                                         isPlaying: isPlaying
                                     )
                                     .frame(width: 320, height: 320)
                                     .offset(y: 20)
-                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
                                 } else {
                                     // ── Original Clean Circular Timer Ring ──
                                     FullCircularTimerView(
@@ -253,76 +163,122 @@ public struct GroundingScreenView: View {
                                     )
                                     .frame(width: 318, height: 318)
                                     .offset(y: 20)
-                                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
                                 }
                             }
 
                             Spacer()
 
-                            // Bottom Dock Controls in a Sleek Frosted Glass Pill
-                            HStack(spacing: 12) {
-                                // ‹ 1. Previous Sound Track
-                                Button(action: { selectPreviousSound() }) {
-                                    Image(systemName: "chevron.left")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.white.opacity(0.85))
-                                        .frame(width: 40, height: 40)
-                                        .contentShape(Circle())
-                                }
-                                .buttonStyle(.plain)
-
-                                // 🎵 2. Relaxing Sounds Button
+                            // Integrated Bottom Dock Controls in a Sleek Frosted Glass Pill
+                            HStack(spacing: 8) {
+                                // 👁️ 1. Eye Button (Zen Mode - Fullscreen Immersion)
                                 Button(action: {
-                                    HapticManager.shared.start()
-                                    activeOverlay = .soundSelection
-                                }) {
-                                    Image(systemName: "music.note")
-                                        .font(.system(size: 17, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.85))
-                                        .frame(width: 40, height: 40)
-                                        .contentShape(Circle())
-                                }
-                                .buttonStyle(.plain)
-
-                                // ⏵/⏸ 3. Play / Pause Hero Button
-                                Button(action: { togglePlayPause() }) {
-                                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                                        .font(.system(size: 20, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .frame(width: 48, height: 48)
-                                        .background(Circle().fill(Color.white.opacity(0.18)))
-                                        .offset(x: isPlaying ? 0 : 1.5)
-                                        .contentShape(Circle())
-                                }
-                                .buttonStyle(.plain)
-
-                                // ✏️ 4. Edit Timer Button
-                                Button(action: {
-                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
-                                    withAnimation(.easeInOut(duration: 0.25)) {
-                                        activeOverlay = .editTimer
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+                                        if isVisualizerMode {
+                                            isVisualizerMode = false
+                                            HapticManager.shared.stop()
+                                        }
+                                        isZenMode.toggle()
                                     }
                                 }) {
-                                    Image(systemName: "pencil")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.85))
-                                        .frame(width: 40, height: 40)
+                                    Image(systemName: isZenMode ? "eye" : "eye.slash")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.70))
+                                        .frame(width: 38, height: 38)
                                         .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
 
-                                // › 5. Next Sound Track
-                                Button(action: { selectNextSound() }) {
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(.white.opacity(0.85))
-                                        .frame(width: 40, height: 40)
-                                        .contentShape(Circle())
+                                if !isZenMode {
+                                    // ‹ 2. Previous Sound Track
+                                    Button(action: { selectPreviousSound() }) {
+                                        Image(systemName: "chevron.left")
+                                            .font(.system(size: 15, weight: .semibold))
+                                            .foregroundColor(.white.opacity(0.70))
+                                            .frame(width: 38, height: 38)
+                                            .contentShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.opacity.combined(with: .scale))
+
+                                    // 🎵 3. Relaxing Sounds Button
+                                    Button(action: {
+                                        HapticManager.shared.start()
+                                        activeOverlay = .soundSelection
+                                    }) {
+                                        Image(systemName: "music.note")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.white.opacity(0.70))
+                                            .frame(width: 38, height: 38)
+                                            .contentShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.opacity.combined(with: .scale))
+
+                                    // ⏵/⏸ 4. Play / Pause Button
+                                    Button(action: { togglePlayPause() }) {
+                                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                                            .font(.system(size: 19, weight: .bold))
+                                            .foregroundColor(.white)
+                                            .frame(width: 42, height: 42)
+                                            .offset(x: isPlaying ? 0 : 1.5)
+                                            .contentShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.opacity.combined(with: .scale))
+
+                                    // ✏️ 5. Edit Timer Button
+                                    Button(action: {
+                                        HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
+                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                            activeOverlay = .editTimer
+                                        }
+                                    }) {
+                                        Image(systemName: "pencil")
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(.white.opacity(0.70))
+                                            .frame(width: 38, height: 38)
+                                            .contentShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.opacity.combined(with: .scale))
+
+                                    // › 6. Next Sound Track
+                                    Button(action: { selectNextSound() }) {
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 15, weight: .semibold))
+                                            .foregroundColor(.white.opacity(0.70))
+                                            .frame(width: 38, height: 38)
+                                            .contentShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.opacity.combined(with: .scale))
+
+                                    // 〰️ 7. Audio Visualizer Mode Button
+                                    Button(action: {
+                                        HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.82)) {
+                                            isVisualizerMode.toggle()
+                                            if isVisualizerMode && isPlaying {
+                                                HapticManager.shared.start()
+                                            } else {
+                                                HapticManager.shared.stop()
+                                            }
+                                        }
+                                    }) {
+                                        Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
+                                            .font(.system(size: 17, weight: .medium))
+                                            .foregroundColor(.white.opacity(isVisualizerMode ? 1.0 : 0.70))
+                                            .frame(width: 38, height: 38)
+                                            .contentShape(Circle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.opacity.combined(with: .scale))
                                 }
-                                .buttonStyle(.plain)
                             }
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, isZenMode ? 4 : 8)
+                            .padding(.vertical, 4)
                             .background(
                                 Capsule()
                                     .fill(Color.black.opacity(0.35))
@@ -333,9 +289,6 @@ public struct GroundingScreenView: View {
                                     .shadow(color: Color.black.opacity(0.40), radius: 10, x: 0, y: 4)
                             )
                             .padding(.bottom, 36)
-                            .opacity((isZenMode || isVisualizerMode) ? 0 : 1)
-                            .animation(.easeInOut(duration: 0.35), value: isZenMode || isVisualizerMode)
-                            .allowsHitTesting(!isZenMode && !isVisualizerMode)
                         }
                     }
                     .frame(width: screenWidth, height: screenHeight)
@@ -600,7 +553,7 @@ private struct FullCircularTimerView: View {
     }
 }
 
-// MARK: ── 2. Pure Organic Fluid Wave Circle Visualizer ───────────────────
+// MARK: ── 2. Ethereal Liquid Silk Harmonograph Visualizer ─────────────────
 
 private struct CircularParticleWaveVisualizerView: View {
     let isPlaying: Bool
@@ -629,11 +582,11 @@ private struct CircularParticleWaveVisualizerView: View {
         let rawMid = isPlaying ? CGFloat(audio.audioMid) : 0.0
         let rawTreble = isPlaying ? CGFloat(audio.audioTreble) : 0.0
 
-        // Silky exponential smoothing for fluid, natural acoustic response
-        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.16
-        let bass = smoothedBass + (rawBass - smoothedBass) * 0.14
-        let mid = smoothedMid + (rawMid - smoothedMid) * 0.16
-        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.18
+        // Butter-smooth exponential damping for silky, liquid acoustic responsiveness
+        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.12
+        let bass = smoothedBass + (rawBass - smoothedBass) * 0.10
+        let mid = smoothedMid + (rawMid - smoothedMid) * 0.12
+        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.14
 
         // Synchronize tactile vibrations using sound-specific sensory profiles
         let _ = updateSoundHaptics(time: time, level: level, bass: bass, mid: mid, treble: treble)
@@ -644,38 +597,38 @@ private struct CircularParticleWaveVisualizerView: View {
 
             ZStack {
                 // ── 1. Volumetric Luminous Breathing Nebula (Swelling Core Aura) ──
-                let glowScale = 1.0 + Double(bass) * 0.32 + Double(level) * 0.26
+                let glowScale = 1.0 + Double(bass) * 0.28 + Double(level) * 0.22
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.white.opacity(0.18 + Double(level) * 0.30 + Double(bass) * 0.20),
-                                Color(white: 0.75).opacity(0.06 + Double(level) * 0.14),
+                                Color.white.opacity(0.14 + Double(level) * 0.24 + Double(bass) * 0.16),
+                                Color(white: 0.72).opacity(0.04 + Double(level) * 0.10),
                                 Color.clear
                             ],
                             center: .center,
-                            startRadius: 8,
-                            endRadius: baseRadius * 1.30 * CGFloat(glowScale)
+                            startRadius: 6,
+                            endRadius: baseRadius * 1.25 * CGFloat(glowScale)
                         )
                     )
-                    .frame(width: baseRadius * 2.7 * CGFloat(glowScale), height: baseRadius * 2.7 * CGFloat(glowScale))
+                    .frame(width: baseRadius * 2.6 * CGFloat(glowScale), height: baseRadius * 2.6 * CGFloat(glowScale))
 
-                // ── 2. Canvas: 4 Concentric Bold Organic Fluid Wave Rings ──
+                // ── 2. Canvas: 6 Concentric Delicate Ethereal Silk Ribbons ──
                 Canvas { context, canvasSize in
                     let cX = canvasSize.width / 2
                     let cY = canvasSize.height / 2
 
-                    let numWaves = 4
-                    let waveSteps = 140
+                    let numWaves = 6
+                    let waveSteps = 160
 
                     for k in 0..<numWaves {
                         let kFrac = CGFloat(k) / CGFloat(numWaves - 1)
-                        // Base ring radius dynamically breathes with overall sound loudness
-                        let ringBaseR = baseRadius * (0.50 + kFrac * 0.46) + level * (18.0 + CGFloat(k) * 7.0)
+                        // Base ring radius breathes softly with sound loudness
+                        let ringBaseR = baseRadius * (0.42 + kFrac * 0.52) + level * (14.0 + CGFloat(k) * 4.5)
                         
-                        let speed1 = (1.10 + Double(k) * 0.22)
-                        let speed2 = (1.45 - Double(k) * 0.18)
-                        let speed3 = (1.90 + Double(k) * 0.26)
+                        let speed1 = (1.05 + Double(k) * 0.18)
+                        let speed2 = (1.35 - Double(k) * 0.14)
+                        let speed3 = (1.75 + Double(k) * 0.20)
                         let dir: Double = (k % 2 == 0) ? 1.0 : -1.0
 
                         var wavePath = Path()
@@ -683,11 +636,11 @@ private struct CircularParticleWaveVisualizerView: View {
                         for s in 0...waveSteps {
                             let theta = (Double(s) / Double(waveSteps)) * 2.0 * .pi
 
-                            // Multi-harmonic fluid wave equations with smooth acoustic coupling
-                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (Double(bass) * (26.0 + Double(k) * 8.0) + (3.2 + Double(k) * 1.4))
-                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (Double(mid) * (18.0 + Double(k) * 6.0) + (2.0 + Double(k) * 1.0))
-                            let h3 = sin(4.0 * theta + time * speed3 * dir) * (Double(treble) * (12.0 + Double(k) * 4.5) + 1.2)
-                            let h4 = cos(theta * 1.0 + time * 0.55) * (Double(level) * (9.0 + Double(k) * 3.5))
+                            // Multi-harmonic silk wave equations reacting gracefully to audio bands
+                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (Double(bass) * (18.0 + Double(k) * 5.0) + (2.0 + Double(k) * 0.8))
+                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (Double(mid) * (13.0 + Double(k) * 4.0) + (1.4 + Double(k) * 0.6))
+                            let h3 = sin(5.0 * theta + time * speed3 * dir) * (Double(treble) * (8.5 + Double(k) * 3.0) + 0.8)
+                            let h4 = cos(theta * 1.0 + time * 0.45) * (Double(level) * (6.5 + Double(k) * 2.2))
 
                             let displacement = CGFloat(h1 + h2 + h3 + h4)
                             let r = ringBaseR + displacement
@@ -703,13 +656,13 @@ private struct CircularParticleWaveVisualizerView: View {
                         }
                         wavePath.closeSubpath()
 
-                        // Layered Monochromatic Silver/White Palette with Thicker, More Prominent Lines
-                        let alpha = Double(0.32 + kFrac * 0.58) * (0.70 + Double(level) * 0.30)
-                        let brightness = 0.82 + 0.18 * Double(kFrac)
+                        // Layered Monochromatic Silver/White Palette with Fine, Delicate Lines
+                        let alpha = Double(0.22 + kFrac * 0.56) * (0.65 + Double(level) * 0.35)
+                        let brightness = 0.80 + 0.20 * Double(kFrac)
                         let ringColor = Color(white: brightness, opacity: min(1.0, alpha))
                         
-                        // Thicker line width for clear, bold visibility
-                        let lineWidth: CGFloat = (2.4 + kFrac * 2.0) + level * 2.6
+                        // Fine, delicate silk line width
+                        let lineWidth: CGFloat = (1.2 + kFrac * 0.8) + level * 0.8
 
                         context.stroke(
                             wavePath,
