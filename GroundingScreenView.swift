@@ -141,9 +141,9 @@ public struct GroundingScreenView: View {
                             }
 
                         // Top Navigation Toolbar just below Dynamic Island
-                        // Hosts both the Eye Icon (Zen Mode) and Particle Wave Icon (Audio Visualizer Mode)
+                        // Hosts both the Eye Icon (Zen Mode) and Particle Wave Icon (Audio Visualizer Mode) inside a sleek pill
                         VStack {
-                            HStack(spacing: 8) {
+                            HStack(spacing: 2) {
                                 // 1. Eye Button (Zen Mode - Fullscreen Image Immersion)
                                 Button(action: {
                                     HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
@@ -156,13 +156,19 @@ public struct GroundingScreenView: View {
                                     }
                                 }) {
                                     Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(.white.opacity(isZenMode ? 0.95 : 0.55))
-                                        .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 2)
-                                        .frame(width: 44, height: 44)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.60))
+                                        .frame(width: 36, height: 36)
+                                        .background(isZenMode ? Circle().fill(Color.white.opacity(0.20)) : Circle().fill(Color.clear))
                                         .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
+
+                                // Subtle sleek vertical divider
+                                Rectangle()
+                                    .fill(Color.white.opacity(0.18))
+                                    .frame(width: 1, height: 16)
+                                    .padding(.horizontal, 2)
 
                                 // 2. Particle Wave Visualizer Button (Audio-Reactive Radial Wave Mode)
                                 Button(action: {
@@ -178,15 +184,26 @@ public struct GroundingScreenView: View {
                                     }
                                 }) {
                                     Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
-                                        .font(.system(size: 20, weight: .medium))
-                                        .foregroundColor(.white.opacity(isVisualizerMode ? 0.95 : 0.55))
-                                        .shadow(color: Color.black.opacity(0.8), radius: 6, x: 0, y: 2)
-                                        .frame(width: 44, height: 44)
+                                        .font(.system(size: 18, weight: .medium))
+                                        .foregroundColor(.white.opacity(isVisualizerMode ? 1.0 : 0.60))
+                                        .frame(width: 36, height: 36)
+                                        .background(isVisualizerMode ? Circle().fill(Color.white.opacity(0.20)) : Circle().fill(Color.clear))
                                         .contentShape(Circle())
                                 }
                                 .buttonStyle(.plain)
                             }
-                            .padding(.top, 38)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(
+                                Capsule()
+                                    .fill(Color.black.opacity(0.35))
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.white.opacity(0.18), lineWidth: 1.0)
+                                    )
+                                    .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 3)
+                            )
+                            .padding(.top, 52)
 
                             Spacer()
                         }
