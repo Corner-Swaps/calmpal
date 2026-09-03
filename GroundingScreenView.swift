@@ -140,69 +140,22 @@ public struct GroundingScreenView: View {
                                 togglePlayPause()
                             }
 
-                        // Top Navigation Toolbar just below Dynamic Island
-                        // Hosts both the Eye Icon (Zen Mode) and Particle Wave Icon (Audio Visualizer Mode) inside a sleek pill
+                        // Top Navigation: Minimalist Floating Eye Icon (Zen Mode Immersion)
                         VStack {
-                            HStack(spacing: 2) {
-                                // 1. Eye Button (Zen Mode - Fullscreen Image Immersion)
-                                Button(action: {
-                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                    withAnimation(.easeInOut(duration: 0.35)) {
-                                        if isVisualizerMode {
-                                            isVisualizerMode = false
-                                            HapticManager.shared.stop()
-                                        }
-                                        isZenMode.toggle()
-                                    }
-                                }) {
-                                    Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                        .font(.system(size: 15, weight: .medium))
-                                        .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.60))
-                                        .frame(width: 36, height: 36)
-                                        .background(isZenMode ? Circle().fill(Color.white.opacity(0.20)) : Circle().fill(Color.clear))
-                                        .contentShape(Circle())
+                            Button(action: {
+                                HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                withAnimation(.easeInOut(duration: 0.35)) {
+                                    isZenMode.toggle()
                                 }
-                                .buttonStyle(.plain)
-
-                                // Subtle sleek vertical divider
-                                Rectangle()
-                                    .fill(Color.white.opacity(0.18))
-                                    .frame(width: 1, height: 16)
-                                    .padding(.horizontal, 2)
-
-                                // 2. Particle Wave Visualizer Button (Audio-Reactive Radial Wave Mode)
-                                Button(action: {
-                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                    withAnimation(.easeInOut(duration: 0.35)) {
-                                        if isZenMode { isZenMode = false }
-                                        isVisualizerMode.toggle()
-                                        if isVisualizerMode && isPlaying {
-                                            HapticManager.shared.start()
-                                        } else {
-                                            HapticManager.shared.stop()
-                                        }
-                                    }
-                                }) {
-                                    Image(systemName: isVisualizerMode ? "waveform.circle.fill" : "waveform.circle")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundColor(.white.opacity(isVisualizerMode ? 1.0 : 0.60))
-                                        .frame(width: 36, height: 36)
-                                        .background(isVisualizerMode ? Circle().fill(Color.white.opacity(0.20)) : Circle().fill(Color.clear))
-                                        .contentShape(Circle())
-                                }
-                                .buttonStyle(.plain)
+                            }) {
+                                Image(systemName: isZenMode ? "eye" : "eye.slash")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(.white.opacity(isZenMode ? 1.0 : 0.65))
+                                    .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
                             }
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(
-                                Capsule()
-                                    .fill(Color.black.opacity(0.35))
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(Color.white.opacity(0.18), lineWidth: 1.0)
-                                    )
-                                    .shadow(color: Color.black.opacity(0.40), radius: 8, x: 0, y: 3)
-                            )
+                            .buttonStyle(.plain)
                             .padding(.top, 52)
 
                             Spacer()
@@ -214,26 +167,16 @@ public struct GroundingScreenView: View {
                             Spacer()
 
                             if !isZenMode {
-                                if isVisualizerMode {
-                                    // ── Ethereal Silk Ribbon Audio Visualizer ──
-                                    CircularParticleWaveVisualizerView(
-                                        isPlaying: isPlaying
-                                    )
-                                    .frame(width: 345, height: 345)
-                                    .offset(y: 20)
-                                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                                } else {
-                                    // ── Original Clean Circular Timer Ring ──
-                                    FullCircularTimerView(
-                                        remainingSeconds: $remainingTimerSeconds,
-                                        totalDuration: $totalTimerDuration,
-                                        isPlaying: isPlaying,
-                                        timerEndTimestamp: timerEndTimestamp
-                                    )
-                                    .frame(width: 318, height: 318)
-                                    .offset(y: 20)
-                                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                                }
+                                // ── Clean Circular Countdown Timer Ring ──
+                                FullCircularTimerView(
+                                    remainingSeconds: $remainingTimerSeconds,
+                                    totalDuration: $totalTimerDuration,
+                                    isPlaying: isPlaying,
+                                    timerEndTimestamp: timerEndTimestamp
+                                )
+                                .frame(width: 318, height: 318)
+                                .offset(y: 20)
+                                .transition(.opacity.combined(with: .scale(scale: 0.96)))
                             }
 
                             Spacer()
@@ -245,6 +188,7 @@ public struct GroundingScreenView: View {
                                     Image(systemName: "chevron.left")
                                         .font(.system(size: 21.4, weight: .semibold))
                                         .foregroundColor(.white)
+                                        .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
                                         .frame(width: 47, height: 47)
                                         .contentShape(Rectangle())
                                 }
@@ -258,6 +202,7 @@ public struct GroundingScreenView: View {
                                     Image(systemName: "music.note")
                                         .font(.system(size: 22.5, weight: .medium))
                                         .foregroundColor(.white)
+                                        .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
                                         .frame(width: 47, height: 47)
                                         .contentShape(Rectangle())
                                 }
@@ -268,6 +213,7 @@ public struct GroundingScreenView: View {
                                     Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                                         .font(.system(size: 28, weight: .bold))
                                         .foregroundColor(.white)
+                                        .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
                                         .frame(width: 47, height: 47)
                                         .offset(x: isPlaying ? 0 : 1.5)
                                         .contentShape(Rectangle())
@@ -284,6 +230,7 @@ public struct GroundingScreenView: View {
                                     Image(systemName: "pencil")
                                         .font(.system(size: 21.4, weight: .medium))
                                         .foregroundColor(.white)
+                                        .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
                                         .frame(width: 47, height: 47)
                                         .contentShape(Rectangle())
                                 }
@@ -294,15 +241,16 @@ public struct GroundingScreenView: View {
                                     Image(systemName: "chevron.right")
                                         .font(.system(size: 21.4, weight: .semibold))
                                         .foregroundColor(.white)
+                                        .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
                                         .frame(width: 47, height: 47)
                                         .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                             }
                             .padding(.bottom, 36)
-                            .opacity((isZenMode || isVisualizerMode) ? 0 : 1)
-                            .animation(.easeInOut(duration: 0.35), value: isZenMode || isVisualizerMode)
-                            .allowsHitTesting(!isZenMode && !isVisualizerMode)
+                            .opacity(isZenMode ? 0 : 1)
+                            .animation(.easeInOut(duration: 0.35), value: isZenMode)
+                            .allowsHitTesting(!isZenMode)
                         }
                     }
                     .frame(width: screenWidth, height: screenHeight)
