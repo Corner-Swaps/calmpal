@@ -22,11 +22,10 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
     case heavyRain       = "Downpour"
     case rollingThunder  = "Thunder"
 
-    // ── Ocean (5) ─────────────────────────────────────────────────────────────
+    // ── Ocean (4) ─────────────────────────────────────────────────────────────
     case oceanWaves      = "Waves"
     case waterfall       = "Waterfall"
     case forestRiver     = "River"
-    case waterDroplets   = "Droplets"
     case coastalSeagulls = "Seagulls"
 
     // ── Forest (5) ────────────────────────────────────────────────────────────
@@ -57,10 +56,10 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
     case rainOnTent     = "Tent"
     case snowyForest    = "Snow"
     case oceanWhale     = "Whale"
-    case antiqueClock   = "Clock"
     case nightOwl       = "Owl"
     case rainOnCar      = "Car"
     case gentleSailboat = "Sailboat"
+    case rainOnUmbrella = "Umbrella"
 
     public var id: String { rawValue }
     public var displayName: String { rawValue }
@@ -76,7 +75,6 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
         case .oceanWaves:      return "waves"
         case .waterfall:       return "waterfall"
         case .forestRiver:     return "river"
-        case .waterDroplets:   return "droplets"
         case .coastalSeagulls: return "seagulls"
         case .forestBirdsong:  return "birds"
         case .tropicalJungle:  return "jungle"
@@ -99,10 +97,10 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
         case .rainOnTent:     return "rain-on-tent"
         case .snowyForest:    return "walk-in-snow"
         case .oceanWhale:     return "whale"
-        case .antiqueClock:   return "clock"
         case .nightOwl:       return "owl"
         case .rainOnCar:      return "rain-on-car-roof"
         case .gentleSailboat: return "sailboat"
+        case .rainOnUmbrella: return "rain-on-umbrella"
         }
     }
 
@@ -117,7 +115,6 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
         case .oceanWaves:      return "Rhythmic ocean surf swells rolling onto sandy shores."
         case .waterfall:       return "Pure white water cascading into a deep natural pool."
         case .forestRiver:     return "Clear stream water trickling over smooth river stones."
-        case .waterDroplets:   return "Crisp, rhythmic water drops falling into a spring."
         case .coastalSeagulls: return "Ocean tides washing coastal rocks with gull calls."
         case .forestBirdsong:  return "Vibrant morning birdsong chorus in woodland canopy."
         case .tropicalJungle:  return "Rich tropical atmosphere with warm birdsong and rustle."
@@ -140,10 +137,10 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
         case .rainOnTent:     return "Cozy raindrops drumming peacefully against a forest camping tent."
         case .snowyForest:    return "Quiet footsteps crunching softly through pristine, silent snow."
         case .oceanWhale:     return "Majestic humpback whale songs echoing through deep blue waters."
-        case .antiqueClock:   return "Steady, comforting tick of an antique wooden pendulum wall clock."
         case .nightOwl:       return "Atmospheric hoot of a wild owl in a calm moonlit forest."
         case .rainOnCar:      return "Soothing rain patter drumming on car glass under twilight streetlights."
         case .gentleSailboat: return "Calm ripples and creaking wood of a sailboat drifting at golden hour."
+        case .rainOnUmbrella: return "Gentle rain tapping softly against a protective umbrella."
         }
     }
 
@@ -200,8 +197,6 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
             return SoundHapticProfile(baseIntensity: 0.35, baseSharpness: 0.38, dynamicGain: 0.70, pulseFrequency: 0.25)
         case .walkOnLeaves:
             return SoundHapticProfile(baseIntensity: 0.42, baseSharpness: 0.68, dynamicGain: 0.85, pulseFrequency: 0.30)
-        case .waterDroplets:
-            return SoundHapticProfile(baseIntensity: 0.38, baseSharpness: 0.75, dynamicGain: 0.85, pulseFrequency: 0.40)
         case .singingBowl:
             return SoundHapticProfile(baseIntensity: 0.40, baseSharpness: 0.18, dynamicGain: 0.65, pulseFrequency: 0.20)
         case .windChimes:
@@ -214,28 +209,28 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
             return SoundHapticProfile(baseIntensity: 0.38, baseSharpness: 0.45, dynamicGain: 0.70, pulseFrequency: 0.30)
         case .oceanWhale:
             return SoundHapticProfile(baseIntensity: 0.55, baseSharpness: 0.15, dynamicGain: 0.90, pulseFrequency: 0.16)
-        case .antiqueClock:
-            return SoundHapticProfile(baseIntensity: 0.36, baseSharpness: 0.60, dynamicGain: 0.60, pulseFrequency: 1.0)
         case .nightOwl:
             return SoundHapticProfile(baseIntensity: 0.38, baseSharpness: 0.40, dynamicGain: 0.75, pulseFrequency: 0.22)
         case .rainOnCar:
             return SoundHapticProfile(baseIntensity: 0.42, baseSharpness: 0.56, dynamicGain: 0.82, pulseFrequency: 0.25)
         case .gentleSailboat:
             return SoundHapticProfile(baseIntensity: 0.44, baseSharpness: 0.25, dynamicGain: 0.80, pulseFrequency: 0.18)
+        case .rainOnUmbrella:
+            return SoundHapticProfile(baseIntensity: 0.40, baseSharpness: 0.60, dynamicGain: 0.82, pulseFrequency: 0.25)
         }
     }
 
     public var shortName: String {
         switch self {
-        case .gentleRain, .rainOnWindow, .rainCanopy, .heavyRain, .rollingThunder, .rainOnTent, .rainOnCar:
+        case .gentleRain, .rainOnWindow, .rainCanopy, .heavyRain, .rollingThunder, .rainOnTent, .rainOnCar, .rainOnUmbrella:
             return "Rain"
-        case .oceanWaves, .waterfall, .forestRiver, .waterDroplets, .coastalSeagulls, .oceanWhale, .gentleSailboat:
+        case .oceanWaves, .waterfall, .forestRiver, .coastalSeagulls, .oceanWhale, .gentleSailboat:
             return "Ocean"
         case .forestBirdsong, .tropicalJungle, .nightCrickets, .eveningFrogs, .catPurring, .nightOwl, .snowyForest:
             return "Forest"
         case .windInTrees, .cozyCampfire, .duneBreeze, .howlingWind, .walkOnLeaves, .windChimes:
             return "Wind"
-        case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater, .singingBowl, .scenicTrain, .antiqueClock:
+        case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater, .singingBowl, .scenicTrain:
             return "Ambient"
         }
     }

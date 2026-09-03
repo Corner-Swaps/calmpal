@@ -68,7 +68,6 @@ public let allSoundBanners: [SoundBannerTheme] = [
     SoundBannerTheme(id: "tropical-jungle", profile: .tropicalJungle, title: "Tropical Jungle", imageName: "tropical-jungle"),
     SoundBannerTheme(id: "night-village", profile: .nightVillage, title: "Quiet Mountain Village", imageName: "night-village"),
     SoundBannerTheme(id: "forest-birds", profile: .forestBirdsong, title: "Morning Birds", imageName: "forest-birds"),
-    SoundBannerTheme(id: "water-droplets", profile: .waterDroplets, title: "Water Droplets", imageName: "water-droplets"),
     SoundBannerTheme(id: "walk-leaves", profile: .walkOnLeaves, title: "Walk on Leaves", imageName: "walk-leaves"),
     SoundBannerTheme(id: "warm-cafe", profile: .warmCafe, title: "Warm Coffee House", imageName: "warm-cafe"),
 
@@ -79,10 +78,10 @@ public let allSoundBanners: [SoundBannerTheme] = [
     SoundBannerTheme(id: "rain-on-tent", profile: .rainOnTent, title: "Rain on Tent", imageName: "rain-on-tent"),
     SoundBannerTheme(id: "snowy-forest", profile: .snowyForest, title: "Snowy Forest Walk", imageName: "snowy-forest"),
     SoundBannerTheme(id: "ocean-whale", profile: .oceanWhale, title: "Whale Song", imageName: "ocean-whale"),
-    SoundBannerTheme(id: "antique-clock", profile: .antiqueClock, title: "Antique Clock", imageName: "antique-clock"),
     SoundBannerTheme(id: "night-owl", profile: .nightOwl, title: "Night Owl", imageName: "night-owl"),
     SoundBannerTheme(id: "rain-on-car", profile: .rainOnCar, title: "Rain on Car Window", imageName: "rain-on-car"),
-    SoundBannerTheme(id: "gentle-sailboat", profile: .gentleSailboat, title: "Gentle Sailboat", imageName: "gentle-sailboat")
+    SoundBannerTheme(id: "gentle-sailboat", profile: .gentleSailboat, title: "Gentle Sailboat", imageName: "gentle-sailboat"),
+    SoundBannerTheme(id: "rain-on-umbrella", profile: .rainOnUmbrella, title: "Rain on Umbrella", imageName: "rain-on-umbrella")
 ]
 
 public func bannerFor(profile: SoundProfile) -> SoundBannerTheme {
