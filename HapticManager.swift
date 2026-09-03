@@ -64,8 +64,8 @@ public final class HapticManager: NSObject {
     private var wasEngineRunningBeforeBackground = false
     
     /// Exponential smoothing factor.
-    /// `0.15` offers a heavy, fluid, liquid tactile feel.
-    private let alpha: Float = 0.15
+    /// `0.38` offers immediate, agile tactile response to audio dynamics.
+    private let alpha: Float = 0.38
     
     /// The persistent smoothed state variables for the low-pass filter.
     private var smoothedIntensity: Float = 0.0
@@ -368,6 +368,22 @@ public final class HapticManager: NSObject {
             try player.sendParameters([intensityControl, sharpnessControl], atTime: CHHapticTimeImmediate)
         } catch {
             print("[HapticManager] Error sending dynamic parameters to player: \(error)")
+        }
+    }
+    
+    /// Triggers an immediate, crisp single-beat transient haptic click/tap in direct response to an audio transient event.
+    public func playSingleTransient(intensity: Float, sharpness: Float) {
+        guard isHardwareSupported, isEngineRunning, let engine = engine else { return }
+        
+        do {
+            let iParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: min(1.0, max(0.1, intensity)))
+            let sParam = CHHapticEventParameter(parameterID: .hapticSharpness, value: min(1.0, max(0.1, sharpness)))
+            let event = CHHapticEvent(eventType: .hapticTransient, parameters: [iParam, sParam], relativeTime: 0.0)
+            let pattern = try CHHapticPattern(events: [event], parameters: [])
+            let clickPlayer = try engine.makePlayer(with: pattern)
+            try clickPlayer.start(atTime: CHHapticTimeImmediate)
+        } catch {
+            print("[HapticManager] Error playing audio transient haptic: \(error.localizedDescription)")
         }
     }
     

@@ -552,6 +552,7 @@ private struct FullCircularTimerView: View {
 
 private struct CircularParticleWaveVisualizerView: View {
     let isPlaying: Bool
+    @State private var lastTransientHapticTime: TimeInterval = 0.0
 
     var body: some View {
         if isPlaying {
@@ -566,116 +567,145 @@ private struct CircularParticleWaveVisualizerView: View {
     @ViewBuilder
     private func visualizerBody(at now: Date) -> some View {
         let time = now.timeIntervalSinceReferenceDate
-        let rawLevel = isPlaying ? CGFloat(AudioManager.shared.audioLevel) : 0.0
-        let freqs = isPlaying ? AudioManager.shared.audioFrequencies : Array(repeating: 0.0, count: 16)
+        let audio = AudioManager.shared
+        let level = isPlaying ? CGFloat(audio.audioLevel) : 0.0
+        let peak = isPlaying ? CGFloat(audio.audioPeak) : 0.0
+        let bass = isPlaying ? CGFloat(audio.audioBass) : 0.0
+        let mid = isPlaying ? CGFloat(audio.audioMid) : 0.0
+        let treble = isPlaying ? CGFloat(audio.audioTreble) : 0.0
+        let transient = isPlaying ? CGFloat(audio.audioTransient) : 0.0
+        let freqs = isPlaying ? audio.audioFrequencies : Array(repeating: Float(0.0), count: 16)
+        let waveform = isPlaying ? audio.audioWaveform : Array(repeating: Float(0.0), count: 64)
 
-        // Real-time tactile vibration driven directly by the audio energy and frequency spectrum
-        let _ = updateHaptics(rawLevel: rawLevel, freqs: freqs)
+        // Real-time tactile vibration driven directly by acoustic energy and transients
+        let _ = updateHaptics(now: time, level: level, peak: peak, bass: bass, mid: mid, treble: treble, transient: transient)
 
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
             let baseRadius: CGFloat = size * 0.38
 
             ZStack {
-                // ── 1. Core Luminous Breathing Glow (Clean Silver-Grey & White) ──
+                // ── 1. Core Luminous Breathing Glow (Reacts directly to Bass and Overall Energy) ──
+                let glowScale = 1.0 + Double(bass) * 0.35 + Double(level) * 0.25
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.white.opacity(0.12 + Double(rawLevel) * 0.25),
-                                Color(white: 0.70).opacity(0.05 + Double(rawLevel) * 0.10),
+                                Color.white.opacity(0.14 + Double(level) * 0.35 + Double(bass) * 0.20),
+                                Color(white: 0.70).opacity(0.06 + Double(level) * 0.15),
                                 Color.clear
                             ],
                             center: .center,
-                            startRadius: 10,
-                            endRadius: baseRadius * 1.35
+                            startRadius: 8,
+                            endRadius: baseRadius * 1.35 * CGFloat(glowScale)
                         )
                     )
-                    .frame(width: baseRadius * 2.7, height: baseRadius * 2.7)
+                    .frame(width: baseRadius * 2.8 * CGFloat(glowScale), height: baseRadius * 2.8 * CGFloat(glowScale))
 
-                // ── 2. Canvas for Circular Fluid Waves & Orbiting Particles (Grey & White) ──
+                // ── 2. Canvas: Live Acoustic Waveform, Spectrum Rings & Dynamic Constellations ──
                 Canvas { context, canvasSize in
                     let cX = canvasSize.width / 2
                     let cY = canvasSize.height / 2
 
-                    // ── A. 4 Concentric Fluid Wave Rings (Radially Wrapped Fluid Waves) ──
-                    let numRings = 4
-                    let steps = 80
-
-                    for k in 0..<numRings {
-                        let ringFraction = CGFloat(k) / CGFloat(numRings - 1)
-                        let ringBaseR = baseRadius * (0.65 + ringFraction * 0.38)
-                        let speedMult = 1.6 + Double(k) * 0.35
-                        let direction: Double = (k % 2 == 0) ? 1.0 : -1.0
-
-                        var wavePath = Path()
-
-                        for s in 0...steps {
-                            let theta = (Double(s) / Double(steps)) * 2.0 * .pi
-
-                            // Harmonic radial wave oscillation
-                            let w1 = sin(theta * 3.0 + time * speedMult * direction) * (3.5 + Double(k) * 1.8)
-                            let w2 = cos(theta * 6.0 - time * 2.1 * direction) * (2.2 + Double(k) * 1.2)
-                            let w3 = sin(theta * 9.0 + time * 3.4) * (Double(rawLevel) * (14.0 + Double(k) * 6.0))
-
-                            // Map angle theta to frequency bands (16 bands)
-                            let bandIndex = Int((theta / (2.0 * .pi)) * 16.0) % 16
-                            let bandEnergy = CGFloat(freqs[bandIndex]) * (18.0 + CGFloat(k) * 6.0)
-
-                            let radialDisplacement = CGFloat(w1 + w2 + w3) + bandEnergy
-                            let r = ringBaseR + radialDisplacement
-
-                            let pX = cX + r * CGFloat(cos(theta))
-                            let pY = cY + r * CGFloat(sin(theta))
-
-                            if s == 0 {
-                                wavePath.move(to: CGPoint(x: pX, y: pY))
-                            } else {
-                                wavePath.addLine(to: CGPoint(x: pX, y: pY))
-                            }
-                        }
-                        wavePath.closeSubpath()
-
-                        // Ring Colors: Shimmering translucent white to silver-grey
-                        let alpha = Double(0.25 + ringFraction * 0.65) * (0.6 + Double(rawLevel) * 0.4)
-                        let brightness = 0.75 + 0.25 * Double(ringFraction)
-                        let ringColor = Color(white: brightness, opacity: alpha)
-
-                        let strokeWidth: CGFloat = (1.2 + ringFraction * 1.2) + rawLevel * 1.8
-
-                        context.stroke(
-                            wavePath,
-                            with: .color(ringColor),
-                            style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round, lineJoin: .round)
-                        )
+                    // ── A. Inner Bass & Harmonic Core Ring ──
+                    let innerR = baseRadius * 0.62 + bass * 16.0 + level * 8.0
+                    var innerPath = Path()
+                    let innerSteps = 64
+                    for s in 0...innerSteps {
+                        let theta = (Double(s) / Double(innerSteps)) * 2.0 * .pi
+                        // Subtle harmonic resonance driven by lower mids
+                        let harmonic = sin(theta * 2.0) * Double(bass) * 4.0
+                        let r = innerR + CGFloat(harmonic)
+                        let pX = cX + r * CGFloat(cos(theta))
+                        let pY = cY + r * CGFloat(sin(theta))
+                        if s == 0 { innerPath.move(to: CGPoint(x: pX, y: pY)) }
+                        else { innerPath.addLine(to: CGPoint(x: pX, y: pY)) }
                     }
+                    innerPath.closeSubpath()
+                    let innerAlpha = 0.35 + Double(bass) * 0.45 + Double(level) * 0.20
+                    context.stroke(
+                        innerPath,
+                        with: .color(Color(white: 0.85, opacity: min(1.0, innerAlpha))),
+                        style: StrokeStyle(lineWidth: 1.2 + bass * 2.0, lineCap: .round, lineJoin: .round)
+                    )
 
-                    // ── B. Orbiting Constellation Particles (36 Reactive Floating Particles) ──
+                    // ── B. Middle Frequency Spectrum Ribbon (16-Band Radial Equalizer) ──
+                    var spectrumPath = Path()
+                    let specSteps = 96
+                    let specBaseR = baseRadius * 0.86 + level * 10.0
+                    for s in 0...specSteps {
+                        let frac = Double(s) / Double(specSteps)
+                        let theta = frac * 2.0 * .pi
+                        
+                        // Symmetrical frequency mapping across 16 bands
+                        let bandFrac = abs(sin(theta)) * 15.0
+                        let b0 = Int(bandFrac)
+                        let b1 = min(15, b0 + 1)
+                        let interp = Float(bandFrac - Double(b0))
+                        let bandVal = freqs[b0] * (1.0 - interp) + freqs[b1] * interp
+                        
+                        let displacement = CGFloat(bandVal) * (26.0 + level * 18.0)
+                        let r = specBaseR + displacement
+                        let pX = cX + r * CGFloat(cos(theta))
+                        let pY = cY + r * CGFloat(sin(theta))
+                        if s == 0 { spectrumPath.move(to: CGPoint(x: pX, y: pY)) }
+                        else { spectrumPath.addLine(to: CGPoint(x: pX, y: pY)) }
+                    }
+                    spectrumPath.closeSubpath()
+                    let specAlpha = 0.45 + Double(level) * 0.40 + Double(mid) * 0.15
+                    context.stroke(
+                        spectrumPath,
+                        with: .color(Color(white: 0.92, opacity: min(1.0, specAlpha))),
+                        style: StrokeStyle(lineWidth: 1.6 + level * 2.2, lineCap: .round, lineJoin: .round)
+                    )
+
+                    // ── C. Outer Live Acoustic Waveform Ribbon (Direct Oscilloscope Stream) ──
+                    var wavePath = Path()
+                    let waveCount = waveform.count // 64 samples
+                    let waveBaseR = baseRadius * 1.06
+                    for s in 0...waveCount {
+                        let idx = s % waveCount
+                        let theta = (Double(s) / Double(waveCount)) * 2.0 * .pi
+                        let waveSample = CGFloat(waveform[idx])
+                        let waveDisplacement = waveSample * (level * 32.0 + peak * 14.0)
+                        let r = waveBaseR + waveDisplacement
+                        let pX = cX + r * CGFloat(cos(theta))
+                        let pY = cY + r * CGFloat(sin(theta))
+                        if s == 0 { wavePath.move(to: CGPoint(x: pX, y: pY)) }
+                        else { wavePath.addLine(to: CGPoint(x: pX, y: pY)) }
+                    }
+                    wavePath.closeSubpath()
+                    let waveAlpha = 0.55 + Double(level) * 0.45
+                    context.stroke(
+                        wavePath,
+                        with: .color(Color.white.opacity(min(1.0, waveAlpha))),
+                        style: StrokeStyle(lineWidth: 1.8 + level * 2.0 + peak * 1.2, lineCap: .round, lineJoin: .round)
+                    )
+
+                    // ── D. Audio-Reactive Constellation Particles (36 Acoustic Emitters) ──
                     let numParticles = 36
                     for i in 0..<numParticles {
-                        let seed = Double(i) * 137.508
-                        let baseTheta = (Double(i) / Double(numParticles)) * 2.0 * .pi
-                        let orbitSpeed = (0.12 + 0.08 * sin(seed)) * ((i % 2 == 0) ? 1.0 : -1.0)
-                        let currentTheta = baseTheta + time * orbitSpeed
-
-                        let driftR = sin(time * 1.8 + seed) * 14.0
-                        let audioBurst = rawLevel * 36.0 * CGFloat(0.5 + 0.5 * sin(seed * 2.0))
-                        let pRadiusDist = baseRadius * 1.08 + CGFloat(driftR) + audioBurst
-
-                        let pX = cX + pRadiusDist * CGFloat(cos(currentTheta))
-                        let pY = cY + pRadiusDist * CGFloat(sin(currentTheta))
-
-                        let pulse = 0.5 + 0.5 * sin(time * 2.8 + seed)
-                        let dotSize: CGFloat = (1.4 + CGFloat(pulse) * 1.6) + rawLevel * 2.0
-                        let pAlpha = (0.30 + 0.55 * pulse) * Double(0.5 + 0.5 * rawLevel)
-
+                        let frac = Double(i) / Double(numParticles)
+                        let baseTheta = frac * 2.0 * .pi
+                        
+                        // Map particle to corresponding frequency band
+                        let bandIdx = Int(frac * 15.0) % 16
+                        let bandEnergy = CGFloat(freqs[bandIdx])
+                        
+                        // Particles burst outward when sound / transients hit
+                        let burst = bandEnergy * 24.0 + transient * 20.0 + level * 12.0
+                        let pR = baseRadius * 1.18 + burst
+                        
+                        let pX = cX + pR * CGFloat(cos(baseTheta))
+                        let pY = cY + pR * CGFloat(sin(baseTheta))
+                        
+                        let dotSize: CGFloat = 1.6 + bandEnergy * 2.8 + transient * 2.4 + level * 1.4
+                        let pAlpha = 0.35 + Double(bandEnergy) * 0.45 + Double(transient) * 0.20 + Double(level) * 0.20
+                        
                         let particleRect = CGRect(x: pX - dotSize, y: pY - dotSize, width: dotSize * 2, height: dotSize * 2)
-                        let dotBrightness = 0.80 + 0.20 * sin(seed)
-                        let dotColor = Color(white: dotBrightness, opacity: pAlpha)
-
                         context.fill(
                             Path(ellipseIn: particleRect),
-                            with: .color(dotColor)
+                            with: .color(Color.white.opacity(min(1.0, pAlpha)))
                         )
                     }
                 }
@@ -700,14 +730,21 @@ private struct CircularParticleWaveVisualizerView: View {
         }
     }
 
-    private func updateHaptics(rawLevel: CGFloat, freqs: [Float]) {
+    private func updateHaptics(now: TimeInterval, level: CGFloat, peak: CGFloat, bass: CGFloat, mid: CGFloat, treble: CGFloat, transient: CGFloat) {
         if isPlaying {
-            let bass = Double(freqs[0] + freqs[1] + freqs[2]) / 3.0
-            let mid = Double(freqs[4] + freqs[5] + freqs[6]) / 3.0
-            let dynamicIntensity = Float(min(1.0, max(0.0, Double(rawLevel) * 0.70 + bass * 0.50)))
-            let dynamicSharpness = Float(min(1.0, max(0.0, 0.15 + mid * 0.60)))
+            let dynamicIntensity = Float(min(1.0, max(0.0, Double(level) * 0.70 + Double(bass) * 0.50)))
+            let dynamicSharpness = Float(min(1.0, max(0.0, 0.10 + Double(treble) * 0.65 + Double(mid) * 0.25)))
             HapticManager.shared.targetIntensity = dynamicIntensity
             HapticManager.shared.targetSharpness = dynamicSharpness
+
+            // Immediate tactile click/tap for transient events (e.g. cricket chirps, fire pops, water drops)
+            if transient > 0.35 && (now - lastTransientHapticTime > 0.09) {
+                lastTransientHapticTime = now
+                HapticManager.shared.playSingleTransient(
+                    intensity: Float(min(1.0, transient)),
+                    sharpness: Float(min(1.0, 0.45 + Double(treble) * 0.45))
+                )
+            }
         } else {
             HapticManager.shared.targetIntensity = 0.0
             HapticManager.shared.targetSharpness = 0.0

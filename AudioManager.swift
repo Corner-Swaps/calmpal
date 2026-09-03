@@ -7,8 +7,9 @@
 //  High-definition audio player with smooth looping and seamless engine playback.
 //
 
-import AVFoundation
+@preconcurrency import AVFoundation
 import MediaPlayer
+import Accelerate
 
 // MARK: ── Sound Profile ───────────────────────────────────────────────────────
 
@@ -142,12 +143,19 @@ public final class AudioManager {
 
     public private(set) var isAudioPlaying: Bool = false
 
-    // Real-time audio energy and frequency spectrum for visualizers
+    // Real-time audio energy, spectral bands, transients, and live waveform for visualizers & haptics
     public private(set) var audioLevel: Float = 0.0
+    public private(set) var audioPeak: Float = 0.0
+    public private(set) var audioBass: Float = 0.0
+    public private(set) var audioMid: Float = 0.0
+    public private(set) var audioTreble: Float = 0.0
+    public private(set) var audioTransient: Float = 0.0
     public private(set) var audioFrequencies: [Float] = Array(repeating: 0.0, count: 16)
+    public private(set) var audioWaveform: [Float] = Array(repeating: 0.0, count: 64)
 
     private let audioEngine = AVAudioEngine()
     private let playerNode  = AVAudioPlayerNode()
+    private let analyzer = AudioSpectrumAnalyzer()
     private var fadeTask: Task<Void, Never>?
 
     public var activeProfile: SoundProfile = .gentleRain {
@@ -363,6 +371,13 @@ public final class AudioManager {
             guard let self = self, self.isAudioPlaying else {
                 DispatchQueue.main.async {
                     self?.audioLevel = 0.0
+                    self?.audioPeak = 0.0
+                    self?.audioBass = 0.0
+                    self?.audioMid = 0.0
+                    self?.audioTreble = 0.0
+                    self?.audioTransient = 0.0
+                    self?.audioFrequencies = Array(repeating: 0.0, count: 16)
+                    self?.audioWaveform = Array(repeating: 0.0, count: 64)
                 }
                 return
             }
@@ -370,31 +385,19 @@ public final class AudioManager {
             let frameLength = Int(buffer.frameLength)
             guard frameLength > 0 else { return }
 
-            var sum: Float = 0.0
-            for i in 0..<frameLength {
-                let sample = channelData[i]
-                sum += sample * sample
-            }
-            let rms = sqrt(sum / Float(frameLength))
-            let normalized = min(1.0, max(0.0, rms * 4.8))
-
-            let chunkSize = max(1, frameLength / 16)
-            var bands = [Float](repeating: 0.0, count: 16)
-            for b in 0..<16 {
-                var bSum: Float = 0.0
-                let start = b * chunkSize
-                let end = min(frameLength, start + chunkSize)
-                for i in start..<end {
-                    bSum += abs(channelData[i])
-                }
-                bands[b] = min(1.0, (bSum / Float(chunkSize)) * 4.2)
-            }
+            let res = self.analyzer.analyze(channelData: channelData, frameLength: frameLength)
 
             DispatchQueue.main.async {
-                self.audioLevel = self.audioLevel * 0.35 + normalized * 0.65
+                self.audioLevel = self.audioLevel * 0.20 + res.level * 0.80
+                self.audioPeak = self.audioPeak * 0.15 + res.peak * 0.85
+                self.audioBass = self.audioBass * 0.25 + res.bass * 0.75
+                self.audioMid = self.audioMid * 0.25 + res.mid * 0.75
+                self.audioTreble = self.audioTreble * 0.25 + res.treble * 0.75
+                self.audioTransient = res.transient
                 for b in 0..<16 {
-                    self.audioFrequencies[b] = self.audioFrequencies[b] * 0.45 + bands[b] * 0.55
+                    self.audioFrequencies[b] = self.audioFrequencies[b] * 0.30 + res.frequencies[b] * 0.70
                 }
+                self.audioWaveform = res.waveform
             }
         }
     }
@@ -650,5 +653,162 @@ public final class AudioManager {
             }
             completion?()
         }
+    }
+}
+
+// MARK: ── Audio Spectrum & Waveform Analyzer (Accelerate FFT & DSP) ──────────
+
+private final class AudioSpectrumAnalyzer: @unchecked Sendable {
+    private let fftSize: Int = 1024
+    private let log2n: vDSP_Length
+    private let fftSetup: FFTSetup?
+    private var window: [Float]
+    private var realp: [Float]
+    private var imagp: [Float]
+    private var magnitudes: [Float]
+    private var previousLevel: Float = 0.0
+
+    init() {
+        self.log2n = vDSP_Length(10) // 2^10 = 1024
+        self.fftSetup = vDSP_create_fftsetup(log2n, FFTRadix(kFFTRadix2))
+        self.window = [Float](repeating: 0, count: 1024)
+        vDSP_hann_window(&window, 1024, Int32(vDSP_HANN_NORM))
+        
+        let halfSize = 512
+        self.realp = [Float](repeating: 0, count: halfSize)
+        self.imagp = [Float](repeating: 0, count: halfSize)
+        self.magnitudes = [Float](repeating: 0, count: halfSize)
+    }
+
+    deinit {
+        if let setup = fftSetup {
+            vDSP_destroy_fftsetup(setup)
+        }
+    }
+
+    struct AnalysisResult {
+        let level: Float
+        let peak: Float
+        let bass: Float
+        let mid: Float
+        let treble: Float
+        let transient: Float
+        let frequencies: [Float] // 16 logarithmic frequency bands
+        let waveform: [Float]    // 64 live time-domain samples
+    }
+
+    func analyze(channelData: UnsafePointer<Float>, frameLength: Int) -> AnalysisResult {
+        let count = min(frameLength, fftSize)
+        guard count >= 64 else {
+            return AnalysisResult(
+                level: 0, peak: 0, bass: 0, mid: 0, treble: 0, transient: 0,
+                frequencies: Array(repeating: 0, count: 16),
+                waveform: Array(repeating: 0, count: 64)
+            )
+        }
+
+        // 1. RMS Amplitude & Peak
+        var sumSquares: Float = 0
+        var peakVal: Float = 0
+        vDSP_measqv(channelData, 1, &sumSquares, vDSP_Length(count))
+        vDSP_maxmgv(channelData, 1, &peakVal, vDSP_Length(count))
+        let rms = sqrt(sumSquares)
+        let normalizedLevel = min(1.0, max(0.0, rms * 5.5))
+        let normalizedPeak = min(1.0, max(0.0, peakVal * 4.0))
+
+        // 2. Subsample 64-point live waveform for oscilloscope rendering
+        var wave64 = [Float](repeating: 0, count: 64)
+        let step = max(1, count / 64)
+        for i in 0..<64 {
+            let idx = min(count - 1, i * step)
+            wave64[i] = max(-1.0, min(1.0, channelData[idx] * 3.5))
+        }
+
+        // 3. FFT or Chunked Energy Fallback
+        guard let setup = fftSetup, count == fftSize else {
+            var fallbackBands = [Float](repeating: 0, count: 16)
+            let chunkSize = max(1, count / 16)
+            for b in 0..<16 {
+                let s = b * chunkSize
+                let e = min(count, s + chunkSize)
+                var bSum: Float = 0
+                for i in s..<e { bSum += abs(channelData[i]) }
+                fallbackBands[b] = min(1.0, (bSum / Float(chunkSize)) * 4.5)
+            }
+            let bass = (fallbackBands[0] + fallbackBands[1]) / 2.0
+            let mid = (fallbackBands[4] + fallbackBands[5]) / 2.0
+            let treble = (fallbackBands[12] + fallbackBands[13]) / 2.0
+            let delta = max(0.0, normalizedLevel - previousLevel)
+            previousLevel = normalizedLevel
+            return AnalysisResult(
+                level: normalizedLevel,
+                peak: normalizedPeak,
+                bass: bass,
+                mid: mid,
+                treble: treble,
+                transient: min(1.0, delta * 3.0),
+                frequencies: fallbackBands,
+                waveform: wave64
+            )
+        }
+
+        // Apply Hann window
+        var windowedInput = [Float](repeating: 0, count: fftSize)
+        vDSP_vmul(channelData, 1, window, 1, &windowedInput, 1, vDSP_Length(fftSize))
+
+        let halfSize = fftSize / 2
+        realp.withUnsafeMutableBufferPointer { rPtr in
+            imagp.withUnsafeMutableBufferPointer { iPtr in
+                var splitComplex = DSPSplitComplex(realp: rPtr.baseAddress!, imagp: iPtr.baseAddress!)
+                windowedInput.withUnsafeBufferPointer { wPtr in
+                    wPtr.baseAddress!.withMemoryRebound(to: DSPComplex.self, capacity: halfSize) { complexPtr in
+                        vDSP_ctoz(complexPtr, 2, &splitComplex, 1, vDSP_Length(halfSize))
+                    }
+                }
+
+                vDSP_fft_zrip(setup, &splitComplex, 1, log2n, FFTDirection(FFT_FORWARD))
+                vDSP_zvmags(&splitComplex, 1, &magnitudes, 1, vDSP_Length(halfSize))
+            }
+        }
+        var norm: Float = 2.0 / Float(fftSize)
+        vDSP_vsmul(magnitudes, 1, &norm, &magnitudes, 1, vDSP_Length(halfSize))
+        var sqrtMags = [Float](repeating: 0, count: halfSize)
+        vvsqrtf(&sqrtMags, magnitudes, [Int32(halfSize)])
+
+        // Group into 16 perceptual frequency bands
+        var bands16 = [Float](repeating: 0, count: 16)
+        for b in 0..<16 {
+            let startBin = Int(pow(Double(halfSize), Double(b) / 16.0))
+            let endBin = max(startBin + 1, Int(pow(Double(halfSize), Double(b + 1) / 16.0)))
+            let sBin = min(halfSize - 1, startBin)
+            let eBin = min(halfSize, endBin)
+            var bSum: Float = 0
+            for k in sBin..<eBin {
+                bSum += sqrtMags[k]
+            }
+            let avg = bSum / Float(max(1, eBin - sBin))
+            bands16[b] = min(1.0, avg * 14.0)
+        }
+
+        let bass = (bands16[0] + bands16[1] + bands16[2] + bands16[3]) / 4.0
+        let mid = (bands16[4] + bands16[5] + bands16[6] + bands16[7] + bands16[8] + bands16[9]) / 6.0
+        let treble = (bands16[10] + bands16[11] + bands16[12] + bands16[13] + bands16[14] + bands16[15]) / 6.0
+
+        // Transient energy detection
+        let delta = max(0.0, normalizedLevel - previousLevel)
+        let highBurst = max(0.0, treble - 0.20)
+        let transient = min(1.0, delta * 3.5 + highBurst * 1.5)
+        previousLevel = normalizedLevel
+
+        return AnalysisResult(
+            level: normalizedLevel,
+            peak: normalizedPeak,
+            bass: min(1.0, bass),
+            mid: min(1.0, mid),
+            treble: min(1.0, treble),
+            transient: transient,
+            frequencies: bands16,
+            waveform: wave64
+        )
     }
 }
