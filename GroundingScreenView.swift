@@ -797,22 +797,33 @@ private struct TallFusedMeasuringLinesView: View {
                             edgeFade = max(0.0, min(1.0, (bottomSafeFadeEnd - yPos) / (bottomSafeFadeEnd - bottomSafeFadeStart)))
                         }
                         guard edgeFade > 0.01 else { continue }
-                        let smoothEdgeFade = 0.40 + 0.60 * sin(Double(edgeFade) * .pi / 2.0)
+                        let smoothEdgeFade = 0.65 + 0.35 * sin(Double(edgeFade) * .pi / 2.0)
 
-                        // Preserve round center shape and slowly curve upwards like an hourglass
+                        // Distinct circular orb at center, then slowly curving upwards like an hourglass
                         let lineWidth: CGFloat
                         if yPos <= midY {
-                            // Upward: Round circular center dome transitioning into a slow, elegant hourglass curve
-                            let upRatio = max(0.0, min(1.0, distFromCenter / (midY - topSafeFadeEnd)))
-                            let curveFactor = 1.0 / (1.0 + pow(upRatio / 0.42, 2.2))
-                            let w = 42.0 + 133.0 * CGFloat(curveFactor)
-                            lineWidth = w * (0.45 + 0.55 * CGFloat(smoothEdgeFade))
+                            if distFromCenter <= 80.0 {
+                                // Pure circular orb in center (radius ~115pt)
+                                let circRatio = sqrt(max(0.0, 1.0 - pow(distFromCenter / 115.0, 2)))
+                                let w = 52.0 + 128.0 * CGFloat(circRatio)
+                                lineWidth = w * (0.50 + 0.50 * CGFloat(smoothEdgeFade))
+                            } else {
+                                // Above circular orb: slowly curves upwards like an hourglass
+                                let dNeck = (distFromCenter - 80.0) / (midY - topSafeFadeEnd - 80.0)
+                                let w = 46.0 + (143.9 - 46.0) * CGFloat(exp(-1.25 * dNeck))
+                                lineWidth = w * (0.50 + 0.50 * CGFloat(smoothEdgeFade))
+                            }
                         } else {
-                            // Downward: Gentle grounded curve towards the bottom checkmark
-                            let downRatio = max(0.0, min(1.0, distFromCenter / (bottomSafeFadeEnd - midY)))
-                            let curveFactor = 1.0 / (1.0 + pow(downRatio / 0.45, 2.0))
-                            let w = 62.0 + 113.0 * CGFloat(curveFactor)
-                            lineWidth = w * (0.45 + 0.55 * CGFloat(smoothEdgeFade))
+                            // Downward: circular bulb transitioning smoothly towards bottom checkmark
+                            if distFromCenter <= 80.0 {
+                                let circRatio = sqrt(max(0.0, 1.0 - pow(distFromCenter / 115.0, 2)))
+                                let w = 65.0 + 115.0 * CGFloat(circRatio)
+                                lineWidth = w * (0.50 + 0.50 * CGFloat(smoothEdgeFade))
+                            } else {
+                                let dNeck = (distFromCenter - 80.0) / (bottomSafeFadeEnd - midY - 80.0)
+                                let w = 60.0 + (147.5 - 60.0) * CGFloat(exp(-1.35 * dNeck))
+                                lineWidth = w * (0.50 + 0.50 * CGFloat(smoothEdgeFade))
+                            }
                         }
                         let numPts = 12
                         let xStart = midX - lineWidth / 2
@@ -848,10 +859,10 @@ private struct TallFusedMeasuringLinesView: View {
                             }
                         }
 
-                        // Brighter baseline for top/outer lines (0.32 base + focus up to 1.0)
-                        let baseAlpha = 0.32 + focus * 0.68
+                        // Distinctly brighter lines closer to top (0.48 base + focus up to 1.0)
+                        let baseAlpha = 0.48 + focus * 0.52
                         let lineAlpha = baseAlpha * smoothEdgeFade
-                        let strokeW = 1.15 + CGFloat(focus) * 0.65
+                        let strokeW = 1.20 + CGFloat(focus) * 0.65
 
                         context.stroke(
                             linePath,
