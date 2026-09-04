@@ -80,7 +80,12 @@ public let allSoundBanners: [SoundBannerTheme] = [
     SoundBannerTheme(id: "rain-on-tent", profile: .rainOnTent, title: "Rain on Tent", imageName: "rain-on-tent"),
     SoundBannerTheme(id: "ocean-whale", profile: .oceanWhale, title: "Whale Song", imageName: "ocean-whale"),
     SoundBannerTheme(id: "rain-on-car", profile: .rainOnCar, title: "Rain on Car Window", imageName: "rain-on-car"),
-    SoundBannerTheme(id: "gentle-sailboat", profile: .gentleSailboat, title: "Gentle Sailboat", imageName: "gentle-sailboat")
+    SoundBannerTheme(id: "gentle-sailboat", profile: .gentleSailboat, title: "Gentle Sailboat", imageName: "gentle-sailboat"),
+    SoundBannerTheme(id: "snowy-forest", profile: .snowyForest, title: "Snowy Forest", imageName: "snowy-forest"),
+    SoundBannerTheme(id: "antique-clock", profile: .antiqueClock, title: "Antique Clock", imageName: "antique-clock"),
+    SoundBannerTheme(id: "night-owl", profile: .nightOwl, title: "Night Owl", imageName: "night-owl"),
+    SoundBannerTheme(id: "rowing-boat", profile: .rowingBoat, title: "Rowing Boat", imageName: "rowing-boat"),
+    SoundBannerTheme(id: "cathedral-chimes", profile: .cathedralChimes, title: "Cathedral Chimes", imageName: "cathedral-chimes")
 ]
 
 public func bannerFor(profile: SoundProfile) -> SoundBannerTheme {

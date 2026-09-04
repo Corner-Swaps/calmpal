@@ -85,13 +85,13 @@ final class CalmpalTests: XCTestCase {
             switch profile {
             case .gentleRain, .rainCanopy, .rollingThunder, .rainOnTent, .rainOnCar:
                 XCTAssertEqual(profile.shortName, "Rain")
-            case .oceanWaves, .waterfall, .forestRiver, .coastalSeagulls, .oceanWhale, .gentleSailboat:
+            case .oceanWaves, .waterfall, .forestRiver, .coastalSeagulls, .oceanWhale, .gentleSailboat, .rowingBoat:
                 XCTAssertEqual(profile.shortName, "Ocean")
-            case .forestBirdsong, .tropicalJungle, .nightCrickets, .eveningFrogs, .catPurring:
+            case .forestBirdsong, .tropicalJungle, .nightCrickets, .eveningFrogs, .catPurring, .snowyForest, .nightOwl:
                 XCTAssertEqual(profile.shortName, "Forest")
             case .windInTrees, .cozyCampfire, .duneBreeze, .howlingWind, .walkOnLeaves, .windChimes:
                 XCTAssertEqual(profile.shortName, "Wind")
-            case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater, .singingBowl, .scenicTrain:
+            case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater, .singingBowl, .scenicTrain, .antiqueClock, .cathedralChimes:
                 XCTAssertEqual(profile.shortName, "Ambient")
             }
         }
@@ -149,7 +149,7 @@ final class CalmpalTests: XCTestCase {
     // MARK: - Sound Banner Themes Tests
 
     func testSoundBannerThemes() {
-        XCTAssertEqual(allSoundBanners.count, 29)
+        XCTAssertEqual(allSoundBanners.count, 34)
         for banner in allSoundBanners {
             XCTAssertFalse(banner.id.isEmpty)
             XCTAssertFalse(banner.title.isEmpty)
