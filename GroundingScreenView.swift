@@ -787,7 +787,7 @@ private struct TallFusedMeasuringLinesView: View {
                         guard yPos >= topSafeFadeEnd && yPos <= bottomSafeFadeEnd else { continue }
 
                         let distFromCenter = abs(yPos - midY)
-                        let focus = max(0.0, exp(-pow(Double(distFromCenter) / 105.0, 2)))
+                        let focus = max(0.0, exp(-pow(Double(distFromCenter) / 135.0, 2)))
 
                         // Smooth gradient fade before touching top timer and bottom checkmark
                         var edgeFade: CGFloat = 1.0
@@ -796,10 +796,10 @@ private struct TallFusedMeasuringLinesView: View {
                         } else if yPos > bottomSafeFadeStart {
                             edgeFade = max(0.0, min(1.0, (bottomSafeFadeEnd - yPos) / (bottomSafeFadeEnd - bottomSafeFadeStart)))
                         }
-                        guard edgeFade > 0.005 else { continue }
-                        let smoothEdgeFade = sin(Double(edgeFade) * .pi / 2.0)
+                        guard edgeFade > 0.01 else { continue }
+                        let smoothEdgeFade = 0.40 + 0.60 * sin(Double(edgeFade) * .pi / 2.0)
 
-                        let lineWidth = (65.0 + CGFloat(focus) * 110.0) * (0.4 + 0.6 * CGFloat(smoothEdgeFade))
+                        let lineWidth = (72.0 + CGFloat(focus) * 105.0) * (0.45 + 0.55 * CGFloat(smoothEdgeFade))
                         let numPts = 12
                         let xStart = midX - lineWidth / 2
 
@@ -834,8 +834,10 @@ private struct TallFusedMeasuringLinesView: View {
                             }
                         }
 
-                        let lineAlpha = (0.12 + focus * 0.88) * smoothEdgeFade
-                        let strokeW = 1.0 + CGFloat(focus) * 0.7
+                        // Brighter baseline for top/outer lines (0.32 base + focus up to 1.0)
+                        let baseAlpha = 0.32 + focus * 0.68
+                        let lineAlpha = baseAlpha * smoothEdgeFade
+                        let strokeW = 1.15 + CGFloat(focus) * 0.65
 
                         context.stroke(
                             linePath,
