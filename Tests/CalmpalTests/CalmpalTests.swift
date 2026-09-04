@@ -159,12 +159,12 @@ final class CalmpalTests: XCTestCase {
             let matched = bannerFor(profile: banner.profile)
             XCTAssertEqual(matched.profile, banner.profile)
         }
-        // Verify surrender is positioned above flowing-river
+        // Verify surrender is positioned above gentle-rain
         if let surrenderIndex = allSoundBanners.firstIndex(where: { $0.profile == .surrender }),
-           let riverIndex = allSoundBanners.firstIndex(where: { $0.profile == .forestRiver }) {
-            XCTAssertEqual(surrenderIndex + 1, riverIndex, "Surrender must be directly above Flowing River")
+           let rainIndex = allSoundBanners.firstIndex(where: { $0.profile == .gentleRain }) {
+            XCTAssertEqual(surrenderIndex + 1, rainIndex, "Surrender must be directly above Gentle Rain")
         } else {
-            XCTFail("Could not find surrender or flowing-river in allSoundBanners")
+            XCTFail("Could not find surrender or gentle-rain in allSoundBanners")
         }
     }
 

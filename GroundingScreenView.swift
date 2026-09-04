@@ -53,11 +53,11 @@ public let allSoundBanners: [SoundBannerTheme] = [
     SoundBannerTheme(id: "rolling-thunder", profile: .rollingThunder, title: "Rolling Thunder", imageName: "rolling-thunder", previewAlignment: .bottom),
 
     // Rest of Soundscapes
+    SoundBannerTheme(id: "surrender", profile: .surrender, title: "Surrender", imageName: "surrender"),
     SoundBannerTheme(id: "gentle-rain", profile: .gentleRain, title: "Gentle Rain", imageName: "gentle-rain"),
     SoundBannerTheme(id: "ocean-waves", profile: .oceanWaves, title: "Peaceful Ocean", imageName: "ocean-waves"),
     SoundBannerTheme(id: "wind-in-trees", profile: .windInTrees, title: "Wind in Trees", imageName: "gentle-wind"),
     SoundBannerTheme(id: "waterfall", profile: .waterfall, title: "Forest Waterfall", imageName: "waterfall"),
-    SoundBannerTheme(id: "surrender", profile: .surrender, title: "Surrender", imageName: "surrender"),
     SoundBannerTheme(id: "flowing-river", profile: .forestRiver, title: "Flowing River", imageName: "flowing-river"),
 
     SoundBannerTheme(id: "evening-frogs", profile: .eveningFrogs, title: "Evening Frogs", imageName: "evening-frogs"),
