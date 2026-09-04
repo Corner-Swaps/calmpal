@@ -733,17 +733,17 @@ private struct TallFusedMeasuringLinesView: View {
 
                 Canvas { context, size in
                     // ── 1. Center Focal Aura Glow ──
-                    let glowRect = CGRect(x: 0, y: midY - 80, width: width, height: 160)
+                    let glowRect = CGRect(x: 0, y: midY - 90, width: width, height: 180)
                     context.fill(
                         Path(glowRect),
                         with: .radialGradient(
                             Gradient(colors: [
-                                Color.white.opacity(0.08),
+                                Color.white.opacity(0.09),
                                 Color.clear
                             ]),
                             center: CGPoint(x: midX, y: midY),
                             startRadius: 10,
-                            endRadius: 160
+                            endRadius: 180
                         )
                     )
 
@@ -771,14 +771,14 @@ private struct TallFusedMeasuringLinesView: View {
                         )
                     }
 
-                    // ── 3. Animated Fluid Wave Measuring Lines (Closer to timer & checkmark) ──
+                    // ── 3. Animated Fluid Wave Measuring Lines ──
                     let lineSpacing: CGFloat = 18.0
                     let numLines = Int(height / lineSpacing) + 6
                     let offsetPx = CGFloat((remainingSeconds * (18.0 / 90.0)).truncatingRemainder(dividingBy: Double(lineSpacing)))
 
-                    // Safe boundaries brought closer to the top timer and bottom checkmark
-                    let topSafeFadeStart: CGFloat = 175.0
-                    let topSafeFadeEnd: CGFloat = 145.0
+                    // Safe boundaries: 2 less lines at top next to the timer (shifted down by 36pt)
+                    let topSafeFadeStart: CGFloat = 211.0
+                    let topSafeFadeEnd: CGFloat = 181.0
                     let bottomSafeFadeStart: CGFloat = height - 155.0
                     let bottomSafeFadeEnd: CGFloat = height - 120.0
 
@@ -787,7 +787,8 @@ private struct TallFusedMeasuringLinesView: View {
                         guard yPos >= topSafeFadeEnd && yPos <= bottomSafeFadeEnd else { continue }
 
                         let distFromCenter = abs(yPos - midY)
-                        let focus = max(0.0, exp(-pow(Double(distFromCenter) / 105.0, 2)))
+                        // Slightly fuller focal width for bigger middle
+                        let focus = max(0.0, exp(-pow(Double(distFromCenter) / 115.0, 2)))
 
                         // Smooth gradient fade before touching top timer and bottom checkmark
                         var edgeFade: CGFloat = 1.0
@@ -798,12 +799,12 @@ private struct TallFusedMeasuringLinesView: View {
                         }
                         guard edgeFade > 0.005 else { continue }
 
-                        // Still brighter, almost the same as the middle line with just a gentle, subtle fade
-                        let smoothEdgeFade = 0.82 + 0.18 * sin(Double(edgeFade) * .pi / 2.0)
-                        let baseAlpha = 0.76 + focus * 0.24
+                        // Balanced fade: noticeably faded towards edges while center line shines at 100%
+                        let smoothEdgeFade = 0.62 + 0.38 * sin(Double(edgeFade) * .pi / 2.0)
+                        let baseAlpha = 0.50 + focus * 0.50
 
-                        // Original round shape
-                        let lineWidth = (65.0 + CGFloat(focus) * 110.0) * (0.4 + 0.6 * CGFloat(smoothEdgeFade))
+                        // Bigger middle width (expands up to 210pt at center)
+                        let lineWidth = (65.0 + CGFloat(focus) * 145.0) * (0.4 + 0.6 * CGFloat(smoothEdgeFade))
                         let numPts = 12
                         let xStart = midX - lineWidth / 2
 
@@ -814,7 +815,7 @@ private struct TallFusedMeasuringLinesView: View {
                             let relX = (x - midX) / (lineWidth / 2)
                             let envelope = max(0.0, 1.0 - relX * relX)
 
-                            let wave = CGFloat(sin(time * 2.6 + Double(yPos) * 0.035 + Double(relX) * 2.2)) * (2.0 + CGFloat(focus) * 5.0) * envelope
+                            let wave = CGFloat(sin(time * 2.6 + Double(yPos) * 0.035 + Double(relX) * 2.2)) * (2.0 + CGFloat(focus) * 5.5) * envelope
 
                             var pointerDeflect: CGFloat = 0.0
                             if let touch = touchLocation {
@@ -839,7 +840,7 @@ private struct TallFusedMeasuringLinesView: View {
                         }
 
                         let lineAlpha = baseAlpha * smoothEdgeFade
-                        let strokeW = 1.15 + CGFloat(focus) * 0.60
+                        let strokeW = 1.15 + CGFloat(focus) * 0.75
 
                         context.stroke(
                             linePath,
