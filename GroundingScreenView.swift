@@ -129,6 +129,8 @@ public struct GroundingScreenView: View {
                     .scaledToFill()
                     .frame(width: screenWidth, height: screenHeight)
                     .clipped()
+                    .id(activeBanner.id)
+                    .transition(.opacity)
                     .overlay(
                         LinearGradient(
                             colors: [
@@ -147,9 +149,26 @@ public struct GroundingScreenView: View {
                 // ── Normal Mode: Main Player Interface ──
                 if activeOverlay == .none {
                     ZStack {
-                        // Background tap gesture: Always toggles play/pause (normal, Zen, and Visualizer modes)
+                        // Background gestures: Sideways swipe to navigate sections, tap to toggle play/pause
                         Color.clear
                             .contentShape(Rectangle())
+                            .gesture(
+                                DragGesture(minimumDistance: 25)
+                                    .onEnded { gesture in
+                                        let horizontal = gesture.translation.width
+                                        let vertical = gesture.translation.height
+                                        // Trigger only if primarily horizontal and sufficient swipe distance
+                                        if abs(horizontal) > abs(vertical) && abs(horizontal) > 40 {
+                                            if horizontal < 0 {
+                                                // Swiped Left -> Bring to Next section
+                                                selectNextSound()
+                                            } else {
+                                                // Swiped Right -> Bring to Previous section
+                                                selectPreviousSound()
+                                            }
+                                        }
+                                    }
+                            )
                             .onTapGesture {
                                 togglePlayPause()
                             }
@@ -191,6 +210,7 @@ public struct GroundingScreenView: View {
                                 .frame(width: 318, height: 318)
                                 .offset(y: 20)
                                 .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                                .allowsHitTesting(false)
                             }
 
                             Spacer()
@@ -411,7 +431,9 @@ public struct GroundingScreenView: View {
         guard let currentIndex = allSoundBanners.firstIndex(where: { $0.profile == activeProfile }) else { return }
         let newIndex = (currentIndex - 1 + allSoundBanners.count) % allSoundBanners.count
         let newProfile = allSoundBanners[newIndex].profile
-        activeProfile = newProfile
+        withAnimation(.easeInOut(duration: 0.35)) {
+            activeProfile = newProfile
+        }
         AudioManager.shared.activeProfile = newProfile
         if !isPlaying {
             isPlaying = true
@@ -427,7 +449,9 @@ public struct GroundingScreenView: View {
         guard let currentIndex = allSoundBanners.firstIndex(where: { $0.profile == activeProfile }) else { return }
         let newIndex = (currentIndex + 1) % allSoundBanners.count
         let newProfile = allSoundBanners[newIndex].profile
-        activeProfile = newProfile
+        withAnimation(.easeInOut(duration: 0.35)) {
+            activeProfile = newProfile
+        }
         AudioManager.shared.activeProfile = newProfile
         if !isPlaying {
             isPlaying = true
