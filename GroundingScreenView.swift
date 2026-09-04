@@ -798,9 +798,9 @@ private struct TallFusedMeasuringLinesView: View {
                         }
                         guard edgeFade > 0.005 else { continue }
 
-                        // Brighter lines on both top and bottom (elevated baseline & softened edge floor)
-                        let smoothEdgeFade = 0.50 + 0.50 * sin(Double(edgeFade) * .pi / 2.0)
-                        let baseAlpha = 0.30 + focus * 0.70
+                        // Still brighter, almost the same as the middle line with just a gentle, subtle fade
+                        let smoothEdgeFade = 0.82 + 0.18 * sin(Double(edgeFade) * .pi / 2.0)
+                        let baseAlpha = 0.76 + focus * 0.24
 
                         // Original round shape
                         let lineWidth = (65.0 + CGFloat(focus) * 110.0) * (0.4 + 0.6 * CGFloat(smoothEdgeFade))
@@ -839,7 +839,7 @@ private struct TallFusedMeasuringLinesView: View {
                         }
 
                         let lineAlpha = baseAlpha * smoothEdgeFade
-                        let strokeW = 1.08 + CGFloat(focus) * 0.70
+                        let strokeW = 1.15 + CGFloat(focus) * 0.60
 
                         context.stroke(
                             linePath,
