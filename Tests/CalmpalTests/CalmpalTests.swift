@@ -1,5 +1,6 @@
 import XCTest
 import SwiftData
+import AVFoundation
 @testable import Calmpal
 
 final class CalmpalTests: XCTestCase {
@@ -91,7 +92,7 @@ final class CalmpalTests: XCTestCase {
                 XCTAssertEqual(profile.shortName, "Forest")
             case .windInTrees, .cozyCampfire, .duneBreeze, .howlingWind, .walkOnLeaves, .windChimes:
                 XCTAssertEqual(profile.shortName, "Wind")
-            case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater, .singingBowl, .scenicTrain, .antiqueClock, .cathedralChimes:
+            case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater, .singingBowl, .scenicTrain, .antiqueClock, .cathedralChimes, .surrender:
                 XCTAssertEqual(profile.shortName, "Ambient")
             }
         }
@@ -149,7 +150,7 @@ final class CalmpalTests: XCTestCase {
     // MARK: - Sound Banner Themes Tests
 
     func testSoundBannerThemes() {
-        XCTAssertEqual(allSoundBanners.count, 34)
+        XCTAssertEqual(allSoundBanners.count, 35)
         for banner in allSoundBanners {
             XCTAssertFalse(banner.id.isEmpty)
             XCTAssertFalse(banner.title.isEmpty)
@@ -158,5 +159,49 @@ final class CalmpalTests: XCTestCase {
             let matched = bannerFor(profile: banner.profile)
             XCTAssertEqual(matched.profile, banner.profile)
         }
+        // Verify surrender is positioned above flowing-river
+        if let surrenderIndex = allSoundBanners.firstIndex(where: { $0.profile == .surrender }),
+           let riverIndex = allSoundBanners.firstIndex(where: { $0.profile == .forestRiver }) {
+            XCTAssertEqual(surrenderIndex + 1, riverIndex, "Surrender must be directly above Flowing River")
+        } else {
+            XCTFail("Could not find surrender or flowing-river in allSoundBanners")
+        }
+    }
+
+    @MainActor
+    func testSurrenderTailFade() {
+        let sampleRate: Double = 44100.0
+        let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 2)!
+        let frameCount: AVAudioFrameCount = 44100 * 30 // 30 seconds of audio
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else {
+            XCTFail("Could not create buffer")
+            return
+        }
+        buffer.frameLength = frameCount
+        guard let channelData = buffer.floatChannelData else {
+            XCTFail("No floatChannelData")
+            return
+        }
+        // Fill with 1.0 amplitude
+        for ch in 0..<2 {
+            for i in 0..<Int(frameCount) {
+                channelData[ch][i] = 1.0
+            }
+        }
+        
+        // Apply 20s tail fade
+        AudioManager.shared.applyTailFade(to: buffer, fadeDuration: 20.0)
+        
+        // Samples before fade (first 10 seconds, frame 0 to 441000) should still be 1.0
+        XCTAssertEqual(channelData[0][0], 1.0, accuracy: 0.001)
+        XCTAssertEqual(channelData[0][44100 * 10 - 1], 1.0, accuracy: 0.001)
+        
+        // At midpoint of fade (10s before end), gain should be ~0.5
+        let midFadeIndex = 44100 * 20
+        XCTAssertEqual(channelData[0][midFadeIndex], 0.5, accuracy: 0.01)
+        
+        // At the very last frame, gain should be 0.0
+        let lastFrameIndex = Int(frameCount) - 1
+        XCTAssertEqual(channelData[0][lastFrameIndex], 0.0, accuracy: 0.001)
     }
 }

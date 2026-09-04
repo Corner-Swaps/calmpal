@@ -60,6 +60,7 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
     case nightOwl        = "Owl"
     case rowingBoat      = "Oars"
     case cathedralChimes = "Bells"
+    case surrender       = "Surrender"
 
     public var id: String { rawValue }
     public var displayName: String { rawValue }
@@ -101,6 +102,7 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
         case .nightOwl:        return "owl"
         case .rowingBoat:      return "rowing-boat"
         case .cathedralChimes: return "church"
+        case .surrender:       return "surrender"
         }
     }
 
@@ -141,6 +143,7 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
         case .nightOwl:        return "Peaceful nocturnal owl calls echoing across the quiet moonlit forest canopy."
         case .rowingBoat:      return "Gentle wooden oars dipping and slicing through glassy, tranquil alpine lake water."
         case .cathedralChimes: return "Contemplative stone chapel bells chiming softly across a misty mountain valley."
+        case .surrender:       return "Enlightened darkness meditative chant for deep surrender and peace."
         }
     }
 
@@ -217,6 +220,8 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
             return SoundHapticProfile(baseIntensity: 0.42, baseSharpness: 0.28, dynamicGain: 0.80, pulseFrequency: 0.24)
         case .cathedralChimes:
             return SoundHapticProfile(baseIntensity: 0.45, baseSharpness: 0.32, dynamicGain: 0.85, pulseFrequency: 0.22)
+        case .surrender:
+            return SoundHapticProfile(baseIntensity: 0.32, baseSharpness: 0.16, dynamicGain: 0.65, pulseFrequency: 0.18)
         }
     }
 
@@ -230,7 +235,7 @@ public enum SoundProfile: String, CaseIterable, Identifiable, Codable, Sendable 
             return "Forest"
         case .windInTrees, .cozyCampfire, .duneBreeze, .howlingWind, .walkOnLeaves, .windChimes:
             return "Wind"
-        case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater, .singingBowl, .scenicTrain, .antiqueClock, .cathedralChimes:
+        case .warmCafe, .quietLibrary, .nightVillage, .templeSanctuary, .deepUnderwater, .singingBowl, .scenicTrain, .antiqueClock, .cathedralChimes, .surrender:
             return "Ambient"
         }
     }
@@ -521,11 +526,14 @@ public final class AudioManager {
                     try file.read(into: fileBuffer)
 
                     // Target standard engine format: 44.1kHz Stereo (2 channels)
-                    let standardFormat = AVAudioFormat(standardFormatWithSampleRate: 44100.0, channels: 2)!
-                    
-                    if fileFormat.sampleRate == standardFormat.sampleRate && fileFormat.channelCount == standardFormat.channelCount {
+                    guard let standardFormat = AVAudioFormat(standardFormatWithSampleRate: 44100.0, channels: 2) else {
                         bufferCache[profile] = fileBuffer
                         return fileBuffer
+                    }
+
+                    let finalBuffer: AVAudioPCMBuffer
+                    if fileFormat.sampleRate == standardFormat.sampleRate && fileFormat.channelCount == standardFormat.channelCount {
+                        finalBuffer = fileBuffer
                     } else if let converter = AVAudioConverter(from: fileFormat, to: standardFormat) {
                         let ratio = standardFormat.sampleRate / fileFormat.sampleRate
                         let targetCapacity = AVAudioFrameCount(Double(frameCount) * ratio + 100)
@@ -543,13 +551,24 @@ public final class AudioManager {
                                 }
                             }
                             if error == nil && convertedBuffer.frameLength > 0 {
-                                bufferCache[profile] = convertedBuffer
-                                return convertedBuffer
+                                finalBuffer = convertedBuffer
+                            } else {
+                                finalBuffer = fileBuffer
                             }
+                        } else {
+                            finalBuffer = fileBuffer
                         }
+                    } else {
+                        finalBuffer = fileBuffer
                     }
-                    bufferCache[profile] = fileBuffer
-                    return fileBuffer
+
+                    // For Surrender: Apply smooth 20-second slow fade away before loop restarts
+                    if profile == .surrender {
+                        applyTailFade(to: finalBuffer, fadeDuration: 20.0)
+                    }
+
+                    bufferCache[profile] = finalBuffer
+                    return finalBuffer
                 } catch {
                     print("[AudioManager] Failed to read audio file: \(error)")
                 }
@@ -584,6 +603,26 @@ public final class AudioManager {
         }
         bufferCache[profile] = buf
         return buf
+    }
+
+    /// Applies a smooth half-cosine fade-out to the final seconds of a PCM buffer so it gently fades to zero before looping
+    func applyTailFade(to buffer: AVAudioPCMBuffer, fadeDuration: Double) {
+        guard let floatData = buffer.floatChannelData else { return }
+        let frameLength = Int(buffer.frameLength)
+        let sampleRate = buffer.format.sampleRate
+        let fadeFrames = Int(fadeDuration * sampleRate)
+        guard frameLength > fadeFrames else { return }
+        let fadeStart = frameLength - fadeFrames
+        let channelCount = Int(buffer.format.channelCount)
+        for ch in 0..<channelCount {
+            let channel = floatData[ch]
+            for i in 0..<fadeFrames {
+                let progress = Double(i) / Double(fadeFrames)
+                // Half-cosine curve: 1.0 at start of fade -> 0.0 at very end
+                let gain = Float(0.5 * (1.0 + cos(.pi * progress)))
+                channel[fadeStart + i] *= gain
+            }
+        }
     }
 
     private func applyBuffer(for profile: SoundProfile) {

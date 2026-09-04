@@ -55,6 +55,7 @@
 		E1A0052D00000000000000B /* windshield-wipers.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052D00000000000000A /* windshield-wipers.mp3 */; };
 		E1A0052E00000000000000B /* wolf.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052E00000000000000A /* wolf.mp3 */; };
 		E1A0052F00000000000000B /* woodpecker.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052F00000000000000A /* woodpecker.mp3 */; };
+		E1A0053000000000000000B /* surrender.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0053000000000000000A /* surrender.mp3 */; };
 		E1A00000000000000000000B /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00000000000000000000A /* HapticManager.swift */; };
 		E1A00001000000000000000B /* TactileSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00001000000000000000A /* TactileSurfaceView.swift */; };
 		E1A00002000000000000000B /* Color+Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00002000000000000000A /* Color+Theme.swift */; };
@@ -129,6 +130,7 @@
 		E1A0052D00000000000000A /* windshield-wipers.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "windshield-wipers.mp3"; path = "Sounds/windshield-wipers.mp3"; sourceTree = "<group>"; };
 		E1A0052E00000000000000A /* wolf.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wolf.mp3"; path = "Sounds/wolf.mp3"; sourceTree = "<group>"; };
 		E1A0052F00000000000000A /* woodpecker.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "woodpecker.mp3"; path = "Sounds/woodpecker.mp3"; sourceTree = "<group>"; };
+		E1A0053000000000000000A /* surrender.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "surrender.mp3"; path = "Sounds/surrender.mp3"; sourceTree = "<group>"; };
 		E1A00000000000000000000A /* HapticManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		E1A00001000000000000000A /* TactileSurfaceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TactileSurfaceView.swift; sourceTree = "<group>"; };
 		E1A00002000000000000000A /* Color+Theme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
@@ -261,6 +263,7 @@
 				E1A0052D00000000000000A /* windshield-wipers.mp3 */,
 				E1A0052E00000000000000A /* wolf.mp3 */,
 				E1A0052F00000000000000A /* woodpecker.mp3 */,
+				E1A0053000000000000000A /* surrender.mp3 */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -396,6 +399,7 @@
 				E1A0052D00000000000000B /* windshield-wipers.mp3 in Resources */,
 				E1A0052E00000000000000B /* wolf.mp3 in Resources */,
 				E1A0052F00000000000000B /* woodpecker.mp3 in Resources */,
+				E1A0053000000000000000B /* surrender.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
