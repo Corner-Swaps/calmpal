@@ -799,17 +799,19 @@ private struct TallFusedMeasuringLinesView: View {
                         guard edgeFade > 0.01 else { continue }
                         let smoothEdgeFade = 0.40 + 0.60 * sin(Double(edgeFade) * .pi / 2.0)
 
-                        // Progressive upward taper: lines get progressively shorter as they go up towards the top timer
+                        // Preserve round center shape and slowly curve upwards like an hourglass
                         let lineWidth: CGFloat
-                        if yPos < midY {
-                            let upwardRatio = max(0.0, min(1.0, (midY - yPos) / (midY - topSafeFadeEnd)))
-                            let t = pow(upwardRatio, 0.85)
-                            let w = 175.0 - t * (175.0 - 36.0)
+                        if yPos <= midY {
+                            // Upward: Round circular center dome transitioning into a slow, elegant hourglass curve
+                            let upRatio = max(0.0, min(1.0, distFromCenter / (midY - topSafeFadeEnd)))
+                            let curveFactor = 1.0 / (1.0 + pow(upRatio / 0.42, 2.2))
+                            let w = 42.0 + 133.0 * CGFloat(curveFactor)
                             lineWidth = w * (0.45 + 0.55 * CGFloat(smoothEdgeFade))
                         } else {
-                            let downwardRatio = max(0.0, min(1.0, (yPos - midY) / (bottomSafeFadeEnd - midY)))
-                            let t = pow(downwardRatio, 0.90)
-                            let w = 175.0 - t * (175.0 - 68.0)
+                            // Downward: Gentle grounded curve towards the bottom checkmark
+                            let downRatio = max(0.0, min(1.0, distFromCenter / (bottomSafeFadeEnd - midY)))
+                            let curveFactor = 1.0 / (1.0 + pow(downRatio / 0.45, 2.0))
+                            let w = 62.0 + 113.0 * CGFloat(curveFactor)
                             lineWidth = w * (0.45 + 0.55 * CGFloat(smoothEdgeFade))
                         }
                         let numPts = 12
