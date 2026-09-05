@@ -108,7 +108,7 @@ public struct SoundArtistCredit: Equatable {
 }
 
 extension SoundProfile {
-    public var artistCredit: SoundArtistCredit {
+    public var artistCredit: SoundArtistCredit? {
         switch self {
         case .surrender:
             return SoundArtistCredit(
@@ -117,11 +117,7 @@ extension SoundProfile {
                 instagramURL: URL(string: "https://www.instagram.com/jeffosterpix/")!
             )
         default:
-            return SoundArtistCredit(
-                name: "Calmpal",
-                instagramHandle: "@calmpal.app",
-                instagramURL: URL(string: "https://www.instagram.com/calmpal.app/")!
-            )
+            return nil
         }
     }
 }
@@ -209,77 +205,61 @@ public struct GroundingScreenView: View {
                                         }
                                     }
                             )
+                            .onTapGesture {
+                                if isZenMode {
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        isZenMode = false
+                                    }
+                                }
+                            }
 
-                        // Top Right Navigation: Single Frosted Pill with Eye & Info
+                        // Top Right Navigation: Floating Icons (Eye on top, Info below - No Pill)
                         VStack {
                             HStack {
                                 Spacer()
 
-                                HStack(spacing: 4) {
+                                VStack(spacing: 6) {
                                     // 👁 Eye Icon (Zen Mode Immersion)
                                     Button(action: {
                                         HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
                                             if isArtistInfoVisible {
                                                 isArtistInfoVisible = false
                                             }
                                             isZenMode.toggle()
                                         }
                                     }) {
-                                        ZStack {
-                                            if isZenMode && !isArtistInfoVisible {
-                                                Circle()
-                                                    .fill(Color.white.opacity(0.22))
-                                                    .frame(width: 32, height: 32)
-                                            }
-                                            Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                                .font(.system(size: 15, weight: .medium))
-                                                .foregroundColor(isZenMode ? .white : Color(white: 0.88).opacity(0.55))
-                                                .shadow(color: Color.black.opacity(0.4), radius: 3, x: 0, y: 1)
-                                        }
-                                        .frame(width: 34, height: 34)
-                                        .contentShape(Circle())
+                                        Image(systemName: isZenMode ? "eye" : "eye.slash")
+                                            .font(.system(size: 18, weight: .regular))
+                                            .foregroundColor(Color.white.opacity(0.85))
+                                            .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
+                                            .frame(width: 44, height: 44)
+                                            .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
 
                                     // ℹ️ / ✕ Info / Exit Icon
                                     Button(action: {
                                         HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            if isZenMode {
+                                                isZenMode = false
+                                            }
                                             isArtistInfoVisible.toggle()
                                         }
                                     }) {
-                                        ZStack {
-                                            if isArtistInfoVisible {
-                                                Circle()
-                                                    .fill(Color.white.opacity(0.22))
-                                                    .frame(width: 32, height: 32)
-                                            }
-                                            Image(systemName: isArtistInfoVisible ? "xmark" : "info.circle")
-                                                .font(.system(size: isArtistInfoVisible ? 13 : 16, weight: .medium))
-                                                .foregroundColor(isArtistInfoVisible ? .white : Color(white: 0.88).opacity(0.55))
-                                                .shadow(color: Color.black.opacity(0.4), radius: 3, x: 0, y: 1)
-                                        }
-                                        .frame(width: 34, height: 34)
-                                        .contentShape(Circle())
+                                        Image(systemName: isArtistInfoVisible ? "xmark" : "info.circle")
+                                            .font(.system(size: isArtistInfoVisible ? 16 : 18, weight: .regular))
+                                            .foregroundColor(Color.white.opacity(0.85))
+                                            .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
+                                            .frame(width: 44, height: 44)
+                                            .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
                                 }
-                                .padding(.horizontal, 4)
-                                .padding(.vertical, 3)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.black.opacity(0.22))
-                                        .background(
-                                            Capsule()
-                                                .fill(.ultraThinMaterial.opacity(0.25))
-                                        )
-                                        .overlay(
-                                            Capsule()
-                                                .stroke(Color.white.opacity(0.18), lineWidth: 0.8)
-                                        )
-                                )
-                                .shadow(color: Color.black.opacity(0.35), radius: 6, x: 0, y: 2)
+                                .opacity(isZenMode ? 0.15 : 1.0)
+                                .animation(.easeInOut(duration: 0.3), value: isZenMode)
                                 .padding(.trailing, 20)
                                 .padding(.top, 54)
                             }
@@ -292,7 +272,7 @@ public struct GroundingScreenView: View {
                         VStack(spacing: 0) {
                             Spacer()
 
-                            if !isZenMode && !isArtistInfoVisible {
+                            ZStack {
                                 // ── Clean Circular Countdown Timer Ring ──
                                 FullCircularTimerView(
                                     remainingSeconds: $remainingTimerSeconds,
@@ -302,39 +282,43 @@ public struct GroundingScreenView: View {
                                 )
                                 .frame(width: 318, height: 318)
                                 .offset(y: 20)
-                                .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                                .allowsHitTesting(false)
-                            } else if isArtistInfoVisible {
-                                let credit = activeProfile.artistCredit
-                                // ── Artist Profile & Social Link ──
-                                VStack(spacing: 16) {
-                                    Text(credit.name)
-                                        .font(.system(size: 32, weight: .light, design: .rounded))
-                                        .tracking(1.5)
-                                        .foregroundColor(.white)
-                                        .shadow(color: Color.black.opacity(0.85), radius: 8, x: 0, y: 2)
+                                .opacity((!isZenMode && !isArtistInfoVisible) ? 1.0 : 0.0)
+                                .animation(.easeInOut(duration: 0.35), value: isZenMode)
+                                .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
+                                .allowsHitTesting(!isZenMode && !isArtistInfoVisible)
 
-                                    Link(destination: credit.instagramURL) {
-                                        HStack(spacing: 10) {
-                                            InstagramLogoView(size: 24)
-                                            Text(credit.instagramHandle)
-                                                .font(.system(size: 16, weight: .medium, design: .rounded))
-                                                .foregroundColor(.white)
-                                                .shadow(color: Color.black.opacity(0.65), radius: 4, x: 0, y: 1.5)
+                                if isArtistInfoVisible {
+                                    let credit = activeProfile.artistCredit
+                                    // ── Artist Profile & Social Link ──
+                                    VStack(spacing: 16) {
+                                        Text(credit.name)
+                                            .font(.system(size: 32, weight: .light, design: .rounded))
+                                            .tracking(1.5)
+                                            .foregroundColor(.white)
+                                            .shadow(color: Color.black.opacity(0.85), radius: 8, x: 0, y: 2)
+
+                                        Link(destination: credit.instagramURL) {
+                                            HStack(spacing: 10) {
+                                                InstagramLogoView(size: 24)
+                                                Text(credit.instagramHandle)
+                                                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                                                    .foregroundColor(.white)
+                                                    .shadow(color: Color.black.opacity(0.65), radius: 4, x: 0, y: 1.5)
+                                            }
+                                            .padding(.horizontal, 20)
+                                            .padding(.vertical, 10)
+                                            .background(Color.white.opacity(0.18))
+                                            .clipShape(Capsule())
+                                            .overlay(
+                                                Capsule().stroke(Color.white.opacity(0.35), lineWidth: 1)
+                                            )
+                                            .shadow(color: Color.black.opacity(0.50), radius: 8, x: 0, y: 2)
                                         }
-                                        .padding(.horizontal, 20)
-                                        .padding(.vertical, 10)
-                                        .background(Color.white.opacity(0.18))
-                                        .clipShape(Capsule())
-                                        .overlay(
-                                            Capsule().stroke(Color.white.opacity(0.35), lineWidth: 1)
-                                        )
-                                        .shadow(color: Color.black.opacity(0.50), radius: 8, x: 0, y: 2)
                                     }
+                                    .frame(height: 318)
+                                    .offset(y: 20)
+                                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
                                 }
-                                .frame(height: 318)
-                                .offset(y: 20)
-                                .transition(.opacity.combined(with: .scale(scale: 0.96)))
                             }
 
                             Spacer()
