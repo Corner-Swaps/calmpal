@@ -225,7 +225,7 @@ public struct GroundingScreenView: View {
                                 Spacer()
 
                                 HStack(spacing: 2) {
-                                    // 👁 Eye Icon (Zen Mode Immersion Toggle)
+                                    // ☀️ / 🌙 Sun & Moon Icon (Zen Mode Immersion Toggle)
                                     Button(action: {
                                         HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
                                         withAnimation(.easeInOut(duration: 0.35)) {
@@ -235,7 +235,7 @@ public struct GroundingScreenView: View {
                                             isZenMode.toggle()
                                         }
                                     }) {
-                                        Image(systemName: isZenMode ? "eye.slash" : "eye")
+                                        Image(systemName: isZenMode ? "moon.fill" : "sun.max")
                                             .font(.system(size: 18, weight: .regular))
                                             .foregroundColor(Color.white.opacity(0.88))
                                             .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
