@@ -244,7 +244,7 @@ public struct GroundingScreenView: View {
                                     }
                                     .buttonStyle(.plain)
 
-                                    // ℹ️ / ✕ Info / Exit Icon (Only shown for artist tracks, e.g. Jeff Oster on Surrender)
+                                    // 👤 / ✕ Profile / Exit Icon (Only shown for artist tracks, e.g. Jeff Oster on Surrender)
                                     if let _ = activeProfile.artistCredit {
                                         Button(action: {
                                             HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
@@ -255,8 +255,8 @@ public struct GroundingScreenView: View {
                                                 isArtistInfoVisible.toggle()
                                             }
                                         }) {
-                                            Image(systemName: isArtistInfoVisible ? "xmark" : "info.circle")
-                                                .font(.system(size: isArtistInfoVisible ? 14.5 : 16.2, weight: .regular))
+                                            Image(systemName: isArtistInfoVisible ? "xmark" : "person.crop.circle")
+                                                .font(.system(size: isArtistInfoVisible ? 14.5 : 17, weight: .regular))
                                                 .foregroundColor(Color.white.opacity(0.88))
                                                 .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
                                                 .frame(width: 34, height: 44)
