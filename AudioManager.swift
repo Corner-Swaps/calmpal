@@ -280,6 +280,7 @@ public final class AudioManager {
     private let analyzer = AudioSpectrumAnalyzer()
     private var fadeTask: Task<Void, Never>?
     public private(set) var isBufferScheduled: Bool = false
+    private var lastRemoteCommandTime: TimeInterval = 0
 
     public var activeProfile: SoundProfile = .gentleRain {
         didSet {
@@ -404,7 +405,7 @@ public final class AudioManager {
             try AVAudioSession.sharedInstance().setCategory(
                 .playback,
                 mode: .default,
-                options: [.allowBluetooth, .allowBluetoothA2DP]
+                options: [.allowBluetoothHFP, .allowBluetoothA2DP]
             )
             try AVAudioSession.sharedInstance().setActive(true)
             UIApplication.shared.beginReceivingRemoteControlEvents()
@@ -451,6 +452,7 @@ public final class AudioManager {
         }
         info[MPMediaItemPropertyArtwork] = artwork
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+        MPNowPlayingInfoCenter.default().playbackState = playing ? .playing : .paused
         #endif
         NotificationCenter.default.post(name: AudioManager.audioStateDidChangeNotification, object: self)
     }
@@ -699,7 +701,7 @@ public final class AudioManager {
             try AVAudioSession.sharedInstance().setCategory(
                 .playback,
                 mode: .default,
-                options: [.allowBluetooth, .allowBluetoothA2DP]
+                options: [.allowBluetoothHFP, .allowBluetoothA2DP]
             )
             try AVAudioSession.sharedInstance().setActive(true)
             UIApplication.shared.beginReceivingRemoteControlEvents()
@@ -735,6 +737,9 @@ public final class AudioManager {
         isAudioPlaying = false
         playerNode.stop()
         isBufferScheduled = false
+        #if os(iOS)
+        MPNowPlayingInfoCenter.default().playbackState = .stopped
+        #endif
         updateNowPlayingInfo()
     }
 
@@ -746,8 +751,12 @@ public final class AudioManager {
         commandCenter.pauseCommand.removeTarget(nil)
         commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            let now = ProcessInfo.processInfo.systemUptime
+            guard now - self.lastRemoteCommandTime > 0.35 else { return .success }
+            self.lastRemoteCommandTime = now
             DispatchQueue.main.async {
-                self?.pause()
+                self.pause()
             }
             return .success
         }
@@ -755,8 +764,12 @@ public final class AudioManager {
         commandCenter.playCommand.removeTarget(nil)
         commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.addTarget { [weak self] _ in
+            guard let self = self else { return .commandFailed }
+            let now = ProcessInfo.processInfo.systemUptime
+            guard now - self.lastRemoteCommandTime > 0.35 else { return .success }
+            self.lastRemoteCommandTime = now
             DispatchQueue.main.async {
-                self?.resume()
+                self.resume()
             }
             return .success
         }
@@ -764,8 +777,13 @@ public final class AudioManager {
         commandCenter.togglePlayPauseCommand.removeTarget(nil)
         commandCenter.togglePlayPauseCommand.isEnabled = true
         commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+            let now = ProcessInfo.processInfo.systemUptime
+            guard let self = self, now - self.lastRemoteCommandTime > 0.35 else {
+                return .success
+            }
+            self.lastRemoteCommandTime = now
             DispatchQueue.main.async {
-                self?.togglePlayPause()
+                self.togglePlayPause()
             }
             return .success
         }
@@ -774,7 +792,7 @@ public final class AudioManager {
         commandCenter.stopCommand.isEnabled = true
         commandCenter.stopCommand.addTarget { [weak self] _ in
             DispatchQueue.main.async {
-                self?.pause()
+                self?.stop()
             }
             return .success
         }
