@@ -45,15 +45,15 @@ public struct SoundBannerTheme: Identifiable, Equatable {
 }
 
 public let allSoundBanners: [SoundBannerTheme] = [
-    // Top 5 Priority Sections
+    // Top Priority Sections
     SoundBannerTheme(id: "crickets-night", profile: .nightCrickets, title: "Crickets Night", imageName: "crickets-night"),
     SoundBannerTheme(id: "dune-breeze", profile: .duneBreeze, title: "Desert Dune Breeze", imageName: "dune-breeze", previewAlignment: .bottom),
     SoundBannerTheme(id: "cozy-campfire", profile: .cozyCampfire, title: "Cozy Campfire", imageName: "cozy-campfire"),
     SoundBannerTheme(id: "quiet-library", profile: .quietLibrary, title: "Quiet Library", imageName: "quiet-library"),
+    SoundBannerTheme(id: "surrender", profile: .surrender, title: "Surrender", imageName: "surrender"),
     SoundBannerTheme(id: "rolling-thunder", profile: .rollingThunder, title: "Rolling Thunder", imageName: "rolling-thunder", previewAlignment: .bottom),
 
     // Rest of Soundscapes
-    SoundBannerTheme(id: "surrender", profile: .surrender, title: "Surrender", imageName: "surrender"),
     SoundBannerTheme(id: "gentle-rain", profile: .gentleRain, title: "Gentle Rain", imageName: "gentle-rain"),
     SoundBannerTheme(id: "ocean-waves", profile: .oceanWaves, title: "Peaceful Ocean", imageName: "ocean-waves"),
     SoundBannerTheme(id: "wind-in-trees", profile: .windInTrees, title: "Wind in Trees", imageName: "gentle-wind"),
@@ -110,6 +110,7 @@ public struct GroundingScreenView: View {
     @State private var activeOverlay: ActiveScreenOverlay = .none
     @State private var isDraggingTimer: Bool = false
     @State private var isZenMode: Bool = false
+    @State private var isArtistInfoVisible: Bool = false
     @State private var isVisualizerMode: Bool = false
     @State private var timerEndTimestamp: Date? = nil
 
@@ -179,22 +180,45 @@ public struct GroundingScreenView: View {
                                 togglePlayPause()
                             }
 
-                        // Top Navigation: Minimalist Floating Eye Icon (Zen Mode Immersion)
+                        // Top Navigation: Minimalist Floating Eye Icon & Artist Info Icon
                         VStack {
-                            Button(action: {
-                                HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                withAnimation(.easeInOut(duration: 0.35)) {
-                                    isZenMode.toggle()
+                            HStack(spacing: 20) {
+                                if !isArtistInfoVisible {
+                                    Button(action: {
+                                        HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                        withAnimation(.easeInOut(duration: 0.35)) {
+                                            isZenMode.toggle()
+                                        }
+                                    }) {
+                                        Image(systemName: isZenMode ? "eye" : "eye.slash")
+                                            .font(.system(size: 18, weight: .medium))
+                                            .foregroundColor(isZenMode ? Color(white: 0.55).opacity(0.85) : Color.white.opacity(0.85))
+                                            .shadow(color: Color.black.opacity(isZenMode ? 0.40 : 0.85), radius: 6, x: 0, y: 2)
+                                            .frame(width: 44, height: 44)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.opacity)
                                 }
-                            }) {
-                                Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                    .font(.system(size: 18, weight: .medium))
-                                    .foregroundColor(isZenMode ? Color(white: 0.55).opacity(0.85) : Color.white.opacity(0.85))
-                                    .shadow(color: Color.black.opacity(isZenMode ? 0.40 : 0.85), radius: 6, x: 0, y: 2)
-                                    .frame(width: 44, height: 44)
-                                    .contentShape(Rectangle())
+
+                                if activeProfile == .surrender {
+                                    Button(action: {
+                                        HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                        withAnimation(.easeInOut(duration: 0.35)) {
+                                            isArtistInfoVisible.toggle()
+                                        }
+                                    }) {
+                                        Image(systemName: isArtistInfoVisible ? "xmark" : "info.circle")
+                                            .font(.system(size: isArtistInfoVisible ? 16 : 18, weight: .medium))
+                                            .foregroundColor(Color.white.opacity(0.85))
+                                            .shadow(color: Color.black.opacity(0.85), radius: 6, x: 0, y: 2)
+                                            .frame(width: 44, height: 44)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .transition(.opacity)
+                                }
                             }
-                            .buttonStyle(.plain)
                             .padding(.top, 52)
 
                             Spacer()
@@ -205,7 +229,7 @@ public struct GroundingScreenView: View {
                         VStack(spacing: 0) {
                             Spacer()
 
-                            if !isZenMode {
+                            if !isZenMode && !isArtistInfoVisible {
                                 // ── Clean Circular Countdown Timer Ring ──
                                 FullCircularTimerView(
                                     remainingSeconds: $remainingTimerSeconds,
@@ -217,6 +241,35 @@ public struct GroundingScreenView: View {
                                 .offset(y: 20)
                                 .transition(.opacity.combined(with: .scale(scale: 0.96)))
                                 .allowsHitTesting(false)
+                            } else if isArtistInfoVisible {
+                                // ── Jeff Oster Artist Profile & Social Link ──
+                                VStack(spacing: 16) {
+                                    Text("Jeff Oster")
+                                        .font(.system(size: 32, weight: .light, design: .rounded))
+                                        .tracking(1.5)
+                                        .foregroundColor(.white)
+                                        .shadow(color: Color.black.opacity(0.9), radius: 10, x: 0, y: 3)
+
+                                    Link(destination: URL(string: "https://www.instagram.com/jeffosterpix/")!) {
+                                        HStack(spacing: 10) {
+                                            InstagramLogoView(size: 24)
+                                            Text("@jeffosterpix")
+                                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                                                .foregroundColor(.white)
+                                        }
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 10)
+                                        .background(Color.white.opacity(0.18))
+                                        .clipShape(Capsule())
+                                        .overlay(
+                                            Capsule().stroke(Color.white.opacity(0.35), lineWidth: 1)
+                                        )
+                                        .shadow(color: Color.black.opacity(0.7), radius: 8, x: 0, y: 2)
+                                    }
+                                }
+                                .frame(height: 318)
+                                .offset(y: 20)
+                                .transition(.opacity.combined(with: .scale(scale: 0.96)))
                             }
 
                             Spacer()
@@ -288,9 +341,10 @@ public struct GroundingScreenView: View {
                                 .buttonStyle(.plain)
                             }
                             .padding(.bottom, 36)
-                            .opacity(isZenMode ? 0 : 1)
+                            .opacity((isZenMode || isArtistInfoVisible) ? 0 : 1)
                             .animation(.easeInOut(duration: 0.35), value: isZenMode)
-                            .allowsHitTesting(!isZenMode)
+                            .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
+                            .allowsHitTesting(!isZenMode && !isArtistInfoVisible)
                         }
                     }
                     .frame(width: screenWidth, height: screenHeight)
@@ -414,6 +468,11 @@ public struct GroundingScreenView: View {
             if isPlaying {
                 timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
                 AudioManager.shared.start()
+            }
+        }
+        .onChange(of: activeProfile) { _, newProfile in
+            if newProfile != .surrender {
+                isArtistInfoVisible = false
             }
         }
     }
@@ -997,3 +1056,35 @@ private struct RelaxingSoundsFullView: View {
         .frame(width: screenWidth)
     }
 }
+
+// MARK: ── Pure White Instagram Logo Glyph ────────────────────────────────────
+
+public struct InstagramLogoView: View {
+    public var size: CGFloat
+
+    public init(size: CGFloat = 24) {
+        self.size = size
+    }
+
+    public var body: some View {
+        ZStack {
+            // Outer squircle outline
+            RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
+                .stroke(Color.white, lineWidth: size * 0.085)
+                .frame(width: size, height: size)
+
+            // Center camera lens
+            Circle()
+                .stroke(Color.white, lineWidth: size * 0.085)
+                .frame(width: size * 0.48, height: size * 0.48)
+
+            // Top-right flash dot
+            Circle()
+                .fill(Color.white)
+                .frame(width: size * 0.11, height: size * 0.11)
+                .offset(x: size * 0.24, y: -size * 0.24)
+        }
+        .frame(width: size, height: size)
+    }
+}
+

@@ -159,12 +159,12 @@ final class CalmpalTests: XCTestCase {
             let matched = bannerFor(profile: banner.profile)
             XCTAssertEqual(matched.profile, banner.profile)
         }
-        // Verify surrender is positioned above gentle-rain
+        // Verify surrender is positioned directly above rolling-thunder
         if let surrenderIndex = allSoundBanners.firstIndex(where: { $0.profile == .surrender }),
-           let rainIndex = allSoundBanners.firstIndex(where: { $0.profile == .gentleRain }) {
-            XCTAssertEqual(surrenderIndex + 1, rainIndex, "Surrender must be directly above Gentle Rain")
+           let thunderIndex = allSoundBanners.firstIndex(where: { $0.profile == .rollingThunder }) {
+            XCTAssertEqual(surrenderIndex + 1, thunderIndex, "Surrender must be directly above Rolling Thunder")
         } else {
-            XCTFail("Could not find surrender or gentle-rain in allSoundBanners")
+            XCTFail("Could not find surrender or rolling-thunder in allSoundBanners")
         }
     }
 
@@ -203,5 +203,20 @@ final class CalmpalTests: XCTestCase {
         // At the very last frame, gain should be 0.0
         let lastFrameIndex = Int(frameCount) - 1
         XCTAssertEqual(channelData[0][lastFrameIndex], 0.0, accuracy: 0.001)
+    }
+
+    @MainActor
+    func testAudioPauseResumeBufferPreservation() {
+        let audioManager = AudioManager.shared
+        audioManager.stop()
+        XCTAssertFalse(audioManager.isAudioPlaying)
+        XCTAssertFalse(audioManager.isBufferScheduled)
+    }
+
+    func testInstagramLogoView() {
+        let logo = InstagramLogoView(size: 32)
+        XCTAssertEqual(logo.size, 32)
+        let defaultLogo = InstagramLogoView()
+        XCTAssertEqual(defaultLogo.size, 24)
     }
 }

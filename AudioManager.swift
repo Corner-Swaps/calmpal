@@ -279,11 +279,13 @@ public final class AudioManager {
     private let playerNode  = AVAudioPlayerNode()
     private let analyzer = AudioSpectrumAnalyzer()
     private var fadeTask: Task<Void, Never>?
+    public private(set) var isBufferScheduled: Bool = false
 
     public var activeProfile: SoundProfile = .gentleRain {
         didSet {
             guard oldValue != activeProfile else { return }
             bufferCache.removeAll(keepingCapacity: false)
+            isBufferScheduled = false
             applyBuffer(for: activeProfile)
         }
     }
@@ -385,8 +387,10 @@ public final class AudioManager {
             if !audioEngine.isRunning {
                 try audioEngine.start()
             }
-            if !playerNode.isPlaying && isAudioPlaying {
+            if !isBufferScheduled {
                 applyBuffer(for: activeProfile)
+            }
+            if !playerNode.isPlaying && isAudioPlaying {
                 playerNode.play()
             }
         } catch {
@@ -400,9 +404,10 @@ public final class AudioManager {
             try AVAudioSession.sharedInstance().setCategory(
                 .playback,
                 mode: .default,
-                options: [.allowBluetoothA2DP, .mixWithOthers]
+                options: [.allowBluetooth, .allowBluetoothA2DP]
             )
             try AVAudioSession.sharedInstance().setActive(true)
+            UIApplication.shared.beginReceivingRemoteControlEvents()
         } catch { print("[AudioManager] Session error: \(error)") }
         #endif
     }
@@ -421,6 +426,7 @@ public final class AudioManager {
         info[MPNowPlayingInfoPropertyPlaybackRate] = playing ? 1.0 : 0.0
         info[MPNowPlayingInfoPropertyDefaultPlaybackRate] = 1.0
         info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0.0
+        info[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
 
         // Universal Crisp White Sound Playing Icon for Dynamic Island (Pure black background, no gray box, no emojis)
         let artworkSize = CGSize(width: 128, height: 128)
@@ -458,6 +464,7 @@ public final class AudioManager {
         audioEngine.connect(playerNode, to: audioEngine.mainMixerNode, format: fmt)
         if let buf = bufferForProfile(activeProfile) {
             playerNode.scheduleBuffer(buf, at: nil, options: .loops, completionHandler: nil)
+            isBufferScheduled = true
         }
         setupAudioTap()
     }
@@ -626,10 +633,14 @@ public final class AudioManager {
     }
 
     private func applyBuffer(for profile: SoundProfile) {
-        guard let buf = bufferForProfile(profile) else { return }
+        guard let buf = bufferForProfile(profile) else {
+            isBufferScheduled = false
+            return
+        }
         let wasPlaying = isAudioPlaying
         playerNode.stop()
         playerNode.scheduleBuffer(buf, at: nil, options: .loops, completionHandler: nil)
+        isBufferScheduled = true
         if wasPlaying {
             if !audioEngine.isRunning {
                 try? audioEngine.start()
@@ -688,9 +699,10 @@ public final class AudioManager {
             try AVAudioSession.sharedInstance().setCategory(
                 .playback,
                 mode: .default,
-                options: [.allowBluetoothA2DP, .mixWithOthers]
+                options: [.allowBluetooth, .allowBluetoothA2DP]
             )
             try AVAudioSession.sharedInstance().setActive(true)
+            UIApplication.shared.beginReceivingRemoteControlEvents()
         } catch {
             print("[AudioManager] Resume session error: \(error)")
         }
@@ -708,8 +720,11 @@ public final class AudioManager {
         let targetVolume = self.volume > 0 ? self.volume : 0.5
         playerNode.volume = targetVolume
 
-        if !playerNode.isPlaying {
+        if !isBufferScheduled {
             applyBuffer(for: activeProfile)
+        }
+
+        if !playerNode.isPlaying {
             playerNode.play()
         }
 
@@ -719,6 +734,7 @@ public final class AudioManager {
     public func stop() {
         isAudioPlaying = false
         playerNode.stop()
+        isBufferScheduled = false
         updateNowPlayingInfo()
     }
 
@@ -727,8 +743,8 @@ public final class AudioManager {
         UIApplication.shared.beginReceivingRemoteControlEvents()
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.removeTarget(nil)
+        commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.addTarget { [weak self] _ in
             DispatchQueue.main.async {
                 self?.pause()
@@ -736,8 +752,8 @@ public final class AudioManager {
             return .success
         }
         
-        commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.removeTarget(nil)
+        commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.addTarget { [weak self] _ in
             DispatchQueue.main.async {
                 self?.resume()
@@ -745,8 +761,8 @@ public final class AudioManager {
             return .success
         }
         
-        commandCenter.togglePlayPauseCommand.isEnabled = true
         commandCenter.togglePlayPauseCommand.removeTarget(nil)
+        commandCenter.togglePlayPauseCommand.isEnabled = true
         commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
             DispatchQueue.main.async {
                 self?.togglePlayPause()
@@ -754,8 +770,8 @@ public final class AudioManager {
             return .success
         }
 
-        commandCenter.stopCommand.isEnabled = true
         commandCenter.stopCommand.removeTarget(nil)
+        commandCenter.stopCommand.isEnabled = true
         commandCenter.stopCommand.addTarget { [weak self] _ in
             DispatchQueue.main.async {
                 self?.pause()
