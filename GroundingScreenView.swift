@@ -210,12 +210,12 @@ public struct GroundingScreenView: View {
                                     }
                             )
 
-                        // Top Right Navigation: Vertical Stack (Eye on top, Info/Exit below)
+                        // Top Right Navigation: Single Frosted Pill with Eye & Info
                         VStack {
                             HStack {
                                 Spacer()
 
-                                VStack(spacing: 8) {
+                                HStack(spacing: 4) {
                                     // 👁 Eye Icon (Zen Mode Immersion)
                                     Button(action: {
                                         HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
@@ -226,12 +226,19 @@ public struct GroundingScreenView: View {
                                             isZenMode.toggle()
                                         }
                                     }) {
-                                        Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                            .font(.system(size: 18, weight: .regular))
-                                            .foregroundColor(Color(white: 0.82).opacity(0.38))
-                                            .shadow(color: Color.black.opacity(0.4), radius: 3, x: 0, y: 1)
-                                            .frame(width: 40, height: 40)
-                                            .contentShape(Rectangle())
+                                        ZStack {
+                                            if isZenMode && !isArtistInfoVisible {
+                                                Circle()
+                                                    .fill(Color.white.opacity(0.22))
+                                                    .frame(width: 32, height: 32)
+                                            }
+                                            Image(systemName: isZenMode ? "eye" : "eye.slash")
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(isZenMode ? .white : Color(white: 0.88).opacity(0.55))
+                                                .shadow(color: Color.black.opacity(0.4), radius: 3, x: 0, y: 1)
+                                        }
+                                        .frame(width: 34, height: 34)
+                                        .contentShape(Circle())
                                     }
                                     .buttonStyle(.plain)
 
@@ -242,15 +249,37 @@ public struct GroundingScreenView: View {
                                             isArtistInfoVisible.toggle()
                                         }
                                     }) {
-                                        Image(systemName: isArtistInfoVisible ? "xmark" : "info.circle")
-                                            .font(.system(size: isArtistInfoVisible ? 15 : 18, weight: .regular))
-                                            .foregroundColor(Color(white: 0.82).opacity(0.38))
-                                            .shadow(color: Color.black.opacity(0.4), radius: 3, x: 0, y: 1)
-                                            .frame(width: 40, height: 40)
-                                            .contentShape(Rectangle())
+                                        ZStack {
+                                            if isArtistInfoVisible {
+                                                Circle()
+                                                    .fill(Color.white.opacity(0.22))
+                                                    .frame(width: 32, height: 32)
+                                            }
+                                            Image(systemName: isArtistInfoVisible ? "xmark" : "info.circle")
+                                                .font(.system(size: isArtistInfoVisible ? 13 : 16, weight: .medium))
+                                                .foregroundColor(isArtistInfoVisible ? .white : Color(white: 0.88).opacity(0.55))
+                                                .shadow(color: Color.black.opacity(0.4), radius: 3, x: 0, y: 1)
+                                        }
+                                        .frame(width: 34, height: 34)
+                                        .contentShape(Circle())
                                     }
                                     .buttonStyle(.plain)
                                 }
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 3)
+                                .background(
+                                    Capsule()
+                                        .fill(Color.black.opacity(0.22))
+                                        .background(
+                                            Capsule()
+                                                .fill(.ultraThinMaterial.opacity(0.25))
+                                        )
+                                        .overlay(
+                                            Capsule()
+                                                .stroke(Color.white.opacity(0.18), lineWidth: 0.8)
+                                        )
+                                )
+                                .shadow(color: Color.black.opacity(0.35), radius: 6, x: 0, y: 2)
                                 .padding(.trailing, 20)
                                 .padding(.top, 54)
                             }
