@@ -17,13 +17,9 @@ public struct MainTabView: View {
             .onAppear {
                 AppReviewManager.shared.handleAppLaunch()
             }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-                AppReviewManager.shared.handleAppForeground()
-            }
     }
 }
 
 #Preview {
     MainTabView()
-        .modelContainer(for: [GroundingSession.self], inMemory: true)
 }

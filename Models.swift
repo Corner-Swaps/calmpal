@@ -7,40 +7,6 @@
 //
 
 import Foundation
-import SwiftData
-
-/// Persisted record of a tactile grounding session.
-@Model
-public final class GroundingSession {
-    /// Unique identifier.
-    public var id: UUID
-    
-    /// The timestamp when the session occurred.
-    public var date: Date
-    
-    /// The duration of the session in seconds.
-    public var duration: TimeInterval
-    
-    /// The method used (e.g., "Free Touch", "Apnea Hold", "Box Breath").
-    public var protocolType: String
-    
-    /// The average pressure/force value recorded during touch (0.0 to 1.0).
-    public var averagePressure: Float
-    
-    public init(
-        id: UUID = UUID(),
-        date: Date = Date(),
-        duration: TimeInterval,
-        protocolType: String,
-        averagePressure: Float
-    ) {
-        self.id = id
-        self.date = date
-        self.duration = duration
-        self.protocolType = protocolType
-        self.averagePressure = averagePressure
-    }
-}
 
 // MARK: - String Control Character Filtering
 

@@ -1,31 +1,15 @@
 import XCTest
-import SwiftData
 import AVFoundation
 @testable import Calmpal
 
 final class CalmpalTests: XCTestCase {
     
-    // MARK: - SessionViewModel Transition Tests
+    // MARK: - Sound Banner Completeness Tests
     
-    @MainActor
-    func testSessionViewModelInitialState() {
-        let viewModel = SessionViewModel()
-        XCTAssertEqual(viewModel.currentState, .rest)
-        XCTAssertFalse(viewModel.isActive)
-        XCTAssertEqual(viewModel.progress, 0.0)
-    }
-    
-    @MainActor
-    func testSessionViewModelStartSession() {
-        let viewModel = SessionViewModel()
-        viewModel.startSession()
-        
-        XCTAssertTrue(viewModel.isActive)
-        XCTAssertEqual(viewModel.currentState, .inhale)
-        XCTAssertEqual(viewModel.progress, 0.0)
-        
-        viewModel.stopSession()
-        XCTAssertFalse(viewModel.isActive)
+    func testSoundBannerCompleteness() {
+        XCTAssertEqual(allSoundBanners.count, 35)
+        let uniqueProfiles = Set(allSoundBanners.map { $0.profile })
+        XCTAssertEqual(uniqueProfiles.count, 35, "All 35 sound profiles must be uniquely represented in allSoundBanners")
     }
     
     @MainActor

@@ -377,7 +377,15 @@ public final class HapticManager: NSObject {
     
     /// Triggers an immediate, crisp single-beat transient haptic click/tap in direct response to an audio transient event.
     public func playSingleTransient(intensity: Float, sharpness: Float) {
-        guard isHardwareSupported, isEngineRunning, let engine = engine else { return }
+        #if canImport(UIKit)
+        if !isEngineRunning || engine == nil {
+            let feedback = UIImpactFeedbackGenerator(style: intensity > 0.6 ? .medium : .light)
+            feedback.prepare()
+            feedback.impactOccurred()
+            return
+        }
+        #endif
+        guard isHardwareSupported, let engine = engine else { return }
         
         do {
             let iParam = CHHapticEventParameter(parameterID: .hapticIntensity, value: min(1.0, max(0.1, intensity)))
@@ -387,14 +395,25 @@ public final class HapticManager: NSObject {
             let clickPlayer = try engine.makePlayer(with: pattern)
             try clickPlayer.start(atTime: CHHapticTimeImmediate)
         } catch {
-            print("[HapticManager] Error playing audio transient haptic: \(error.localizedDescription)")
+            #if canImport(UIKit)
+            let feedback = UIImpactFeedbackGenerator(style: .light)
+            feedback.impactOccurred()
+            #endif
         }
     }
     
     /// Triggers a double-beat transient haptic pulse (lub-dub) on top of the continuous background hum.
-    /// Used for matching breath hold heartbeat intervals.
+    /// Used for matching breath hold heartbeat intervals and crisp button feedback.
     public func playTransientHeartbeat(intensity: Float, sharpness: Float) {
-        guard isHardwareSupported, isEngineRunning, let engine = engine else { return }
+        #if canImport(UIKit)
+        if !isEngineRunning || engine == nil {
+            let feedback = UIImpactFeedbackGenerator(style: intensity > 0.5 ? .medium : .light)
+            feedback.prepare()
+            feedback.impactOccurred()
+            return
+        }
+        #endif
+        guard isHardwareSupported, let engine = engine else { return }
         
         do {
             let lubIntensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity)
@@ -409,7 +428,10 @@ public final class HapticManager: NSObject {
             let heartbeatPlayer = try engine.makePlayer(with: pattern)
             try heartbeatPlayer.start(atTime: CHHapticTimeImmediate)
         } catch {
-            print("[HapticManager] Error playing transient heartbeat pulse: \(error.localizedDescription)")
+            #if canImport(UIKit)
+            let feedback = UIImpactFeedbackGenerator(style: .light)
+            feedback.impactOccurred()
+            #endif
         }
     }
 }

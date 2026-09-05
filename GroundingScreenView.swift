@@ -4,12 +4,12 @@
 //
 //  Atmospheric Nature & Sleep Player:
 //  • Dynamic Fullscreen Scenic Photographic Backdrop (Instant Cut)
-//  • Preset Default Timer: 30:00 (1800s)
-//  • Bottom Action Dock: [🎵 Sounds] [💧 Theme Droplet] [⏵/⏸ Play] [✏️ Edit Timer] (All 50pt, Subtle Glass)
-//  • Center Screen: Clean Pure Title + Full Circular Sleep Timer Ring (Pure Minimal Dot)
-//  • In Edit Mode: Solid Black View + Top Clean Digital Timer + Fluid Wave Bottleneck Measuring Lines + Bottom (✓) Checkmark Button (50pt)
-//  • In Theme Mode: Dark Ambient Space + Shimmer Particles Interacting with Floating Center Time (No ring container) + Bottom (X) Close Button (50pt)
-//  • Full-Bleed Sound Library: [🔊 Preview Left] [Title Center] [▶ Play Right] & Floating Bottom (X) Button (50pt)
+//  • Preset Default Timer: 10:00 (600s)
+//  • Bottom Action Dock: [‹ Prev] [🎵 Sounds] [⏵/⏸ Play] [✏️ Edit Timer] [› Next]
+//  • Center Screen: Clean Minimal Title + Full Circular Sleep Timer Ring (Pure Minimal Dot)
+//  • In Edit Mode: Solid Black View + Top Clean Digital Timer + Fluid Wave Bottleneck Measuring Lines + Bottom (X / ✓) Buttons
+//  • In Zen Mode: Minimal Immersion with subtle Sun/Moon toggle
+//  • Full-Bleed Sound Library: 35 Authentic Soundscapes with auto-scroll to active track
 //
 
 import SwiftUI
@@ -141,7 +141,6 @@ public struct GroundingScreenView: View {
     @State private var isZenMode: Bool = false
     @State private var isArtistInfoVisible: Bool = false
     @State private var isInstagramGlowing: Bool = false
-    @State private var isVisualizerMode: Bool = false
     @State private var timerEndTimestamp: Date? = nil
 
     private let timerTicker = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
@@ -152,13 +151,14 @@ public struct GroundingScreenView: View {
         GeometryReader { screenGeo in
             let screenWidth = screenGeo.size.width
             let screenHeight = screenGeo.size.height
+            let topInset = max(44.0, screenGeo.safeAreaInsets.top)
 
             ZStack(alignment: .bottom) {
                 // ── Solid Deep Black Base Canvas ──
                 Color.black
                     .ignoresSafeArea()
 
-                // ── Deep Atmospheric Fullscreen Backdrop (Fades out in Particle Visualizer Mode) ──
+                // ── Deep Atmospheric Fullscreen Backdrop ──
                 let activeBanner = bannerFor(profile: activeProfile)
 
                 Image(activeBanner.imageName)
@@ -180,46 +180,41 @@ public struct GroundingScreenView: View {
                         )
                         .ignoresSafeArea()
                     )
-                    .opacity(isVisualizerMode ? 0.0 : 1.0)
-                    .animation(.easeInOut(duration: 0.40), value: isVisualizerMode)
 
                 // ── Normal Mode: Main Player Interface ──
                 if activeOverlay == .none {
                     ZStack {
-                        // Background gestures: Sideways swipe to navigate sections, tap to toggle play/pause
+                        // Background gestures: Sideways swipe to navigate soundscapes, tap/micro-drag to play/pause or hide artist
                         Color.clear
                             .contentShape(Rectangle())
                             .gesture(
-                                DragGesture(minimumDistance: 25)
+                                DragGesture(minimumDistance: 0)
                                     .onEnded { gesture in
                                         let horizontal = gesture.translation.width
                                         let vertical = gesture.translation.height
-                                        // Trigger only if primarily horizontal and sufficient swipe distance
-                                        if abs(horizontal) > abs(vertical) && abs(horizontal) > 40 {
+                                        // Trigger track change if primarily horizontal and sufficient swipe distance (> 35pt)
+                                        if abs(horizontal) > abs(vertical) && abs(horizontal) > 35 {
                                             if horizontal < 0 {
-                                                // Swiped Left -> Bring to Next section
+                                                // Swiped Left -> Bring to Next sound
                                                 selectNextSound()
                                             } else {
-                                                // Swiped Right -> Bring to Previous section
+                                                // Swiped Right -> Bring to Previous sound
                                                 selectPreviousSound()
+                                            }
+                                        } else {
+                                            // Any tap or micro-drag (< 35pt) reliably triggers play/pause
+                                            if isArtistInfoVisible {
+                                                withAnimation(.easeInOut(duration: 0.25)) {
+                                                    isArtistInfoVisible = false
+                                                }
+                                            } else {
+                                                togglePlayPause()
                                             }
                                         }
                                     }
                             )
-                            .onTapGesture {
-                                if isArtistInfoVisible {
-                                    withAnimation(.easeInOut(duration: 0.25)) {
-                                        isArtistInfoVisible = false
-                                    }
-                                } else if isZenMode {
-                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                    withAnimation(.easeInOut(duration: 0.35)) {
-                                        isZenMode = false
-                                    }
-                                }
-                            }
 
-                        // Top Navigation: Floating Icons (Eye and Info side by side at top center - No background circle or pill)
+                        // Top Navigation: Floating Icons (Sun/Moon and Artist Info side by side at top center)
                         VStack {
                             HStack {
                                 Spacer()
@@ -236,13 +231,15 @@ public struct GroundingScreenView: View {
                                         }
                                     }) {
                                         Image(systemName: isZenMode ? "moon.fill" : "sun.max")
-                                            .font(.system(size: 18, weight: .regular))
-                                            .foregroundColor(Color.white.opacity(0.88))
+                                            .font(.system(size: 20, weight: .regular))
+                                            .foregroundColor(Color.white.opacity(0.92))
                                             .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
-                                            .frame(width: 34, height: 44)
+                                            .frame(width: (activeProfile.artistCredit != nil) ? 54 : 72, height: 52)
+                                            .background(Color.black.opacity(0.001))
                                             .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
+                                    .contentShape(Rectangle())
 
                                     // 👤 / ✕ Profile / Exit Icon (Only shown for artist tracks, e.g. Jeff Oster on Surrender)
                                     if let _ = activeProfile.artistCredit {
@@ -256,26 +253,29 @@ public struct GroundingScreenView: View {
                                             }
                                         }) {
                                             Image(systemName: isArtistInfoVisible ? "xmark" : "person")
-                                                .font(.system(size: isArtistInfoVisible ? 15 : 18, weight: .regular))
-                                                .foregroundColor(Color.white.opacity(0.88))
+                                                .font(.system(size: isArtistInfoVisible ? 16 : 19, weight: .regular))
+                                                .foregroundColor(Color.white.opacity(0.92))
                                                 .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
-                                                .frame(width: 34, height: 44)
+                                                .frame(width: 54, height: 52)
+                                                .background(Color.black.opacity(0.001))
                                                 .contentShape(Rectangle())
                                         }
                                         .buttonStyle(.plain)
+                                        .contentShape(Rectangle())
                                         .transition(.opacity.combined(with: .scale(scale: 0.9)))
                                     }
                                 }
-                                .opacity(isZenMode ? 0.35 : 1.0)
+                                .opacity(isZenMode ? 0.60 : 1.0)
                                 .animation(.easeInOut(duration: 0.35), value: isZenMode)
                                 .animation(.easeInOut(duration: 0.25), value: activeProfile.artistCredit != nil)
 
                                 Spacer()
                             }
-                            .padding(.top, 54)
+                            .padding(.top, topInset + 6)
 
                             Spacer()
                         }
+                        .zIndex(100)
 
                         // Main Center Stage & Bottom Controls
                         VStack(spacing: 0) {
@@ -292,7 +292,7 @@ public struct GroundingScreenView: View {
                                 .opacity((!isZenMode && !isArtistInfoVisible) ? 1.0 : 0.0)
                                 .animation(.easeInOut(duration: 0.35), value: isZenMode)
                                 .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
-                                .allowsHitTesting(!isZenMode && !isArtistInfoVisible)
+                                .allowsHitTesting(false)
 
                                 if isArtistInfoVisible, let credit = activeProfile.artistCredit {
                                     // ── Artist Profile & Social Link ──
@@ -352,7 +352,7 @@ public struct GroundingScreenView: View {
 
                                 // 🎵 2. Relaxing Sounds Button
                                 Button(action: {
-                                    HapticManager.shared.start()
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
                                     activeOverlay = .soundSelection
                                 }) {
                                     Image(systemName: "music.note")
@@ -414,13 +414,13 @@ public struct GroundingScreenView: View {
                     .transition(.identity)
                 }
 
-                // ── Edit Mode: Solid Black + Top Timer + Full Height Waves + Bottom Checkmark ──
+                // ── Edit Mode: Solid Black + Top Timer + Full Height Waves + Bottom Controls ──
                 if activeOverlay == .editTimer {
                     ZStack(alignment: .bottom) {
                         Color.black
                             .ignoresSafeArea()
 
-                        // Full Height Fluid Wave Measuring Lines (Brought closer to timer & checkmark)
+                        // Full Height Fluid Wave Measuring Lines
                         TallFusedMeasuringLinesView(
                             remainingSeconds: $remainingTimerSeconds,
                             totalDuration: $totalTimerDuration,
@@ -429,24 +429,25 @@ public struct GroundingScreenView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .ignoresSafeArea()
 
-                        // Top Clean Digital Timer in Edit Mode (Exact 44pt size matching main screen)
+                        // Top Clean Digital Timer in Edit Mode
                         VStack {
                             Text(formatNoLeadingZeroHours(remainingTimerSeconds))
                                 .font(.system(size: 44, weight: .light, design: .rounded))
                                 .monospacedDigit()
                                 .foregroundColor(.white)
                                 .shadow(color: Color.black.opacity(0.90), radius: 8, x: 0, y: 3)
-                                .padding(.top, 96)
+                                .padding(.top, topInset + 36)
 
                             Spacer()
                         }
-                        .allowsHitTesting(false) // Let drag touch pass through to the measuring lines
+                        .allowsHitTesting(false)
 
-                        // Floating Checkmark Confirmation Button (Matching bottom icons size & alignment)
+                        // Bottom Action: Confirm (✓) Button
                         Button(action: {
                             HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
                             if isPlaying {
                                 timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                                AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
                             }
                             activeOverlay = .none
                         }) {
@@ -474,8 +475,12 @@ public struct GroundingScreenView: View {
                         isPlaying: isPlaying,
                         onSelectSound: { profile in
                             activeProfile = profile
+                            if remainingTimerSeconds <= 0 {
+                                remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+                            }
                             isPlaying = true
                             timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                            AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
                             activeOverlay = .none
                             AudioManager.shared.activeProfile = profile
                             if !AudioManager.shared.isAudioPlaying {
@@ -503,16 +508,21 @@ public struct GroundingScreenView: View {
                         remainingTimerSeconds = 0
                         isPlaying = false
                         timerEndTimestamp = nil
+                        AudioManager.shared.sleepTimerTargetDate = nil
                         AudioManager.shared.pause()
                     } else {
                         remainingTimerSeconds = left
                     }
                 } else {
                     timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                    AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
                 }
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: AudioManager.audioStateDidChangeNotification)) { _ in
+            if activeProfile != AudioManager.shared.activeProfile {
+                activeProfile = AudioManager.shared.activeProfile
+            }
             let audioPlaying = AudioManager.shared.isAudioPlaying
             if isPlaying != audioPlaying {
                 isPlaying = audioPlaying
@@ -521,11 +531,13 @@ public struct GroundingScreenView: View {
                         remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
                     }
                     timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                    AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
                 } else {
                     if let end = timerEndTimestamp {
                         remainingTimerSeconds = max(0, end.timeIntervalSinceNow)
                     }
                     timerEndTimestamp = nil
+                    AudioManager.shared.sleepTimerTargetDate = nil
                 }
             }
         }
@@ -533,6 +545,7 @@ public struct GroundingScreenView: View {
             AudioManager.shared.activeProfile = activeProfile
             if isPlaying {
                 timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
                 AudioManager.shared.start()
             }
         }
@@ -569,11 +582,13 @@ public struct GroundingScreenView: View {
                 remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
             }
             timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+            AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
         } else {
             if let end = timerEndTimestamp {
                 remainingTimerSeconds = max(0, end.timeIntervalSinceNow)
             }
             timerEndTimestamp = nil
+            AudioManager.shared.sleepTimerTargetDate = nil
         }
         AudioManager.shared.togglePlayPause()
     }
@@ -587,10 +602,14 @@ public struct GroundingScreenView: View {
             activeProfile = newProfile
         }
         AudioManager.shared.activeProfile = newProfile
+        if remainingTimerSeconds <= 0 {
+            remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+        }
         if !isPlaying {
             isPlaying = true
-            timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
         }
+        timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+        AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
         if !AudioManager.shared.isAudioPlaying {
             AudioManager.shared.start()
         }
@@ -605,10 +624,14 @@ public struct GroundingScreenView: View {
             activeProfile = newProfile
         }
         AudioManager.shared.activeProfile = newProfile
+        if remainingTimerSeconds <= 0 {
+            remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+        }
         if !isPlaying {
             isPlaying = true
-            timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
         }
+        timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+        AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
         if !AudioManager.shared.isAudioPlaying {
             AudioManager.shared.start()
         }
@@ -706,164 +729,7 @@ private struct FullCircularTimerView: View {
     }
 }
 
-// MARK: ── 2. Ethereal Liquid Silk Harmonograph Visualizer ─────────────────
-
-private struct CircularParticleWaveVisualizerView: View {
-    let isPlaying: Bool
-
-    @State private var smoothedLevel: CGFloat = 0.0
-    @State private var smoothedBass: CGFloat = 0.0
-    @State private var smoothedMid: CGFloat = 0.0
-    @State private var smoothedTreble: CGFloat = 0.0
-
-    var body: some View {
-        if isPlaying {
-            TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
-                visualizerBody(at: timeline.date)
-            }
-        } else {
-            visualizerBody(at: Date())
-        }
-    }
-
-    @ViewBuilder
-    private func visualizerBody(at now: Date) -> some View {
-        let time = now.timeIntervalSinceReferenceDate
-        let audio = AudioManager.shared
-        let rawLevel = isPlaying ? CGFloat(audio.audioLevel) : 0.0
-        let rawBass = isPlaying ? CGFloat(audio.audioBass) : 0.0
-        let rawMid = isPlaying ? CGFloat(audio.audioMid) : 0.0
-        let rawTreble = isPlaying ? CGFloat(audio.audioTreble) : 0.0
-
-        // Butter-smooth exponential damping for silky, liquid acoustic responsiveness
-        let level = smoothedLevel + (rawLevel - smoothedLevel) * 0.12
-        let bass = smoothedBass + (rawBass - smoothedBass) * 0.10
-        let mid = smoothedMid + (rawMid - smoothedMid) * 0.12
-        let treble = smoothedTreble + (rawTreble - smoothedTreble) * 0.14
-
-        // Synchronize tactile vibrations using sound-specific sensory profiles
-        let _ = updateSoundHaptics(time: time, level: level, bass: bass, mid: mid, treble: treble)
-
-        GeometryReader { geo in
-            let size = min(geo.size.width, geo.size.height)
-            let baseRadius: CGFloat = size * 0.46
-
-            ZStack {
-                // ── 1. Volumetric Luminous Breathing Nebula (Swelling Core Aura) ──
-                let glowScale = 1.0 + Double(bass) * 0.30 + Double(level) * 0.24
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color.white.opacity(0.14 + Double(level) * 0.26 + Double(bass) * 0.18),
-                                Color(white: 0.72).opacity(0.04 + Double(level) * 0.10),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 6,
-                            endRadius: baseRadius * 1.25 * CGFloat(glowScale)
-                        )
-                    )
-                    .frame(width: baseRadius * 2.6 * CGFloat(glowScale), height: baseRadius * 2.6 * CGFloat(glowScale))
-
-                // ── 2. Canvas: 6 Concentric Delicate Ethereal Silk Ribbons ──
-                Canvas { context, canvasSize in
-                    let cX = canvasSize.width / 2
-                    let cY = canvasSize.height / 2
-
-                    let numWaves = 6
-                    let waveSteps = 160
-
-                    for k in 0..<numWaves {
-                        let kFrac = CGFloat(k) / CGFloat(numWaves - 1)
-                        // Base ring radius breathes softly with sound loudness
-                        let ringBaseR = baseRadius * (0.42 + kFrac * 0.52) + level * (16.0 + CGFloat(k) * 5.0)
-                        
-                        let speed1 = (1.05 + Double(k) * 0.18)
-                        let speed2 = (1.35 - Double(k) * 0.14)
-                        let speed3 = (1.75 + Double(k) * 0.20)
-                        let dir: Double = (k % 2 == 0) ? 1.0 : -1.0
-
-                        var wavePath = Path()
-
-                        for s in 0...waveSteps {
-                            let theta = (Double(s) / Double(waveSteps)) * 2.0 * .pi
-
-                            // Multi-harmonic silk wave equations reacting distinctly to sound profile frequencies
-                            let h1 = sin(2.0 * theta + time * speed1 * dir) * (Double(bass) * (24.0 + Double(k) * 6.0) + (1.8 + Double(k) * 0.6))
-                            let h2 = cos(3.0 * theta - time * speed2 * dir) * (Double(mid) * (18.0 + Double(k) * 5.0) + (1.2 + Double(k) * 0.5))
-                            let h3 = sin(5.0 * theta + time * speed3 * dir) * (Double(treble) * (14.0 + Double(k) * 4.0) + 0.6)
-                            let h4 = cos(theta * 1.0 + time * 0.45) * (Double(level) * (10.0 + Double(k) * 3.0))
-
-                            let displacement = CGFloat(h1 + h2 + h3 + h4)
-                            let r = ringBaseR + displacement
-
-                            let pX = cX + r * CGFloat(cos(theta))
-                            let pY = cY + r * CGFloat(sin(theta))
-
-                            if s == 0 {
-                                wavePath.move(to: CGPoint(x: pX, y: pY))
-                            } else {
-                                wavePath.addLine(to: CGPoint(x: pX, y: pY))
-                            }
-                        }
-                        wavePath.closeSubpath()
-
-                        // Layered Monochromatic Silver/White Palette with Fine, Delicate Lines
-                        let alpha = Double(0.22 + kFrac * 0.56) * (0.65 + Double(level) * 0.35)
-                        let brightness = 0.80 + 0.20 * Double(kFrac)
-                        let ringColor = Color(white: brightness, opacity: min(1.0, alpha))
-                        
-                        // Fine, delicate silk line width
-                        let lineWidth: CGFloat = (1.2 + kFrac * 0.8) + level * 0.8
-
-                        context.stroke(
-                            wavePath,
-                            with: .color(ringColor),
-                            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round, lineJoin: .round)
-                        )
-                    }
-                }
-                .frame(width: size, height: size)
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
-        }
-        .onAppear {
-            if isPlaying {
-                HapticManager.shared.start()
-            }
-        }
-        .onDisappear {
-            HapticManager.shared.stop()
-        }
-        .onChange(of: isPlaying) { _, playing in
-            if playing {
-                HapticManager.shared.start()
-            } else {
-                HapticManager.shared.stop()
-            }
-        }
-    }
-
-    private func updateSoundHaptics(time: TimeInterval, level: CGFloat, bass: CGFloat, mid: CGFloat, treble: CGFloat) {
-        if isPlaying {
-            let profile = AudioManager.shared.activeProfile.hapticProfile
-            let breathingMod = Float(0.5 + 0.5 * sin(time * profile.pulseFrequency * 2.0 * .pi))
-            
-            // Tailored tactile symphony for the active soundscape
-            let targetIntensity = profile.baseIntensity + Float(level) * profile.dynamicGain + Float(bass) * 0.32 * breathingMod
-            let targetSharpness = profile.baseSharpness + Float(treble) * 0.28 + Float(mid) * 0.12
-            
-            HapticManager.shared.targetIntensity = min(1.0, max(0.20, targetIntensity))
-            HapticManager.shared.targetSharpness = min(1.0, max(0.10, targetSharpness))
-        } else {
-            HapticManager.shared.targetIntensity = 0.0
-            HapticManager.shared.targetSharpness = 0.0
-        }
-    }
-}
-
-// MARK: ── 3. Tall Interactive Fluid Wave Measuring Lines (Edit Mode) ─────────
+// MARK: ── 2. Tall Interactive Fluid Wave Measuring Lines (Edit Mode) ─────────
 
 private struct TallFusedMeasuringLinesView: View {
     @Binding var remainingSeconds: TimeInterval
@@ -1045,6 +911,22 @@ private struct RelaxingSoundsFullView: View {
     let onClose: () -> Void
 
     private let cardHeight: CGFloat = 135.0
+    @State private var scrolledID: String?
+
+    init(
+        screenWidth: CGFloat,
+        activeProfile: Binding<SoundProfile>,
+        isPlaying: Bool,
+        onSelectSound: @escaping (SoundProfile) -> Void,
+        onClose: @escaping () -> Void
+    ) {
+        self.screenWidth = screenWidth
+        self._activeProfile = activeProfile
+        self.isPlaying = isPlaying
+        self.onSelectSound = onSelectSound
+        self.onClose = onClose
+        self._scrolledID = State(initialValue: activeProfile.wrappedValue.rawValue)
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -1053,59 +935,84 @@ private struct RelaxingSoundsFullView: View {
                 .ignoresSafeArea()
 
             // Vertical Soundscapes Scroll View
-            ScrollView(.vertical, showsIndicators: false) {
-                LazyVStack(spacing: 0) {
-                    ForEach(allSoundBanners) { banner in
-                        let isThisActive = (banner.profile == activeProfile)
+            ScrollViewReader { scrollProxy in
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVStack(spacing: 0) {
+                        ForEach(allSoundBanners) { banner in
+                            let isThisActive = (banner.profile == activeProfile)
 
-                        Button(action: {
-                            HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
-                            onSelectSound(banner.profile)
-                        }) {
-                            ZStack(alignment: .bottom) {
-                                // 1. Sound Scenic Background Picture (Ultra-fast pre-cached thumbnail)
-                                Image(banner.thumbnailImageName)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: screenWidth, height: cardHeight, alignment: banner.previewAlignment)
-                                    .clipped()
+                            Button(action: {
+                                HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
+                                onSelectSound(banner.profile)
+                            }) {
+                                ZStack(alignment: .bottom) {
+                                    // 1. Sound Scenic Background Picture (Ultra-fast pre-cached thumbnail)
+                                    Image(banner.thumbnailImageName)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: screenWidth, height: cardHeight, alignment: banner.previewAlignment)
+                                        .clipped()
 
-                                // 2. Dark Tint for High Contrast Legibility
-                                Rectangle()
-                                    .fill(Color.black.opacity(isThisActive ? 0.22 : 0.38))
-                                    .frame(width: screenWidth, height: cardHeight)
+                                    // 2. Dark Tint for High Contrast Legibility
+                                    Rectangle()
+                                        .fill(Color.black.opacity(isThisActive ? 0.22 : 0.38))
+                                        .frame(width: screenWidth, height: cardHeight)
 
-                                // 3. Content Row (Title on Left, Pure White Checkmark on Right)
-                                HStack(spacing: 14) {
-                                    Text(banner.title)
-                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.white)
-                                        .shadow(color: Color.black.opacity(0.95), radius: 6, x: 0, y: 2)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                                    if isThisActive {
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 20, weight: .bold))
+                                    // 3. Content Row (Title on Left, Pure White Checkmark on Right)
+                                    HStack(spacing: 14) {
+                                        Text(banner.title)
+                                            .font(.system(size: 20, weight: .semibold, design: .rounded))
                                             .foregroundColor(.white)
-                                            .shadow(color: Color.black.opacity(0.95), radius: 4, x: 0, y: 2)
+                                            .shadow(color: Color.black.opacity(0.95), radius: 6, x: 0, y: 2)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                                        if isThisActive {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 20, weight: .bold))
+                                                .foregroundColor(.white)
+                                                .shadow(color: Color.black.opacity(0.95), radius: 4, x: 0, y: 2)
+                                        }
                                     }
+                                    .padding(.horizontal, 24)
+                                    .frame(width: screenWidth, height: cardHeight)
                                 }
-                                .padding(.horizontal, 24)
                                 .frame(width: screenWidth, height: cardHeight)
+                                .contentShape(Rectangle())
+                                .clipped()
                             }
-                            .frame(width: screenWidth, height: cardHeight)
+                            .buttonStyle(.plain)
                             .contentShape(Rectangle())
-                            .clipped()
+                            .id(banner.profile.rawValue)
                         }
-                        .buttonStyle(.plain)
-                        .contentShape(Rectangle())
                     }
+                    .scrollTargetLayout()
+                    .padding(.top, 54)
+                    .padding(.bottom, 94) // Balanced clearance so cards scroll smoothly
                 }
-                .padding(.top, 50)
-                .padding(.bottom, 84) // Balanced clearance so cards scroll smoothly
+                .scrollPosition(id: $scrolledID, anchor: .center)
+                .frame(width: screenWidth)
+                .ignoresSafeArea(edges: .bottom)
+                .onAppear {
+                    scrollProxy.scrollTo(activeProfile.rawValue, anchor: .center)
+                }
             }
-            .frame(width: screenWidth)
-            .ignoresSafeArea(edges: .bottom)
+
+            // Top Status Bar Fade Scrim
+            VStack(spacing: 0) {
+                LinearGradient(
+                    stops: [
+                        .init(color: Color.black.opacity(0.85), location: 0.0),
+                        .init(color: Color.black.opacity(0.40), location: 0.5),
+                        .init(color: .clear, location: 1.0)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(width: screenWidth, height: 60)
+                .allowsHitTesting(false)
+                Spacer()
+            }
+            .ignoresSafeArea(edges: .top)
 
             // Ultra-Smooth Bottom Fade Scrim & Floating Exit (X) Button
             VStack(spacing: 0) {

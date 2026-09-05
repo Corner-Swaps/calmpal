@@ -7,44 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E1A0050000000000000000B /* beehive.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050000000000000000A /* beehive.mp3 */; };
 		E1A0050100000000000000B /* birds.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050100000000000000A /* birds.mp3 */; };
 		E1A0050200000000000000B /* cafe.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050200000000000000A /* cafe.mp3 */; };
 		E1A0050300000000000000B /* campfire.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050300000000000000A /* campfire.mp3 */; };
 		E1A0050400000000000000B /* cat-purring.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050400000000000000A /* cat-purring.mp3 */; };
-		E1A0050500000000000000B /* ceiling-fan.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050500000000000000A /* ceiling-fan.mp3 */; };
-		E1A0050600000000000000B /* chickens.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050600000000000000A /* chickens.mp3 */; };
 		E1A0050700000000000000B /* church.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050700000000000000A /* church.mp3 */; };
 		E1A0050800000000000000B /* clock.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050800000000000000A /* clock.mp3 */; };
 		E1A0050900000000000000B /* crickets.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050900000000000000A /* crickets.mp3 */; };
-		E1A0050A00000000000000B /* droplets.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050A00000000000000A /* droplets.mp3 */; };
 		E1A0050B00000000000000B /* frog.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050B00000000000000A /* frog.mp3 */; };
-		E1A0050C00000000000000B /* heavy-rain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050C00000000000000A /* heavy-rain.mp3 */; };
 		E1A0050D00000000000000B /* howling-wind.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050D00000000000000A /* howling-wind.mp3 */; };
 		E1A0050E00000000000000B /* inside-a-train.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050E00000000000000A /* inside-a-train.mp3 */; };
 		E1A0050F00000000000000B /* jungle.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0050F00000000000000A /* jungle.mp3 */; };
 		E1A0051000000000000000B /* library.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051000000000000000A /* library.mp3 */; };
 		E1A0051100000000000000B /* light-rain.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051100000000000000A /* light-rain.mp3 */; };
 		E1A0051200000000000000B /* night-village.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051200000000000000A /* night-village.mp3 */; };
-		E1A0051300000000000000B /* office.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051300000000000000A /* office.mp3 */; };
 		E1A0051400000000000000B /* owl.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051400000000000000A /* owl.mp3 */; };
 		E1A0051500000000000000B /* rain-on-car-roof.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051500000000000000A /* rain-on-car-roof.mp3 */; };
 		E1A0051600000000000000B /* rain-on-leaves.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051600000000000000A /* rain-on-leaves.mp3 */; };
 		E1A0051700000000000000B /* rain-on-tent.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051700000000000000A /* rain-on-tent.mp3 */; };
-		E1A0051800000000000000B /* rain-on-umbrella.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051800000000000000A /* rain-on-umbrella.mp3 */; };
-		E1A0051900000000000000B /* rain-on-window.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051900000000000000A /* rain-on-window.mp3 */; };
-		E1A0051A00000000000000B /* restaurant.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051A00000000000000A /* restaurant.mp3 */; };
 		E1A0051B00000000000000B /* river.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051B00000000000000A /* river.mp3 */; };
 		E1A0051C00000000000000B /* rowing-boat.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051C00000000000000A /* rowing-boat.mp3 */; };
 		E1A0051D00000000000000B /* sailboat.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051D00000000000000A /* sailboat.mp3 */; };
 		E1A0051E00000000000000B /* seagulls.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051E00000000000000A /* seagulls.mp3 */; };
 		E1A0051F00000000000000B /* singing-bowl.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0051F00000000000000A /* singing-bowl.mp3 */; };
-		E1A0052000000000000000B /* submarine.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052000000000000000A /* submarine.mp3 */; };
 		E1A0052100000000000000B /* temple.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052100000000000000A /* temple.mp3 */; };
 		E1A0052200000000000000B /* thunder.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052200000000000000A /* thunder.mp3 */; };
 		E1A0052300000000000000B /* underwater.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052300000000000000A /* underwater.mp3 */; };
 		E1A0052400000000000000B /* walk-in-snow.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052400000000000000A /* walk-in-snow.mp3 */; };
-		E1A0052500000000000000B /* walk-on-gravel.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052500000000000000A /* walk-on-gravel.mp3 */; };
 		E1A0052600000000000000B /* walk-on-leaves.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052600000000000000A /* walk-on-leaves.mp3 */; };
 		E1A0052700000000000000B /* waterfall.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052700000000000000A /* waterfall.mp3 */; };
 		E1A0052800000000000000B /* waves.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052800000000000000A /* waves.mp3 */; };
@@ -52,15 +41,9 @@
 		E1A0052A00000000000000B /* wind-chimes.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052A00000000000000A /* wind-chimes.mp3 */; };
 		E1A0052B00000000000000B /* wind-in-trees.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052B00000000000000A /* wind-in-trees.mp3 */; };
 		E1A0052C00000000000000B /* wind.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052C00000000000000A /* wind.mp3 */; };
-		E1A0052D00000000000000B /* windshield-wipers.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052D00000000000000A /* windshield-wipers.mp3 */; };
-		E1A0052E00000000000000B /* wolf.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052E00000000000000A /* wolf.mp3 */; };
-		E1A0052F00000000000000B /* woodpecker.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0052F00000000000000A /* woodpecker.mp3 */; };
 		E1A0053000000000000000B /* surrender.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E1A0053000000000000000A /* surrender.mp3 */; };
 		E1A00000000000000000000B /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00000000000000000000A /* HapticManager.swift */; };
-		E1A00001000000000000000B /* TactileSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00001000000000000000A /* TactileSurfaceView.swift */; };
 		E1A00002000000000000000B /* Color+Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00002000000000000000A /* Color+Theme.swift */; };
-		E1A00003000000000000000B /* TactileTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00003000000000000000A /* TactileTestView.swift */; };
-		E1A00004000000000000000B /* SessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00004000000000000000A /* SessionViewModel.swift */; };
 		E1A00005000000000000000B /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00005000000000000000A /* AudioManager.swift */; };
 		E1A00006000000000000000B /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00006000000000000000A /* Models.swift */; };
 		E1A00010000000000000000B /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00010000000000000000A /* MainTabView.swift */; };
@@ -83,44 +66,33 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		E1A0050000000000000000A /* beehive.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "beehive.mp3"; path = "Sounds/beehive.mp3"; sourceTree = "<group>"; };
 		E1A0050100000000000000A /* birds.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "birds.mp3"; path = "Sounds/birds.mp3"; sourceTree = "<group>"; };
 		E1A0050200000000000000A /* cafe.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "cafe.mp3"; path = "Sounds/cafe.mp3"; sourceTree = "<group>"; };
 		E1A0050300000000000000A /* campfire.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "campfire.mp3"; path = "Sounds/campfire.mp3"; sourceTree = "<group>"; };
 		E1A0050400000000000000A /* cat-purring.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "cat-purring.mp3"; path = "Sounds/cat-purring.mp3"; sourceTree = "<group>"; };
-		E1A0050500000000000000A /* ceiling-fan.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "ceiling-fan.mp3"; path = "Sounds/ceiling-fan.mp3"; sourceTree = "<group>"; };
-		E1A0050600000000000000A /* chickens.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "chickens.mp3"; path = "Sounds/chickens.mp3"; sourceTree = "<group>"; };
 		E1A0050700000000000000A /* church.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "church.mp3"; path = "Sounds/church.mp3"; sourceTree = "<group>"; };
 		E1A0050800000000000000A /* clock.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "clock.mp3"; path = "Sounds/clock.mp3"; sourceTree = "<group>"; };
 		E1A0050900000000000000A /* crickets.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "crickets.mp3"; path = "Sounds/crickets.mp3"; sourceTree = "<group>"; };
-		E1A0050A00000000000000A /* droplets.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "droplets.mp3"; path = "Sounds/droplets.mp3"; sourceTree = "<group>"; };
 		E1A0050B00000000000000A /* frog.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "frog.mp3"; path = "Sounds/frog.mp3"; sourceTree = "<group>"; };
-		E1A0050C00000000000000A /* heavy-rain.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "heavy-rain.mp3"; path = "Sounds/heavy-rain.mp3"; sourceTree = "<group>"; };
 		E1A0050D00000000000000A /* howling-wind.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "howling-wind.mp3"; path = "Sounds/howling-wind.mp3"; sourceTree = "<group>"; };
 		E1A0050E00000000000000A /* inside-a-train.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "inside-a-train.mp3"; path = "Sounds/inside-a-train.mp3"; sourceTree = "<group>"; };
 		E1A0050F00000000000000A /* jungle.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "jungle.mp3"; path = "Sounds/jungle.mp3"; sourceTree = "<group>"; };
 		E1A0051000000000000000A /* library.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "library.mp3"; path = "Sounds/library.mp3"; sourceTree = "<group>"; };
 		E1A0051100000000000000A /* light-rain.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "light-rain.mp3"; path = "Sounds/light-rain.mp3"; sourceTree = "<group>"; };
 		E1A0051200000000000000A /* night-village.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "night-village.mp3"; path = "Sounds/night-village.mp3"; sourceTree = "<group>"; };
-		E1A0051300000000000000A /* office.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "office.mp3"; path = "Sounds/office.mp3"; sourceTree = "<group>"; };
 		E1A0051400000000000000A /* owl.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "owl.mp3"; path = "Sounds/owl.mp3"; sourceTree = "<group>"; };
 		E1A0051500000000000000A /* rain-on-car-roof.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-car-roof.mp3"; path = "Sounds/rain-on-car-roof.mp3"; sourceTree = "<group>"; };
 		E1A0051600000000000000A /* rain-on-leaves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-leaves.mp3"; path = "Sounds/rain-on-leaves.mp3"; sourceTree = "<group>"; };
 		E1A0051700000000000000A /* rain-on-tent.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-tent.mp3"; path = "Sounds/rain-on-tent.mp3"; sourceTree = "<group>"; };
-		E1A0051800000000000000A /* rain-on-umbrella.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-umbrella.mp3"; path = "Sounds/rain-on-umbrella.mp3"; sourceTree = "<group>"; };
-		E1A0051900000000000000A /* rain-on-window.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rain-on-window.mp3"; path = "Sounds/rain-on-window.mp3"; sourceTree = "<group>"; };
-		E1A0051A00000000000000A /* restaurant.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "restaurant.mp3"; path = "Sounds/restaurant.mp3"; sourceTree = "<group>"; };
 		E1A0051B00000000000000A /* river.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "river.mp3"; path = "Sounds/river.mp3"; sourceTree = "<group>"; };
 		E1A0051C00000000000000A /* rowing-boat.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "rowing-boat.mp3"; path = "Sounds/rowing-boat.mp3"; sourceTree = "<group>"; };
 		E1A0051D00000000000000A /* sailboat.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "sailboat.mp3"; path = "Sounds/sailboat.mp3"; sourceTree = "<group>"; };
 		E1A0051E00000000000000A /* seagulls.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "seagulls.mp3"; path = "Sounds/seagulls.mp3"; sourceTree = "<group>"; };
 		E1A0051F00000000000000A /* singing-bowl.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "singing-bowl.mp3"; path = "Sounds/singing-bowl.mp3"; sourceTree = "<group>"; };
-		E1A0052000000000000000A /* submarine.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "submarine.mp3"; path = "Sounds/submarine.mp3"; sourceTree = "<group>"; };
 		E1A0052100000000000000A /* temple.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "temple.mp3"; path = "Sounds/temple.mp3"; sourceTree = "<group>"; };
 		E1A0052200000000000000A /* thunder.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "thunder.mp3"; path = "Sounds/thunder.mp3"; sourceTree = "<group>"; };
 		E1A0052300000000000000A /* underwater.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "underwater.mp3"; path = "Sounds/underwater.mp3"; sourceTree = "<group>"; };
 		E1A0052400000000000000A /* walk-in-snow.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "walk-in-snow.mp3"; path = "Sounds/walk-in-snow.mp3"; sourceTree = "<group>"; };
-		E1A0052500000000000000A /* walk-on-gravel.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "walk-on-gravel.mp3"; path = "Sounds/walk-on-gravel.mp3"; sourceTree = "<group>"; };
 		E1A0052600000000000000A /* walk-on-leaves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "walk-on-leaves.mp3"; path = "Sounds/walk-on-leaves.mp3"; sourceTree = "<group>"; };
 		E1A0052700000000000000A /* waterfall.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "waterfall.mp3"; path = "Sounds/waterfall.mp3"; sourceTree = "<group>"; };
 		E1A0052800000000000000A /* waves.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "waves.mp3"; path = "Sounds/waves.mp3"; sourceTree = "<group>"; };
@@ -128,15 +100,9 @@
 		E1A0052A00000000000000A /* wind-chimes.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wind-chimes.mp3"; path = "Sounds/wind-chimes.mp3"; sourceTree = "<group>"; };
 		E1A0052B00000000000000A /* wind-in-trees.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wind-in-trees.mp3"; path = "Sounds/wind-in-trees.mp3"; sourceTree = "<group>"; };
 		E1A0052C00000000000000A /* wind.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wind.mp3"; path = "Sounds/wind.mp3"; sourceTree = "<group>"; };
-		E1A0052D00000000000000A /* windshield-wipers.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "windshield-wipers.mp3"; path = "Sounds/windshield-wipers.mp3"; sourceTree = "<group>"; };
-		E1A0052E00000000000000A /* wolf.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "wolf.mp3"; path = "Sounds/wolf.mp3"; sourceTree = "<group>"; };
-		E1A0052F00000000000000A /* woodpecker.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "woodpecker.mp3"; path = "Sounds/woodpecker.mp3"; sourceTree = "<group>"; };
 		E1A0053000000000000000A /* surrender.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; name = "surrender.mp3"; path = "Sounds/surrender.mp3"; sourceTree = "<group>"; };
 		E1A00000000000000000000A /* HapticManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
-		E1A00001000000000000000A /* TactileSurfaceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TactileSurfaceView.swift; sourceTree = "<group>"; };
 		E1A00002000000000000000A /* Color+Theme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Color+Theme.swift"; sourceTree = "<group>"; };
-		E1A00003000000000000000A /* TactileTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TactileTestView.swift; sourceTree = "<group>"; };
-		E1A00004000000000000000A /* SessionViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionViewModel.swift; sourceTree = "<group>"; };
 		E1A00005000000000000000A /* AudioManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		E1A00006000000000000000A /* Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		E1A00010000000000000000A /* MainTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -183,10 +149,7 @@
 			children = (
 				E1A000990000000000000040 /* Assets.xcassets */,
 				E1A00000000000000000000A /* HapticManager.swift */,
-				E1A00001000000000000000A /* TactileSurfaceView.swift */,
 				E1A00002000000000000000A /* Color+Theme.swift */,
-				E1A00003000000000000000A /* TactileTestView.swift */,
-				E1A00004000000000000000A /* SessionViewModel.swift */,
 				E1A00005000000000000000A /* AudioManager.swift */,
 				E1A00006000000000000000A /* Models.swift */,
 				E1A00010000000000000000A /* MainTabView.swift */,
@@ -218,44 +181,33 @@
 		F989C07D302ABB15004AC438 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
-				E1A0050000000000000000A /* beehive.mp3 */,
 				E1A0050100000000000000A /* birds.mp3 */,
 				E1A0050200000000000000A /* cafe.mp3 */,
 				E1A0050300000000000000A /* campfire.mp3 */,
 				E1A0050400000000000000A /* cat-purring.mp3 */,
-				E1A0050500000000000000A /* ceiling-fan.mp3 */,
-				E1A0050600000000000000A /* chickens.mp3 */,
 				E1A0050700000000000000A /* church.mp3 */,
 				E1A0050800000000000000A /* clock.mp3 */,
 				E1A0050900000000000000A /* crickets.mp3 */,
-				E1A0050A00000000000000A /* droplets.mp3 */,
 				E1A0050B00000000000000A /* frog.mp3 */,
-				E1A0050C00000000000000A /* heavy-rain.mp3 */,
 				E1A0050D00000000000000A /* howling-wind.mp3 */,
 				E1A0050E00000000000000A /* inside-a-train.mp3 */,
 				E1A0050F00000000000000A /* jungle.mp3 */,
 				E1A0051000000000000000A /* library.mp3 */,
 				E1A0051100000000000000A /* light-rain.mp3 */,
 				E1A0051200000000000000A /* night-village.mp3 */,
-				E1A0051300000000000000A /* office.mp3 */,
 				E1A0051400000000000000A /* owl.mp3 */,
 				E1A0051500000000000000A /* rain-on-car-roof.mp3 */,
 				E1A0051600000000000000A /* rain-on-leaves.mp3 */,
 				E1A0051700000000000000A /* rain-on-tent.mp3 */,
-				E1A0051800000000000000A /* rain-on-umbrella.mp3 */,
-				E1A0051900000000000000A /* rain-on-window.mp3 */,
-				E1A0051A00000000000000A /* restaurant.mp3 */,
 				E1A0051B00000000000000A /* river.mp3 */,
 				E1A0051C00000000000000A /* rowing-boat.mp3 */,
 				E1A0051D00000000000000A /* sailboat.mp3 */,
 				E1A0051E00000000000000A /* seagulls.mp3 */,
 				E1A0051F00000000000000A /* singing-bowl.mp3 */,
-				E1A0052000000000000000A /* submarine.mp3 */,
 				E1A0052100000000000000A /* temple.mp3 */,
 				E1A0052200000000000000A /* thunder.mp3 */,
 				E1A0052300000000000000A /* underwater.mp3 */,
 				E1A0052400000000000000A /* walk-in-snow.mp3 */,
-				E1A0052500000000000000A /* walk-on-gravel.mp3 */,
 				E1A0052600000000000000A /* walk-on-leaves.mp3 */,
 				E1A0052700000000000000A /* waterfall.mp3 */,
 				E1A0052800000000000000A /* waves.mp3 */,
@@ -263,9 +215,6 @@
 				E1A0052A00000000000000A /* wind-chimes.mp3 */,
 				E1A0052B00000000000000A /* wind-in-trees.mp3 */,
 				E1A0052C00000000000000A /* wind.mp3 */,
-				E1A0052D00000000000000A /* windshield-wipers.mp3 */,
-				E1A0052E00000000000000A /* wolf.mp3 */,
-				E1A0052F00000000000000A /* woodpecker.mp3 */,
 				E1A0053000000000000000A /* surrender.mp3 */,
 			);
 			name = "Recovered References";
@@ -354,44 +303,33 @@
 			files = (
 				E1A000990000000000000041 /* Assets.xcassets in Resources */,
 				E1A000990000000000000050 /* PrivacyInfo.xcprivacy in Resources */,
-				E1A0050000000000000000B /* beehive.mp3 in Resources */,
 				E1A0050100000000000000B /* birds.mp3 in Resources */,
 				E1A0050200000000000000B /* cafe.mp3 in Resources */,
 				E1A0050300000000000000B /* campfire.mp3 in Resources */,
 				E1A0050400000000000000B /* cat-purring.mp3 in Resources */,
-				E1A0050500000000000000B /* ceiling-fan.mp3 in Resources */,
-				E1A0050600000000000000B /* chickens.mp3 in Resources */,
 				E1A0050700000000000000B /* church.mp3 in Resources */,
 				E1A0050800000000000000B /* clock.mp3 in Resources */,
 				E1A0050900000000000000B /* crickets.mp3 in Resources */,
-				E1A0050A00000000000000B /* droplets.mp3 in Resources */,
 				E1A0050B00000000000000B /* frog.mp3 in Resources */,
-				E1A0050C00000000000000B /* heavy-rain.mp3 in Resources */,
 				E1A0050D00000000000000B /* howling-wind.mp3 in Resources */,
 				E1A0050E00000000000000B /* inside-a-train.mp3 in Resources */,
 				E1A0050F00000000000000B /* jungle.mp3 in Resources */,
 				E1A0051000000000000000B /* library.mp3 in Resources */,
 				E1A0051100000000000000B /* light-rain.mp3 in Resources */,
 				E1A0051200000000000000B /* night-village.mp3 in Resources */,
-				E1A0051300000000000000B /* office.mp3 in Resources */,
 				E1A0051400000000000000B /* owl.mp3 in Resources */,
 				E1A0051500000000000000B /* rain-on-car-roof.mp3 in Resources */,
 				E1A0051600000000000000B /* rain-on-leaves.mp3 in Resources */,
 				E1A0051700000000000000B /* rain-on-tent.mp3 in Resources */,
-				E1A0051800000000000000B /* rain-on-umbrella.mp3 in Resources */,
-				E1A0051900000000000000B /* rain-on-window.mp3 in Resources */,
-				E1A0051A00000000000000B /* restaurant.mp3 in Resources */,
 				E1A0051B00000000000000B /* river.mp3 in Resources */,
 				E1A0051C00000000000000B /* rowing-boat.mp3 in Resources */,
 				E1A0051D00000000000000B /* sailboat.mp3 in Resources */,
 				E1A0051E00000000000000B /* seagulls.mp3 in Resources */,
 				E1A0051F00000000000000B /* singing-bowl.mp3 in Resources */,
-				E1A0052000000000000000B /* submarine.mp3 in Resources */,
 				E1A0052100000000000000B /* temple.mp3 in Resources */,
 				E1A0052200000000000000B /* thunder.mp3 in Resources */,
 				E1A0052300000000000000B /* underwater.mp3 in Resources */,
 				E1A0052400000000000000B /* walk-in-snow.mp3 in Resources */,
-				E1A0052500000000000000B /* walk-on-gravel.mp3 in Resources */,
 				E1A0052600000000000000B /* walk-on-leaves.mp3 in Resources */,
 				E1A0052700000000000000B /* waterfall.mp3 in Resources */,
 				E1A0052800000000000000B /* waves.mp3 in Resources */,
@@ -399,9 +337,6 @@
 				E1A0052A00000000000000B /* wind-chimes.mp3 in Resources */,
 				E1A0052B00000000000000B /* wind-in-trees.mp3 in Resources */,
 				E1A0052C00000000000000B /* wind.mp3 in Resources */,
-				E1A0052D00000000000000B /* windshield-wipers.mp3 in Resources */,
-				E1A0052E00000000000000B /* wolf.mp3 in Resources */,
-				E1A0052F00000000000000B /* woodpecker.mp3 in Resources */,
 				E1A0053000000000000000B /* surrender.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -414,10 +349,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E1A00000000000000000000B /* HapticManager.swift in Sources */,
-				E1A00001000000000000000B /* TactileSurfaceView.swift in Sources */,
 				E1A00002000000000000000B /* Color+Theme.swift in Sources */,
-				E1A00003000000000000000B /* TactileTestView.swift in Sources */,
-				E1A00004000000000000000B /* SessionViewModel.swift in Sources */,
 				E1A00005000000000000000B /* AudioManager.swift in Sources */,
 				E1A00006000000000000000B /* Models.swift in Sources */,
 				E1A00010000000000000000B /* MainTabView.swift in Sources */,
