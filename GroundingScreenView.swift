@@ -255,8 +255,8 @@ public struct GroundingScreenView: View {
                                                 isArtistInfoVisible.toggle()
                                             }
                                         }) {
-                                            Image(systemName: isArtistInfoVisible ? "xmark" : "person.crop.circle")
-                                                .font(.system(size: isArtistInfoVisible ? 14.5 : 17, weight: .regular))
+                                            Image(systemName: isArtistInfoVisible ? "xmark" : "person")
+                                                .font(.system(size: isArtistInfoVisible ? 15 : 18, weight: .regular))
                                                 .foregroundColor(Color.white.opacity(0.88))
                                                 .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
                                                 .frame(width: 34, height: 44)
