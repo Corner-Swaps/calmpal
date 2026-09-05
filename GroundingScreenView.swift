@@ -140,6 +140,7 @@ public struct GroundingScreenView: View {
     @State private var isDraggingTimer: Bool = false
     @State private var isZenMode: Bool = false
     @State private var isArtistInfoVisible: Bool = false
+    @State private var isInstagramGlowing: Bool = false
     @State private var isVisualizerMode: Bool = false
     @State private var timerEndTimestamp: Date? = nil
 
@@ -307,12 +308,18 @@ public struct GroundingScreenView: View {
                                             }
                                             .padding(.horizontal, 23)
                                             .padding(.vertical, 11.5)
-                                            .background(Color.white.opacity(0.18))
+                                            .background(Color.white.opacity(isInstagramGlowing ? 0.28 : 0.18))
                                             .clipShape(Capsule())
                                             .overlay(
-                                                Capsule().stroke(Color.white.opacity(0.35), lineWidth: 1)
+                                                Capsule()
+                                                    .stroke(Color.white.opacity(isInstagramGlowing ? 0.90 : 0.35), lineWidth: isInstagramGlowing ? 1.5 : 1)
                                             )
+                                            .shadow(color: Color.white.opacity(isInstagramGlowing ? 0.70 : 0.0), radius: isInstagramGlowing ? 16 : 0, x: 0, y: 0)
+                                            .shadow(color: Color.white.opacity(isInstagramGlowing ? 0.40 : 0.0), radius: isInstagramGlowing ? 28 : 0, x: 0, y: 0)
                                             .shadow(color: Color.black.opacity(0.50), radius: 8, x: 0, y: 2)
+                                        }
+                                        .onAppear {
+                                            triggerInstagramGlow()
                                         }
                                     }
                                     .frame(height: 318)
@@ -526,6 +533,26 @@ public struct GroundingScreenView: View {
         }
         .onChange(of: activeProfile) { _, _ in
             isArtistInfoVisible = false
+            isInstagramGlowing = false
+        }
+        .onChange(of: isArtistInfoVisible) { _, newValue in
+            if newValue {
+                triggerInstagramGlow()
+            } else {
+                isInstagramGlowing = false
+            }
+        }
+    }
+
+    private func triggerInstagramGlow() {
+        isInstagramGlowing = false
+        withAnimation(.easeOut(duration: 0.35)) {
+            isInstagramGlowing = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            withAnimation(.easeInOut(duration: 0.65)) {
+                isInstagramGlowing = false
+            }
         }
     }
 
