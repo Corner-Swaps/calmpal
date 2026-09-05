@@ -654,6 +654,7 @@ private struct FullCircularTimerView: View {
                     }
                 }
             }
+            .frame(width: size, height: size)
         }
     }
 
@@ -663,11 +664,11 @@ private struct FullCircularTimerView: View {
             // 👁 Eye Button (Zen Mode Immersion Toggle)
             Button(action: onToggleZen) {
                 Image(systemName: isZenMode ? "eye.slash" : "eye")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(Color.white.opacity(isZenMode ? 0.70 : 0.88))
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color.white.opacity(isZenMode ? 0.85 : 0.88))
                     .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1)
-                    .frame(width: 32, height: 32)
-                    .contentShape(Circle())
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -685,8 +686,8 @@ private struct FullCircularTimerView: View {
                             .foregroundColor(artistInfoMode ? .white : Color.white.opacity(0.88))
                             .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1)
                     }
-                    .frame(width: 32, height: 32)
-                    .contentShape(Circle())
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
@@ -696,14 +697,14 @@ private struct FullCircularTimerView: View {
         .padding(.vertical, 3)
         .background(
             Capsule()
-                .fill(Color(white: 0.85).opacity(isZenMode ? 0.14 : 0.24))
+                .fill(Color(white: 0.85).opacity(isZenMode ? 0.18 : 0.24))
                 .background(
                     Capsule()
-                        .fill(.ultraThinMaterial.opacity(isZenMode ? 0.15 : 0.30))
+                        .fill(.ultraThinMaterial.opacity(isZenMode ? 0.20 : 0.30))
                 )
                 .overlay(
                     Capsule()
-                        .stroke(Color.white.opacity(isZenMode ? 0.18 : 0.28), lineWidth: 0.8)
+                        .stroke(Color.white.opacity(isZenMode ? 0.24 : 0.28), lineWidth: 0.8)
                 )
         )
         .shadow(color: Color.black.opacity(0.25), radius: 6, x: 0, y: 2)
