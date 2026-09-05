@@ -235,7 +235,7 @@ public struct GroundingScreenView: View {
                                         }
                                     }) {
                                         Image(systemName: isZenMode ? "eye.slash" : "eye")
-                                            .font(.system(size: 20, weight: .regular))
+                                            .font(.system(size: 18, weight: .regular))
                                             .foregroundColor(Color.white.opacity(isZenMode ? 0.78 : 0.88))
                                             .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
                                             .frame(width: 44, height: 44)
@@ -252,7 +252,7 @@ public struct GroundingScreenView: View {
                                             }
                                         }) {
                                             Image(systemName: isArtistInfoVisible ? "xmark" : "info.circle")
-                                                .font(.system(size: isArtistInfoVisible ? 16 : 18, weight: .regular))
+                                                .font(.system(size: isArtistInfoVisible ? 14.5 : 16.2, weight: .regular))
                                                 .foregroundColor(Color.white.opacity(0.88))
                                                 .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
                                                 .frame(width: 44, height: 44)
