@@ -408,7 +408,6 @@ public final class AudioManager {
                 options: [.allowBluetoothHFP, .allowBluetoothA2DP]
             )
             try AVAudioSession.sharedInstance().setActive(true)
-            UIApplication.shared.beginReceivingRemoteControlEvents()
         } catch { print("[AudioManager] Session error: \(error)") }
         #endif
     }
@@ -704,7 +703,6 @@ public final class AudioManager {
                 options: [.allowBluetoothHFP, .allowBluetoothA2DP]
             )
             try AVAudioSession.sharedInstance().setActive(true)
-            UIApplication.shared.beginReceivingRemoteControlEvents()
         } catch {
             print("[AudioManager] Resume session error: \(error)")
         }
@@ -745,57 +743,18 @@ public final class AudioManager {
 
     private func setupRemoteCommandCenter() {
         #if os(iOS)
-        UIApplication.shared.beginReceivingRemoteControlEvents()
         let commandCenter = MPRemoteCommandCenter.shared()
-        
         commandCenter.pauseCommand.removeTarget(nil)
-        commandCenter.pauseCommand.isEnabled = true
-        commandCenter.pauseCommand.addTarget { [weak self] _ in
-            guard let self = self else { return .commandFailed }
-            let now = ProcessInfo.processInfo.systemUptime
-            guard now - self.lastRemoteCommandTime > 0.35 else { return .success }
-            self.lastRemoteCommandTime = now
-            DispatchQueue.main.async {
-                self.pause()
-            }
-            return .success
-        }
+        commandCenter.pauseCommand.isEnabled = false
         
         commandCenter.playCommand.removeTarget(nil)
-        commandCenter.playCommand.isEnabled = true
-        commandCenter.playCommand.addTarget { [weak self] _ in
-            guard let self = self else { return .commandFailed }
-            let now = ProcessInfo.processInfo.systemUptime
-            guard now - self.lastRemoteCommandTime > 0.35 else { return .success }
-            self.lastRemoteCommandTime = now
-            DispatchQueue.main.async {
-                self.resume()
-            }
-            return .success
-        }
+        commandCenter.playCommand.isEnabled = false
         
         commandCenter.togglePlayPauseCommand.removeTarget(nil)
-        commandCenter.togglePlayPauseCommand.isEnabled = true
-        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
-            let now = ProcessInfo.processInfo.systemUptime
-            guard let self = self, now - self.lastRemoteCommandTime > 0.35 else {
-                return .success
-            }
-            self.lastRemoteCommandTime = now
-            DispatchQueue.main.async {
-                self.togglePlayPause()
-            }
-            return .success
-        }
+        commandCenter.togglePlayPauseCommand.isEnabled = false
 
         commandCenter.stopCommand.removeTarget(nil)
-        commandCenter.stopCommand.isEnabled = true
-        commandCenter.stopCommand.addTarget { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.stop()
-            }
-            return .success
-        }
+        commandCenter.stopCommand.isEnabled = false
 
         commandCenter.changePlaybackPositionCommand.isEnabled = false
         #endif
