@@ -311,14 +311,14 @@ public struct GroundingScreenView: View {
                                             }
                                             .padding(.horizontal, 23)
                                             .padding(.vertical, 11.5)
-                                            .background(Color.white.opacity(isInstagramGlowing ? 0.28 : 0.18))
+                                            .background(Color.white.opacity(isInstagramGlowing ? 0.26 : 0.18))
                                             .clipShape(Capsule())
                                             .overlay(
                                                 Capsule()
-                                                    .stroke(Color.white.opacity(isInstagramGlowing ? 0.90 : 0.35), lineWidth: isInstagramGlowing ? 1.5 : 1)
+                                                    .stroke(Color.white.opacity(isInstagramGlowing ? 0.78 : 0.35), lineWidth: isInstagramGlowing ? 1.3 : 1)
                                             )
-                                            .shadow(color: Color.white.opacity(isInstagramGlowing ? 0.70 : 0.0), radius: isInstagramGlowing ? 16 : 0, x: 0, y: 0)
-                                            .shadow(color: Color.white.opacity(isInstagramGlowing ? 0.40 : 0.0), radius: isInstagramGlowing ? 28 : 0, x: 0, y: 0)
+                                            .shadow(color: Color.white.opacity(isInstagramGlowing ? 0.55 : 0.0), radius: isInstagramGlowing ? 18 : 0, x: 0, y: 0)
+                                            .shadow(color: Color.white.opacity(isInstagramGlowing ? 0.32 : 0.0), radius: isInstagramGlowing ? 32 : 0, x: 0, y: 0)
                                             .shadow(color: Color.black.opacity(0.50), radius: 8, x: 0, y: 2)
                                         }
                                         .onAppear {
@@ -549,11 +549,11 @@ public struct GroundingScreenView: View {
 
     private func triggerInstagramGlow() {
         isInstagramGlowing = false
-        withAnimation(.easeOut(duration: 0.35)) {
+        withAnimation(.easeOut(duration: 0.55)) {
             isInstagramGlowing = true
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-            withAnimation(.easeInOut(duration: 0.65)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            withAnimation(.easeInOut(duration: 1.5)) {
                 isInstagramGlowing = false
             }
         }
