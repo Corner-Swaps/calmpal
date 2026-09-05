@@ -66,6 +66,7 @@
 		E1A00010000000000000000B /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00010000000000000000A /* MainTabView.swift */; };
 		E1A00011000000000000000B /* CalmpalApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00011000000000000000A /* CalmpalApp.swift */; };
 		E1A00012000000000000000B /* GroundingScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00012000000000000000A /* GroundingScreenView.swift */; };
+		E1A00014000000000000000B /* AppReviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00014000000000000000A /* AppReviewManager.swift */; };
 		E1A00013000000000000000B /* Tests/CalmpalTests/CalmpalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A00013000000000000000A /* Tests/CalmpalTests/CalmpalTests.swift */; };
 		E1A000990000000000000041 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E1A000990000000000000040 /* Assets.xcassets */; };
 		E1A000990000000000000050 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E1A000990000000000000051 /* PrivacyInfo.xcprivacy */; };
@@ -141,6 +142,7 @@
 		E1A00010000000000000000A /* MainTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		E1A00011000000000000000A /* CalmpalApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalmpalApp.swift; sourceTree = "<group>"; };
 		E1A00012000000000000000A /* GroundingScreenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GroundingScreenView.swift; sourceTree = "<group>"; };
+		E1A00014000000000000000A /* AppReviewManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppReviewManager.swift; sourceTree = "<group>"; };
 		E1A00013000000000000000A /* Tests/CalmpalTests/CalmpalTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tests/CalmpalTests/CalmpalTests.swift; sourceTree = "<group>"; };
 		E1A000990000000000000001 /* Calmpal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Calmpal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1A000990000000000000021 /* CalmpalTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CalmpalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -190,6 +192,7 @@
 				E1A00010000000000000000A /* MainTabView.swift */,
 				E1A00011000000000000000A /* CalmpalApp.swift */,
 				E1A00012000000000000000A /* GroundingScreenView.swift */,
+				E1A00014000000000000000A /* AppReviewManager.swift */,
 				E1A000990000000000000051 /* PrivacyInfo.xcprivacy */,
 			);
 			path = .;
@@ -420,6 +423,7 @@
 				E1A00010000000000000000B /* MainTabView.swift in Sources */,
 				E1A00011000000000000000B /* CalmpalApp.swift in Sources */,
 				E1A00012000000000000000B /* GroundingScreenView.swift in Sources */,
+				E1A00014000000000000000B /* AppReviewManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

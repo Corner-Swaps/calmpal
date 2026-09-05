@@ -14,6 +14,12 @@ public struct MainTabView: View {
     public var body: some View {
         GroundingScreenView()
             .preferredColorScheme(.dark)
+            .onAppear {
+                AppReviewManager.shared.handleAppLaunch()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                AppReviewManager.shared.handleAppForeground()
+            }
     }
 }
 

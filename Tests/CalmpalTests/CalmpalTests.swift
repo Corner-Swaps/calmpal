@@ -219,4 +219,131 @@ final class CalmpalTests: XCTestCase {
         let defaultLogo = InstagramLogoView()
         XCTAssertEqual(defaultLogo.size, 24)
     }
+
+    // MARK: - AppReviewManager Tests
+
+    func testAppReviewManagerNewUserMilestones() {
+        let testDefaults = UserDefaults(suiteName: "test.calmpal.appreview.newuser")!
+        testDefaults.removePersistentDomain(forName: "test.calmpal.appreview.newuser")
+
+        let manager = AppReviewManager(userDefaults: testDefaults, observeLifecycleNotifications: false)
+        manager.resetAllTrackingData()
+
+        let now = Date()
+        manager.originalInstallDate = now
+        manager.isExistingUser = false
+        manager.lifetimeLaunches = 0
+
+        // Initially 0 launches, 0 days -> Ineligible
+        XCTAssertFalse(manager.isEligibleForReview(at: now))
+
+        // 14 launches -> Still Ineligible
+        manager.lifetimeLaunches = 14
+        XCTAssertFalse(manager.isEligibleForReview(at: now))
+
+        // 15 launches -> Eligible!
+        manager.lifetimeLaunches = 15
+        XCTAssertTrue(manager.isEligibleForReview(at: now))
+
+        // Reset launches to 3, but simulate 15 days elapsed -> Eligible!
+        manager.lifetimeLaunches = 3
+        let fifteenDaysLater = now.addingTimeInterval(15 * 86400)
+        XCTAssertTrue(manager.isEligibleForReview(at: fifteenDaysLater))
+    }
+
+    func testAppReviewManagerExistingUserMilestones() {
+        let testDefaults = UserDefaults(suiteName: "test.calmpal.appreview.existinguser")!
+        testDefaults.removePersistentDomain(forName: "test.calmpal.appreview.existinguser")
+
+        let manager = AppReviewManager(userDefaults: testDefaults, observeLifecycleNotifications: false)
+        manager.resetAllTrackingData()
+
+        let now = Date()
+        manager.isExistingUser = true
+        manager.originalInstallDate = now
+        manager.currentVersionInstallDate = now
+        manager.lifetimeLaunches = 2
+        manager.currentVersionLaunches = 2
+
+        // All below 15 -> Ineligible
+        XCTAssertFalse(manager.isEligibleForReview(at: now))
+
+        // Lifetime launches >= 15 -> Eligible
+        manager.lifetimeLaunches = 15
+        XCTAssertTrue(manager.isEligibleForReview(at: now))
+        manager.lifetimeLaunches = 2
+
+        // Launches since update >= 15 -> Eligible
+        manager.currentVersionLaunches = 15
+        XCTAssertTrue(manager.isEligibleForReview(at: now))
+        manager.currentVersionLaunches = 2
+
+        // Days since update >= 15 -> Eligible
+        let fifteenDaysAfterUpdate = now.addingTimeInterval(15 * 86400)
+        XCTAssertTrue(manager.isEligibleForReview(at: fifteenDaysAfterUpdate))
+    }
+
+    func testAppReviewManagerRepromptCadenceAndSubmissionLock() {
+        let testDefaults = UserDefaults(suiteName: "test.calmpal.appreview.reprompt")!
+        testDefaults.removePersistentDomain(forName: "test.calmpal.appreview.reprompt")
+
+        let manager = AppReviewManager(userDefaults: testDefaults, observeLifecycleNotifications: false)
+        manager.resetAllTrackingData()
+
+        let now = Date()
+        manager.originalInstallDate = now.addingTimeInterval(-20 * 86400) // Installed 20 days ago
+        manager.lifetimeLaunches = 15
+
+        // Initial prompt eligibility satisfied
+        XCTAssertTrue(manager.isEligibleForReview(at: now))
+
+        // Simulate prompt was presented (user dismissed dialog without submitting)
+        manager.lastPromptLaunchCount = 15
+        manager.lastPromptDate = now
+
+        // Immediately after dismissal -> Ineligible
+        XCTAssertFalse(manager.isEligibleForReview(at: now))
+
+        // 10 more launches (total 25), 5 days later -> Still Ineligible
+        manager.lifetimeLaunches = 25
+        let fiveDaysLater = now.addingTimeInterval(5 * 86400)
+        XCTAssertFalse(manager.isEligibleForReview(at: fiveDaysLater))
+
+        // 15 more launches (total 30) -> Eligible for re-prompt!
+        manager.lifetimeLaunches = 30
+        XCTAssertTrue(manager.isEligibleForReview(at: fiveDaysLater))
+
+        // Or if launches remained at 25, but 15 days elapsed since last prompt -> Eligible for re-prompt!
+        manager.lifetimeLaunches = 25
+        let fifteenDaysAfterPrompt = now.addingTimeInterval(15 * 86400)
+        XCTAssertTrue(manager.isEligibleForReview(at: fifteenDaysAfterPrompt))
+
+        // Permanent submission lock
+        manager.markReviewSubmitted()
+        XCTAssertTrue(manager.hasSubmittedReview)
+
+        // Once submitted, permanently in-eligible even with 100 launches & 100 days
+        manager.lifetimeLaunches = 100
+        let hundredDaysLater = now.addingTimeInterval(100 * 86400)
+        XCTAssertFalse(manager.isEligibleForReview(at: hundredDaysLater))
+    }
+
+    func testAppReviewManagerLaunchTracking() {
+        let testDefaults = UserDefaults(suiteName: "test.calmpal.appreview.launchtrack")!
+        testDefaults.removePersistentDomain(forName: "test.calmpal.appreview.launchtrack")
+
+        let manager = AppReviewManager(userDefaults: testDefaults, observeLifecycleNotifications: false)
+        manager.resetAllTrackingData()
+
+        XCTAssertEqual(manager.lifetimeLaunches, 0)
+        manager.handleAppLaunch()
+
+        XCTAssertEqual(manager.lifetimeLaunches, 1)
+        XCTAssertEqual(manager.currentVersionLaunches, 1)
+        XCTAssertFalse(manager.currentVersion.isEmpty)
+
+        manager.handleAppLaunch()
+        XCTAssertEqual(manager.lifetimeLaunches, 2)
+        XCTAssertEqual(manager.currentVersionLaunches, 2)
+    }
 }
