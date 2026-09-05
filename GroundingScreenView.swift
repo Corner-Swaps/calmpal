@@ -210,121 +210,48 @@ public struct GroundingScreenView: View {
                                     withAnimation(.easeInOut(duration: 0.25)) {
                                         isArtistInfoVisible = false
                                     }
-                                } else {
-                                    togglePlayPause()
-                                }
-                            }
-
-                        // Top Navigation: Floating Icons (Eye and Info side by side at the top in the middle)
-                        VStack {
-                            HStack {
-                                Spacer()
-
-                                HStack(spacing: 8) {
-                                    // 👁 Eye Icon (Zen Mode Immersion)
-                                    Button(action: {
-                                        HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                        withAnimation(.easeInOut(duration: 0.3)) {
-                                            if isArtistInfoVisible {
-                                                isArtistInfoVisible = false
-                                            }
-                                            isZenMode.toggle()
-                                        }
-                                    }) {
-                                        Image(systemName: isZenMode ? "eye" : "eye.slash")
-                                            .font(.system(size: 18, weight: .regular))
-                                            .foregroundColor(Color.white.opacity(0.85))
-                                            .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
-                                            .frame(width: 44, height: 44)
-                                            .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-
-                                    // ℹ️ / ✕ Info / Exit Icon (Only shown for artist tracks, i.e. Jeff)
-                                    if let _ = activeProfile.artistCredit {
-                                        Button(action: {
-                                            HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                            withAnimation(.easeInOut(duration: 0.3)) {
-                                                if isZenMode {
-                                                    isZenMode = false
-                                                }
-                                                isArtistInfoVisible.toggle()
-                                            }
-                                        }) {
-                                            Image(systemName: isArtistInfoVisible ? "xmark" : "info.circle")
-                                                .font(.system(size: isArtistInfoVisible ? 16 : 18, weight: .regular))
-                                                .foregroundColor(Color.white.opacity(0.85))
-                                                .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
-                                                .frame(width: 44, height: 44)
-                                                .contentShape(Rectangle())
-                                        }
-                                        .buttonStyle(.plain)
-                                        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                                } else if isZenMode {
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                    withAnimation(.easeInOut(duration: 0.35)) {
+                                        isZenMode = false
                                     }
                                 }
-                                .opacity(isZenMode ? 0.15 : 1.0)
-                                .animation(.easeInOut(duration: 0.3), value: isZenMode)
-                                .animation(.easeInOut(duration: 0.25), value: activeProfile.artistCredit != nil)
-
-                                Spacer()
                             }
-                            .padding(.top, 54)
-
-                            Spacer()
-                        }
-                        .zIndex(20)
 
                         // Main Center Stage & Bottom Controls
                         VStack(spacing: 0) {
                             Spacer()
 
-                            ZStack {
-                                // ── Clean Circular Countdown Timer Ring ──
-                                FullCircularTimerView(
-                                    remainingSeconds: $remainingTimerSeconds,
-                                    totalDuration: $totalTimerDuration,
-                                    isPlaying: isPlaying,
-                                    timerEndTimestamp: timerEndTimestamp
-                                )
-                                .frame(width: 318, height: 318)
-                                .offset(y: 20)
-                                .opacity((!isZenMode && !isArtistInfoVisible) ? 1.0 : 0.0)
-                                .animation(.easeInOut(duration: 0.35), value: isZenMode)
-                                .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
-                                .allowsHitTesting(!isZenMode && !isArtistInfoVisible)
-
-                                if isArtistInfoVisible, let credit = activeProfile.artistCredit {
-                                    // ── Artist Profile & Social Link ──
-                                    VStack(spacing: 18.4) {
-                                        Text(credit.name)
-                                            .font(.system(size: 36.8, weight: .light, design: .rounded))
-                                            .tracking(1.7)
-                                            .foregroundColor(.white)
-                                            .shadow(color: Color.black.opacity(0.85), radius: 8, x: 0, y: 2)
-
-                                        Link(destination: credit.instagramURL) {
-                                            HStack(spacing: 11.5) {
-                                                InstagramLogoView(size: 27.6)
-                                                Text(credit.instagramHandle)
-                                                    .font(.system(size: 18.4, weight: .medium, design: .rounded))
-                                                    .foregroundColor(.white)
-                                                    .shadow(color: Color.black.opacity(0.65), radius: 4, x: 0, y: 1.5)
-                                            }
-                                            .padding(.horizontal, 23)
-                                            .padding(.vertical, 11.5)
-                                            .background(Color.white.opacity(0.18))
-                                            .clipShape(Capsule())
-                                            .overlay(
-                                                Capsule().stroke(Color.white.opacity(0.35), lineWidth: 1)
-                                            )
-                                            .shadow(color: Color.black.opacity(0.50), radius: 8, x: 0, y: 2)
+                            // ── Clean Circular Countdown Timer Ring with Center Content & Controls ──
+                            FullCircularTimerView(
+                                remainingSeconds: $remainingTimerSeconds,
+                                totalDuration: $totalTimerDuration,
+                                isPlaying: isPlaying,
+                                timerEndTimestamp: timerEndTimestamp,
+                                isZenMode: $isZenMode,
+                                isArtistInfoVisible: $isArtistInfoVisible,
+                                artistCredit: activeProfile.artistCredit,
+                                onToggleZen: {
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                    withAnimation(.easeInOut(duration: 0.35)) {
+                                        if isArtistInfoVisible {
+                                            isArtistInfoVisible = false
                                         }
+                                        isZenMode.toggle()
                                     }
-                                    .frame(height: 318)
-                                    .offset(y: 20)
-                                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                                },
+                                onToggleArtistInfo: {
+                                    HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        if isZenMode {
+                                            isZenMode = false
+                                        }
+                                        isArtistInfoVisible.toggle()
+                                    }
                                 }
-                            }
+                            )
+                            .frame(width: 318, height: 318)
+                            .offset(y: 20)
 
                             Spacer()
 
@@ -607,6 +534,11 @@ private struct FullCircularTimerView: View {
     @Binding var totalDuration: TimeInterval
     let isPlaying: Bool
     let timerEndTimestamp: Date?
+    @Binding var isZenMode: Bool
+    @Binding var isArtistInfoVisible: Bool
+    let artistCredit: SoundArtistCredit?
+    let onToggleZen: () -> Void
+    let onToggleArtistInfo: () -> Void
 
     var body: some View {
         if isPlaying {
@@ -647,6 +579,9 @@ private struct FullCircularTimerView: View {
                 Circle()
                     .stroke(Color.white.opacity(0.16), lineWidth: 4.0)
                     .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+                    .opacity((isZenMode || isArtistInfoVisible) ? 0.0 : 1.0)
+                    .animation(.easeInOut(duration: 0.35), value: isZenMode)
+                    .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
 
                 // Foreground Animated Smooth Flowing Remaining Arc
                 Circle()
@@ -657,6 +592,9 @@ private struct FullCircularTimerView: View {
                     )
                     .rotationEffect(.degrees(-90))
                     .frame(width: (radius - 10) * 2, height: (radius - 10) * 2)
+                    .opacity((isZenMode || isArtistInfoVisible) ? 0.0 : 1.0)
+                    .animation(.easeInOut(duration: 0.35), value: isZenMode)
+                    .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
 
                 // Minimal Little White Dot (Smooth 60/120fps continuous glide)
                 Circle()
@@ -664,15 +602,111 @@ private struct FullCircularTimerView: View {
                     .frame(width: 10, height: 10)
                     .shadow(color: Color.white.opacity(0.85), radius: 3, x: 0, y: 0)
                     .position(x: tickX, y: tickY)
+                    .opacity((isZenMode || isArtistInfoVisible) ? 0.0 : 1.0)
+                    .animation(.easeInOut(duration: 0.35), value: isZenMode)
+                    .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
 
-                // Center Digital Countdown (Exact 44pt rounded light font)
-                Text(formatNoLeadingZeroHours(currentRemaining))
-                    .font(.system(size: 44, weight: .light, design: .rounded))
-                    .monospacedDigit()
-                    .foregroundColor(.white)
-                    .shadow(color: Color.black.opacity(0.90), radius: 8, x: 0, y: 3)
+                // Center Content: Countdown + Pill, or Artist Profile + Pill
+                if isArtistInfoVisible, let credit = artistCredit {
+                    // Artist Profile Mode
+                    VStack(spacing: 14) {
+                        Text(credit.name)
+                            .font(.system(size: 30, weight: .light, design: .rounded))
+                            .tracking(1.5)
+                            .foregroundColor(.white)
+                            .shadow(color: Color.black.opacity(0.85), radius: 8, x: 0, y: 2)
+
+                        Link(destination: credit.instagramURL) {
+                            HStack(spacing: 10) {
+                                InstagramLogoView(size: 22)
+                                Text(credit.instagramHandle)
+                                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .shadow(color: Color.black.opacity(0.65), radius: 4, x: 0, y: 1.5)
+                            }
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 9)
+                            .background(Color.white.opacity(0.18))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule().stroke(Color.white.opacity(0.35), lineWidth: 1)
+                            )
+                            .shadow(color: Color.black.opacity(0.50), radius: 8, x: 0, y: 2)
+                        }
+
+                        // Pill with Eye and Xmark below artist info
+                        pill(artistInfoMode: true)
+                    }
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+                } else {
+                    // Normal / Zen Mode: Timer Countdown + Pill below
+                    VStack(spacing: 12) {
+                        Text(formatNoLeadingZeroHours(currentRemaining))
+                            .font(.system(size: 44, weight: .light, design: .rounded))
+                            .monospacedDigit()
+                            .foregroundColor(.white)
+                            .shadow(color: Color.black.opacity(0.90), radius: 8, x: 0, y: 3)
+                            .opacity(isZenMode ? 0.0 : 1.0)
+                            .animation(.easeInOut(duration: 0.35), value: isZenMode)
+
+                        // Pill with Eye (and Info if artist track)
+                        pill(artistInfoMode: false)
+                    }
+                }
             }
         }
+    }
+
+    @ViewBuilder
+    private func pill(artistInfoMode: Bool) -> some View {
+        HStack(spacing: 6) {
+            // 👁 Eye Button (Zen Mode Immersion Toggle)
+            Button(action: onToggleZen) {
+                Image(systemName: isZenMode ? "eye.slash" : "eye")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(Color.white.opacity(isZenMode ? 0.70 : 0.88))
+                    .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1)
+                    .frame(width: 32, height: 32)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+
+            // ℹ️ / ✕ Info Button (Only shown for artist soundscapes, e.g. Surrender)
+            if artistCredit != nil && !isZenMode {
+                Button(action: onToggleArtistInfo) {
+                    ZStack {
+                        if artistInfoMode {
+                            Circle()
+                                .fill(Color.white.opacity(0.22))
+                                .frame(width: 28, height: 28)
+                        }
+                        Image(systemName: artistInfoMode ? "xmark" : "info.circle")
+                            .font(.system(size: artistInfoMode ? 13 : 16, weight: .medium))
+                            .foregroundColor(artistInfoMode ? .white : Color.white.opacity(0.88))
+                            .shadow(color: Color.black.opacity(0.35), radius: 3, x: 0, y: 1)
+                    }
+                    .frame(width: 32, height: 32)
+                    .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+            }
+        }
+        .padding(.horizontal, (artistCredit != nil && !isZenMode) ? 8 : 4)
+        .padding(.vertical, 3)
+        .background(
+            Capsule()
+                .fill(Color(white: 0.85).opacity(isZenMode ? 0.14 : 0.24))
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial.opacity(isZenMode ? 0.15 : 0.30))
+                )
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white.opacity(isZenMode ? 0.18 : 0.28), lineWidth: 0.8)
+                )
+        )
+        .shadow(color: Color.black.opacity(0.25), radius: 6, x: 0, y: 2)
     }
 }
 
