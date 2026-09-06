@@ -288,26 +288,59 @@ public final class AudioManager {
         }
     }
     private var sleepTimerSource: DispatchSourceTimer?
+    private var sleepFadeTimerSource: DispatchSourceTimer?
 
     public func scheduleSleepTimer() {
         sleepTimerSource?.cancel()
         sleepTimerSource = nil
-        guard let target = sleepTimerTargetDate, isAudioPlaying else { return }
+        sleepFadeTimerSource?.cancel()
+        sleepFadeTimerSource = nil
+
+        guard let target = sleepTimerTargetDate else { return }
         let interval = target.timeIntervalSinceNow
         if interval <= 0 {
-            pause()
+            if isAudioPlaying {
+                pause()
+            }
             sleepTimerTargetDate = nil
             return
         }
+        guard isAudioPlaying else { return }
+
+        let fadeDuration: TimeInterval = 15.0
         let queue = DispatchQueue.global(qos: .userInteractive)
+
+        // 1. Schedule 15-second graceful fade-out before the timer ends
+        if interval > fadeDuration {
+            let fadeDelay = interval - fadeDuration
+            let fadeTimer = DispatchSource.makeTimerSource(queue: queue)
+            fadeTimer.schedule(deadline: .now() + fadeDelay)
+            fadeTimer.setEventHandler { [weak self] in
+                Task { @MainActor [weak self] in
+                    guard let self = self, self.isAudioPlaying else { return }
+                    self.fadeVolume(to: 0.0, duration: fadeDuration)
+                }
+            }
+            fadeTimer.resume()
+            sleepFadeTimerSource = fadeTimer
+        } else {
+            // Already within the final 15 seconds: fade immediately over remaining time
+            Task { @MainActor [weak self] in
+                guard let self = self, self.isAudioPlaying else { return }
+                self.fadeVolume(to: 0.0, duration: interval)
+            }
+        }
+
+        // 2. Schedule final stop and volume restore at exact target timestamp
         let timer = DispatchSource.makeTimerSource(queue: queue)
         timer.schedule(deadline: .now() + interval)
         timer.setEventHandler { [weak self] in
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
                 if self.isAudioPlaying {
-                    self.pause()
+                    self.stop()
                 }
+                self.playerNode.volume = self.volume > 0 ? self.volume : 0.5
                 self.sleepTimerTargetDate = nil
             }
         }
@@ -375,14 +408,26 @@ public final class AudioManager {
               let type = AVAudioSession.InterruptionType(rawValue: typeVal) else { return }
         switch type {
         case .began:
-            wasPlayingBeforeInterruption = isAudioPlaying
-            if isAudioPlaying {
-                pause()
+            guard isAudioPlaying else { return }
+            wasPlayingBeforeInterruption = true
+            
+            // When another app starts playing (e.g. Spotify, Apple Music, YouTube, videos, or system sounds),
+            // iOS may post an interruption event. By immediately re-asserting our mixable audio session,
+            // Calmpal continues playing in the background simultaneously alongside the other sound or song!
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { [weak self] in
+                guard let self = self, self.isAudioPlaying else { return }
+                self.ensureEngineRunningAndPlaying(forceReschedule: true)
             }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.30) { [weak self] in
+                guard let self = self, self.isAudioPlaying else { return }
+                self.ensureEngineRunningAndPlaying(forceReschedule: true)
+            }
+            
         case .ended:
             if wasPlayingBeforeInterruption {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-                    self?.resume()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { [weak self] in
+                    guard let self = self, self.isAudioPlaying else { return }
+                    self.ensureEngineRunningAndPlaying(forceReschedule: true)
                 }
             }
             wasPlayingBeforeInterruption = false
@@ -398,37 +443,65 @@ public final class AudioManager {
             wasPlayingBeforeInterruption = false
             pause()
         } else if isAudioPlaying {
-            ensureEngineRunningAndPlaying()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                guard let self = self, self.isAudioPlaying else { return }
+                self.ensureEngineRunningAndPlaying(forceReschedule: true)
+            }
         }
     }
 
     @objc private func handleEngineConfigurationChange(notification: Notification) {
         guard isAudioPlaying else { return }
-        ensureEngineRunningAndPlaying()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            guard let self = self, self.isAudioPlaying else { return }
+            self.ensureEngineRunningAndPlaying(forceReschedule: true)
+        }
     }
 
     @objc private func handleAppForeground(notification: Notification) {
         guard isAudioPlaying else { return }
-        ensureEngineRunningAndPlaying()
+        ensureEngineRunningAndPlaying(forceReschedule: false)
     }
     #endif
 
-    public func ensureEngineRunningAndPlaying() {
+    public func ensureEngineRunningAndPlaying(forceReschedule: Bool = false) {
         #if os(iOS)
-        setupAudioSession()
-        #endif
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil {
+            return
+        }
         do {
-            if !audioEngine.isRunning {
-                try audioEngine.start()
-            }
-            if !isBufferScheduled {
-                applyBuffer(for: activeProfile)
-            }
-            if !playerNode.isPlaying && isAudioPlaying {
-                playerNode.play()
-            }
+            try AVAudioSession.sharedInstance().setCategory(
+                .playback,
+                mode: .default,
+                options: [.mixWithOthers, .allowBluetoothA2DP]
+            )
+            try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            print("[AudioManager] Failed to ensure engine running: \(error)")
+            print("[AudioManager] Failed to set active session: \(error)")
+        }
+        #endif
+        guard isAudioPlaying else { return }
+
+        var didRestartEngine = false
+        if !audioEngine.isRunning {
+            do {
+                try audioEngine.start()
+                didRestartEngine = true
+            } catch {
+                print("[AudioManager] Failed to restart engine: \(error)")
+                audioEngine.stop()
+                audioEngine.reset()
+                do {
+                    try audioEngine.start()
+                    didRestartEngine = true
+                } catch {
+                    print("[AudioManager] Engine reset start failed: \(error)")
+                }
+            }
+        }
+
+        if forceReschedule || didRestartEngine || !isBufferScheduled || !playerNode.isPlaying {
+            applyBuffer(for: activeProfile)
         }
     }
 
@@ -441,7 +514,7 @@ public final class AudioManager {
             try AVAudioSession.sharedInstance().setCategory(
                 .playback,
                 mode: .default,
-                options: [.allowBluetoothHFP, .allowBluetoothA2DP]
+                options: [.mixWithOthers, .allowBluetoothA2DP]
             )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch { print("[AudioManager] Session error: \(error)") }
@@ -632,6 +705,50 @@ public final class AudioManager {
         resume()
     }
 
+    public func restartFromStart() {
+        fadeTask?.cancel()
+        fadeTask = nil
+        isAudioPlaying = true
+        let targetVolume = self.volume > 0 ? self.volume : 0.5
+        playerNode.volume = targetVolume
+
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil || NSClassFromString("XCTestCase") != nil {
+            isBufferScheduled = true
+            updateNowPlayingInfo()
+            return
+        }
+
+        #if os(iOS)
+        do {
+            try AVAudioSession.sharedInstance().setCategory(
+                .playback,
+                mode: .default,
+                options: [.mixWithOthers, .allowBluetoothA2DP]
+            )
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("[AudioManager] restartFromStart session error: \(error)")
+        }
+        do {
+            if !audioEngine.isRunning {
+                try audioEngine.start()
+            }
+        } catch {
+            print("[AudioManager] restartFromStart engine error: \(error)")
+            return
+        }
+        #endif
+
+        applyBuffer(for: activeProfile)
+        if !playerNode.isPlaying {
+            playerNode.play()
+        }
+        if sleepTimerTargetDate != nil {
+            scheduleSleepTimer()
+        }
+        updateNowPlayingInfo()
+    }
+
     public func togglePlayPause() {
         if isAudioPlaying {
             pause()
@@ -646,8 +763,11 @@ public final class AudioManager {
         fadeTask = nil
         sleepTimerSource?.cancel()
         sleepTimerSource = nil
+        sleepFadeTimerSource?.cancel()
+        sleepFadeTimerSource = nil
         isAudioPlaying = false
         playerNode.pause()
+        playerNode.volume = self.volume > 0 ? self.volume : 0.5
         updateNowPlayingInfo()
     }
 
@@ -668,7 +788,7 @@ public final class AudioManager {
             try AVAudioSession.sharedInstance().setCategory(
                 .playback,
                 mode: .default,
-                options: [.allowBluetoothHFP, .allowBluetoothA2DP]
+                options: [.mixWithOthers, .allowBluetoothA2DP]
             )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
@@ -707,9 +827,14 @@ public final class AudioManager {
         isAudioPlaying = false
         playerNode.stop()
         isBufferScheduled = false
+        fadeTask?.cancel()
+        fadeTask = nil
         sleepTimerSource?.cancel()
         sleepTimerSource = nil
+        sleepFadeTimerSource?.cancel()
+        sleepFadeTimerSource = nil
         sleepTimerTargetDate = nil
+        playerNode.volume = self.volume > 0 ? self.volume : 0.5
         #if os(iOS)
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         #endif
@@ -756,7 +881,7 @@ public final class AudioManager {
         #endif
     }
 
-    private func fadeVolume(to target: Float, duration: Double, completion: (() -> Void)? = nil) {
+    public func fadeVolume(to target: Float, duration: Double, completion: (() -> Void)? = nil) {
         fadeTask?.cancel()
         if duration < 0.05 {
             playerNode.volume = target
@@ -764,15 +889,16 @@ public final class AudioManager {
             return
         }
         fadeTask = Task { @MainActor in
-            let steps = max(4, min(20, Int(duration * 20.0)))
+            let steps = max(10, Int(duration * 30.0))
             let interval = duration / Double(steps)
             let start = playerNode.volume
             let diff  = target - start
             for step in 1...steps {
                 if Task.isCancelled { return }
                 try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
-                playerNode.volume = start + diff * Float(step) / Float(steps)
+                playerNode.volume = max(0.0, min(1.0, start + diff * Float(step) / Float(steps)))
             }
+            playerNode.volume = target
             completion?()
         }
     }

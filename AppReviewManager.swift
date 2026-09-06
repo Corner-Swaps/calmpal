@@ -10,6 +10,7 @@ import Foundation
 import StoreKit
 import UIKit
 import Combine
+import Security
 
 /// Manages StoreKit in-app rating and review prompt presentations in compliance
 /// with Apple App Store Review Guideline 5.6.1.
@@ -31,6 +32,7 @@ public final class AppReviewManager: ObservableObject {
         public static let lastPromptLaunchCount = "AppReview_LastPromptLaunchCount"
         public static let lastPromptDate = "AppReview_LastPromptDate"
         public static let isExistingUser = "AppReview_IsExistingUser"
+        public static let lastActiveDate = "AppReview_LastActiveDate"
     }
 
     // MARK: - Dependencies & Configuration
@@ -117,11 +119,67 @@ public final class AppReviewManager: ObservableObject {
         set { userDefaults.set(newValue, forKey: Keys.currentVersionLaunches) }
     }
 
+    // MARK: - Persistent Review Lock Helpers
+
+    private static let keychainService = "com.calmpal.app.review"
+    private static let keychainAccount = "hasSubmittedReview"
+
+    private func readKeychainReviewSubmitted() -> Bool {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.keychainService,
+            kSecAttrAccount as String: Self.keychainAccount,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        if status == errSecSuccess, let data = item as? Data, let str = String(data: data, encoding: .utf8) {
+            return str == "true"
+        }
+        return false
+    }
+
+    private func writeKeychainReviewSubmitted(_ value: Bool) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: Self.keychainService,
+            kSecAttrAccount as String: Self.keychainAccount
+        ]
+        if value {
+            let data = "true".data(using: .utf8) ?? Data()
+            let attributesToUpdate: [String: Any] = [
+                kSecValueData as String: data
+            ]
+            let status = SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
+            if status == errSecItemNotFound {
+                var newItem = query
+                newItem[kSecValueData as String] = data
+                SecItemAdd(newItem as CFDictionary, nil)
+            }
+        } else {
+            SecItemDelete(query as CFDictionary)
+        }
+    }
+
     /// Whether the user has actually submitted a review.
-    /// When true, review prompts are permanently locked out.
+    /// When true, review prompts are permanently locked out across all launches,
+    /// app updates, and device reinstalls (via Keychain persistence).
     public var hasSubmittedReview: Bool {
-        get { userDefaults.bool(forKey: Keys.hasSubmittedReview) }
-        set { userDefaults.set(newValue, forKey: Keys.hasSubmittedReview) }
+        get {
+            if userDefaults.bool(forKey: Keys.hasSubmittedReview) {
+                return true
+            }
+            if readKeychainReviewSubmitted() {
+                userDefaults.set(true, forKey: Keys.hasSubmittedReview)
+                return true
+            }
+            return false
+        }
+        set {
+            userDefaults.set(newValue, forKey: Keys.hasSubmittedReview)
+            writeKeychainReviewSubmitted(newValue)
+        }
     }
 
     /// Lifetime launch count recorded at the time of the most recent prompt.
@@ -153,25 +211,45 @@ public final class AppReviewManager: ObservableObject {
         set { userDefaults.set(newValue, forKey: Keys.isExistingUser) }
     }
 
+    /// Timestamp of the most recent active launch or foreground session.
+    public var lastActiveDate: Date? {
+        get { userDefaults.object(forKey: Keys.lastActiveDate) as? Date }
+        set { userDefaults.set(newValue, forKey: Keys.lastActiveDate) }
+    }
+
     // MARK: - Lifecycle Handlers
 
     /// Invoked at application launch (`.onAppear` in root SwiftUI view or App delegate).
     /// Tracks launches, checks version changes, and schedules review dialog if eligible.
-    public func handleAppLaunch() {
-        trackLaunch()
+    public func handleAppLaunch(at now: Date = Date()) {
+        trackLaunch(at: now)
+        guard !hasSubmittedReview else { return }
         checkAndSchedulePromptIfEligible()
     }
 
     /// Invoked when the application returns to foreground (`UIApplication.willEnterForegroundNotification`).
-    public func handleAppForeground() {
+    /// Tracks foreground return as an app use if at least 2 minutes have elapsed since the last session.
+    public func handleAppForeground(at now: Date = Date()) {
+        // Debounce: Only count as a new use if at least 120 seconds (2 minutes) have elapsed since last active session
+        if let lastActive = lastActiveDate {
+            if now.timeIntervalSince(lastActive) >= 120 {
+                trackLaunch(at: now)
+            }
+        } else {
+            trackLaunch(at: now)
+        }
+        guard !hasSubmittedReview else { return }
         checkAndSchedulePromptIfEligible()
     }
 
     // MARK: - Launch & Version Tracking
 
-    private func trackLaunch() {
+    private func trackLaunch(at now: Date = Date()) {
         // Ensure install date is initialized and preserved
         _ = originalInstallDate
+
+        // Update last active session timestamp
+        lastActiveDate = now
 
         // Increment lifetime launches
         lifetimeLaunches += 1
@@ -189,7 +267,7 @@ public final class AppReviewManager: ObservableObject {
             // App update detected
             isExistingUser = true
             currentVersion = appVersion
-            currentVersionInstallDate = Date()
+            currentVersionInstallDate = now
             currentVersionLaunches = 1
         } else {
             // Continued on current version
@@ -227,43 +305,42 @@ public final class AppReviewManager: ObservableObject {
     ///
     /// Rules:
     /// - If `hasSubmittedReview == true`, permanently locked (returns false).
+    /// - HARD REQUIREMENT: User must have used the app at least 15 times (`lifetimeLaunches >= 15`).
     /// - If previously prompted (user dismissed without submitting):
-    ///   Re-prompt only after 15 more app opens OR 15 days have elapsed.
+    ///   Re-prompt only after 15 more app uses (`launchesSincePrompt >= 15`) AND 15 days have elapsed (`daysSincePrompt >= 15.0`).
     /// - If never prompted before:
-    ///   - Existing users: lifetime launches >= 15 OR launches since update >= 15
-    ///                     OR days since original install >= 15 OR days since update >= 15.
-    ///   - New users: lifetime launches >= 15 OR days since install >= 15.
+    ///   Eligible once `lifetimeLaunches >= 15`.
     public func isEligibleForReview(at now: Date = Date()) -> Bool {
-        // Rule 4: Submission lock permanently disables all prompts
+        // Rule 1: Submission lock permanently disables all prompts
         guard !hasSubmittedReview else {
             return false
         }
 
-        // Rule 4: Re-prompting cadence after a dismissal
+        // Rule 2: Non-negotiable requirement: user must have used the app at least 15 times
+        guard lifetimeLaunches >= 15 else {
+            return false
+        }
+
+        // Rule 3: Re-prompting cadence after a dismissal
         if let lastPromptDate = self.lastPromptDate, let lastPromptLaunch = self.lastPromptLaunchCount {
             let launchesSincePrompt = lifetimeLaunches - lastPromptLaunch
             let daysSincePrompt = now.timeIntervalSince(lastPromptDate) / 86400.0
-            return launchesSincePrompt >= 15 || daysSincePrompt >= 15.0
+            return launchesSincePrompt >= 15 && daysSincePrompt >= 15.0
         }
 
-        // Rule 2: Milestone Triggers for first-time prompt
-        let daysSinceOriginalInstall = now.timeIntervalSince(originalInstallDate) / 86400.0
-
-        if isExistingUser {
-            let daysSinceUpdate = now.timeIntervalSince(currentVersionInstallDate) / 86400.0
-            return lifetimeLaunches >= 15 ||
-                   currentVersionLaunches >= 15 ||
-                   daysSinceOriginalInstall >= 15.0 ||
-                   daysSinceUpdate >= 15.0
-        } else {
-            return lifetimeLaunches >= 15 || daysSinceOriginalInstall >= 15.0
-        }
+        // Rule 4: First-time prompt: eligible once user has reached 15 lifetime launches
+        return true
     }
 
     // MARK: - Prompt Scheduling & Presentation
 
     /// Checks review eligibility and, if satisfied, schedules presentation after exactly 11 seconds.
     public func checkAndSchedulePromptIfEligible() {
+        // Triple-check: Never schedule if review has been submitted
+        guard !hasSubmittedReview else {
+            return
+        }
+
         guard isEligibleForReview() else {
             return
         }
@@ -283,6 +360,11 @@ public final class AppReviewManager: ObservableObject {
             guard !Task.isCancelled else { return }
             guard let self = self else { return }
 
+            // Triple-check: Never present if review was submitted during delay
+            guard !self.hasSubmittedReview else {
+                return
+            }
+
             // Re-verify that the application is still active in foreground
             guard UIApplication.shared.applicationState == .active else {
                 return
@@ -300,6 +382,11 @@ public final class AppReviewManager: ObservableObject {
     /// Presents the StoreKit review dialog targeting the foreground-active `UIWindowScene`.
     @MainActor
     public func presentReviewDialog() {
+        // Triple-check: Absolute hard lockout if review was submitted
+        guard !hasSubmittedReview else {
+            return
+        }
+
         guard let windowScene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .first(where: { $0.activationState == .foregroundActive }) else {
@@ -344,5 +431,7 @@ public final class AppReviewManager: ObservableObject {
         userDefaults.removeObject(forKey: Keys.lastPromptLaunchCount)
         userDefaults.removeObject(forKey: Keys.lastPromptDate)
         userDefaults.removeObject(forKey: Keys.isExistingUser)
+        userDefaults.removeObject(forKey: Keys.lastActiveDate)
+        writeKeychainReviewSubmitted(false)
     }
 }

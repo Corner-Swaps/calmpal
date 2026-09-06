@@ -204,7 +204,7 @@ public struct GroundingScreenView: View {
                                         } else {
                                             // Any tap or micro-drag (< 35pt) reliably triggers play/pause
                                             if isArtistInfoVisible {
-                                                withAnimation(.easeInOut(duration: 0.25)) {
+                                                withAnimation(.easeInOut(duration: 0.65)) {
                                                     isArtistInfoVisible = false
                                                 }
                                             } else {
@@ -223,7 +223,7 @@ public struct GroundingScreenView: View {
                                     // ☀️ / 🌙 Sun & Moon Icon (Zen Mode Immersion Toggle)
                                     Button(action: {
                                         HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                        withAnimation(.easeInOut(duration: 0.35)) {
+                                        withAnimation(.easeInOut(duration: 0.65)) {
                                             if isArtistInfoVisible {
                                                 isArtistInfoVisible = false
                                             }
@@ -232,6 +232,7 @@ public struct GroundingScreenView: View {
                                     }) {
                                         Image(systemName: isZenMode ? "moon.fill" : "sun.max")
                                             .font(.system(size: 20, weight: .regular))
+                                            .contentTransition(.symbolEffect(.replace))
                                             .foregroundColor(Color.white.opacity(0.92))
                                             .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
                                             .frame(width: (activeProfile.artistCredit != nil) ? 54 : 72, height: 52)
@@ -245,7 +246,7 @@ public struct GroundingScreenView: View {
                                     if let _ = activeProfile.artistCredit {
                                         Button(action: {
                                             HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
-                                            withAnimation(.easeInOut(duration: 0.3)) {
+                                            withAnimation(.easeInOut(duration: 0.65)) {
                                                 if isZenMode {
                                                     isZenMode = false
                                                 }
@@ -254,6 +255,7 @@ public struct GroundingScreenView: View {
                                         }) {
                                             Image(systemName: isArtistInfoVisible ? "xmark" : "person")
                                                 .font(.system(size: isArtistInfoVisible ? 16 : 19, weight: .regular))
+                                                .contentTransition(.symbolEffect(.replace))
                                                 .foregroundColor(Color.white.opacity(0.92))
                                                 .shadow(color: Color.black.opacity(0.45), radius: 4, x: 0, y: 1)
                                                 .frame(width: 54, height: 52)
@@ -266,8 +268,8 @@ public struct GroundingScreenView: View {
                                     }
                                 }
                                 .opacity(isZenMode ? 0.60 : 1.0)
-                                .animation(.easeInOut(duration: 0.35), value: isZenMode)
-                                .animation(.easeInOut(duration: 0.25), value: activeProfile.artistCredit != nil)
+                                .animation(.easeInOut(duration: 0.65), value: isZenMode)
+                                .animation(.easeInOut(duration: 0.40), value: activeProfile.artistCredit != nil)
 
                                 Spacer()
                             }
@@ -290,8 +292,8 @@ public struct GroundingScreenView: View {
                                     timerEndTimestamp: timerEndTimestamp
                                 )
                                 .opacity((!isZenMode && !isArtistInfoVisible) ? 1.0 : 0.0)
-                                .animation(.easeInOut(duration: 0.35), value: isZenMode)
-                                .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
+                                .animation(.easeInOut(duration: 0.65), value: isZenMode)
+                                .animation(.easeInOut(duration: 0.65), value: isArtistInfoVisible)
                                 .allowsHitTesting(false)
 
                                 if isArtistInfoVisible, let credit = activeProfile.artistCredit {
@@ -405,8 +407,8 @@ public struct GroundingScreenView: View {
                             }
                             .padding(.bottom, 36)
                             .opacity((isZenMode || isArtistInfoVisible) ? 0 : 1)
-                            .animation(.easeInOut(duration: 0.35), value: isZenMode)
-                            .animation(.easeInOut(duration: 0.35), value: isArtistInfoVisible)
+                            .animation(.easeInOut(duration: 0.65), value: isZenMode)
+                            .animation(.easeInOut(duration: 0.65), value: isArtistInfoVisible)
                             .allowsHitTesting(!isZenMode && !isArtistInfoVisible)
                         }
                     }
@@ -446,8 +448,15 @@ public struct GroundingScreenView: View {
                         Button(action: {
                             HapticManager.shared.playTransientHeartbeat(intensity: 0.5, sharpness: 0.6)
                             if isPlaying {
-                                timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
-                                AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
+                                if remainingTimerSeconds <= 0 {
+                                    isPlaying = false
+                                    timerEndTimestamp = nil
+                                    AudioManager.shared.sleepTimerTargetDate = nil
+                                    AudioManager.shared.pause()
+                                } else {
+                                    timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
+                                    AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
+                                }
                             }
                             activeOverlay = .none
                         }) {
@@ -475,15 +484,22 @@ public struct GroundingScreenView: View {
                         isPlaying: isPlaying,
                         onSelectSound: { profile in
                             activeProfile = profile
-                            if remainingTimerSeconds <= 0 {
-                                remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+                            let wasTimerOver = (remainingTimerSeconds <= 0)
+                            if wasTimerOver {
+                                let dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+                                remainingTimerSeconds = dur
+                                if totalTimerDuration <= 0 {
+                                    totalTimerDuration = dur
+                                }
                             }
                             isPlaying = true
                             timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
                             AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
                             activeOverlay = .none
                             AudioManager.shared.activeProfile = profile
-                            if !AudioManager.shared.isAudioPlaying {
+                            if wasTimerOver {
+                                AudioManager.shared.restartFromStart()
+                            } else if !AudioManager.shared.isAudioPlaying {
                                 AudioManager.shared.start()
                             }
                         },
@@ -509,7 +525,7 @@ public struct GroundingScreenView: View {
                         isPlaying = false
                         timerEndTimestamp = nil
                         AudioManager.shared.sleepTimerTargetDate = nil
-                        AudioManager.shared.pause()
+                        AudioManager.shared.stop()
                     } else {
                         remainingTimerSeconds = left
                     }
@@ -528,7 +544,11 @@ public struct GroundingScreenView: View {
                 isPlaying = audioPlaying
                 if audioPlaying {
                     if remainingTimerSeconds <= 0 {
-                        remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+                        let dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+                        remainingTimerSeconds = dur
+                        if totalTimerDuration <= 0 {
+                            totalTimerDuration = dur
+                        }
                     }
                     timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
                     AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
@@ -578,19 +598,29 @@ public struct GroundingScreenView: View {
         HapticManager.shared.playTransientHeartbeat(intensity: 0.6, sharpness: 0.6)
         isPlaying.toggle()
         if isPlaying {
-            if remainingTimerSeconds <= 0 {
-                remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+            let wasTimerOver = (remainingTimerSeconds <= 0)
+            if wasTimerOver {
+                let dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+                remainingTimerSeconds = dur
+                if totalTimerDuration <= 0 {
+                    totalTimerDuration = dur
+                }
             }
             timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
             AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
+            if wasTimerOver {
+                AudioManager.shared.restartFromStart()
+            } else {
+                AudioManager.shared.togglePlayPause()
+            }
         } else {
             if let end = timerEndTimestamp {
                 remainingTimerSeconds = max(0, end.timeIntervalSinceNow)
             }
             timerEndTimestamp = nil
             AudioManager.shared.sleepTimerTargetDate = nil
+            AudioManager.shared.pause()
         }
-        AudioManager.shared.togglePlayPause()
     }
 
     private func selectPreviousSound() {
@@ -602,15 +632,22 @@ public struct GroundingScreenView: View {
             activeProfile = newProfile
         }
         AudioManager.shared.activeProfile = newProfile
-        if remainingTimerSeconds <= 0 {
-            remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+        let wasTimerOver = (remainingTimerSeconds <= 0)
+        if wasTimerOver {
+            let dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+            remainingTimerSeconds = dur
+            if totalTimerDuration <= 0 {
+                totalTimerDuration = dur
+            }
         }
         if !isPlaying {
             isPlaying = true
         }
         timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
         AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
-        if !AudioManager.shared.isAudioPlaying {
+        if wasTimerOver {
+            AudioManager.shared.restartFromStart()
+        } else if !AudioManager.shared.isAudioPlaying {
             AudioManager.shared.start()
         }
     }
@@ -624,15 +661,22 @@ public struct GroundingScreenView: View {
             activeProfile = newProfile
         }
         AudioManager.shared.activeProfile = newProfile
-        if remainingTimerSeconds <= 0 {
-            remainingTimerSeconds = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+        let wasTimerOver = (remainingTimerSeconds <= 0)
+        if wasTimerOver {
+            let dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0
+            remainingTimerSeconds = dur
+            if totalTimerDuration <= 0 {
+                totalTimerDuration = dur
+            }
         }
         if !isPlaying {
             isPlaying = true
         }
         timerEndTimestamp = Date().addingTimeInterval(remainingTimerSeconds)
         AudioManager.shared.sleepTimerTargetDate = timerEndTimestamp
-        if !AudioManager.shared.isAudioPlaying {
+        if wasTimerOver {
+            AudioManager.shared.restartFromStart()
+        } else if !AudioManager.shared.isAudioPlaying {
             AudioManager.shared.start()
         }
     }
@@ -640,7 +684,7 @@ public struct GroundingScreenView: View {
 
 // MARK: ── Clean Time Formatter ───────────────────────────────────────────────
 
-private func formatNoLeadingZeroHours(_ seconds: TimeInterval) -> String {
+func formatNoLeadingZeroHours(_ seconds: TimeInterval) -> String {
     let total = max(0, Int(ceil(seconds)))
     let hrs = total / 3600
     let mins = (total % 3600) / 60
@@ -680,7 +724,7 @@ private struct FullCircularTimerView: View {
         }()
 
         let progress: Double = {
-            guard totalDuration > 0 else { return 1.0 }
+            guard totalDuration > 0 else { return 0.0 }
             return max(0.0, min(1.0, currentRemaining / totalDuration))
         }()
 
@@ -885,8 +929,14 @@ private struct TallFusedMeasuringLinesView: View {
                         let sensitivity: Double = 90.0 / 18.0
                         let secondsDelta = -Double(dy) * sensitivity
 
-                        let currentTotal = totalDuration > 0 ? totalDuration : 600.0
-                        let newTotal = max(60.0, min(maxTime, currentTotal + secondsDelta))
+                        let currentTotal = totalDuration
+                        var newTotal = max(0.0, min(maxTime, currentTotal + secondsDelta))
+                        if newTotal < 1.0 {
+                            newTotal = 0.0
+                        }
+                        if newTotal == 0.0 && totalDuration > 0.0 {
+                            HapticManager.shared.playTransientHeartbeat(intensity: 0.4, sharpness: 0.5)
+                        }
                         totalDuration = newTotal
                         remainingSeconds = newTotal
                     }

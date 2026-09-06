@@ -229,10 +229,10 @@ final class CalmpalTests: XCTestCase {
         manager.lifetimeLaunches = 15
         XCTAssertTrue(manager.isEligibleForReview(at: now))
 
-        // Reset launches to 3, but simulate 15 days elapsed -> Eligible!
+        // Reset launches to 3, but simulate 15 days elapsed -> Must remain Ineligible!
         manager.lifetimeLaunches = 3
         let fifteenDaysLater = now.addingTimeInterval(15 * 86400)
-        XCTAssertTrue(manager.isEligibleForReview(at: fifteenDaysLater))
+        XCTAssertFalse(manager.isEligibleForReview(at: fifteenDaysLater), "Fewer than 15 launches must never trigger review even after 15+ days")
     }
 
     func testAppReviewManagerExistingUserMilestones() {
@@ -252,19 +252,13 @@ final class CalmpalTests: XCTestCase {
         // All below 15 -> Ineligible
         XCTAssertFalse(manager.isEligibleForReview(at: now))
 
+        // Days since update >= 15 with only 2 launches -> Must remain Ineligible!
+        let fifteenDaysAfterUpdate = now.addingTimeInterval(15 * 86400)
+        XCTAssertFalse(manager.isEligibleForReview(at: fifteenDaysAfterUpdate), "Days elapsed without 15 launches must never trigger review")
+
         // Lifetime launches >= 15 -> Eligible
         manager.lifetimeLaunches = 15
         XCTAssertTrue(manager.isEligibleForReview(at: now))
-        manager.lifetimeLaunches = 2
-
-        // Launches since update >= 15 -> Eligible
-        manager.currentVersionLaunches = 15
-        XCTAssertTrue(manager.isEligibleForReview(at: now))
-        manager.currentVersionLaunches = 2
-
-        // Days since update >= 15 -> Eligible
-        let fifteenDaysAfterUpdate = now.addingTimeInterval(15 * 86400)
-        XCTAssertTrue(manager.isEligibleForReview(at: fifteenDaysAfterUpdate))
     }
 
     func testAppReviewManagerRepromptCadenceAndSubmissionLock() {
@@ -293,13 +287,15 @@ final class CalmpalTests: XCTestCase {
         let fiveDaysLater = now.addingTimeInterval(5 * 86400)
         XCTAssertFalse(manager.isEligibleForReview(at: fiveDaysLater))
 
-        // 15 more launches (total 30) -> Eligible for re-prompt!
-        manager.lifetimeLaunches = 30
-        XCTAssertTrue(manager.isEligibleForReview(at: fiveDaysLater))
-
-        // Or if launches remained at 25, but 15 days elapsed since last prompt -> Eligible for re-prompt!
-        manager.lifetimeLaunches = 25
+        // 10 more launches (total 25), 15 days later -> Still Ineligible (needs 15 more uses!)
         let fifteenDaysAfterPrompt = now.addingTimeInterval(15 * 86400)
+        XCTAssertFalse(manager.isEligibleForReview(at: fifteenDaysAfterPrompt), "Needs at least 15 launches since last prompt")
+
+        // 15 more launches (total 30), 5 days later -> Still Ineligible (needs 15 days elapsed)
+        manager.lifetimeLaunches = 30
+        XCTAssertFalse(manager.isEligibleForReview(at: fiveDaysLater))
+
+        // 15 more launches (total 30) AND 15 days later -> Eligible for re-prompt!
         XCTAssertTrue(manager.isEligibleForReview(at: fifteenDaysAfterPrompt))
 
         // Permanent submission lock
@@ -329,5 +325,110 @@ final class CalmpalTests: XCTestCase {
         manager.handleAppLaunch()
         XCTAssertEqual(manager.lifetimeLaunches, 2)
         XCTAssertEqual(manager.currentVersionLaunches, 2)
+    }
+
+    func testAppReviewManagerForegroundTracking() {
+        let testDefaults = UserDefaults(suiteName: "test.calmpal.appreview.fgtrack")!
+        testDefaults.removePersistentDomain(forName: "test.calmpal.appreview.fgtrack")
+
+        let manager = AppReviewManager(userDefaults: testDefaults, observeLifecycleNotifications: false)
+        manager.resetAllTrackingData()
+
+        let now = Date()
+        manager.handleAppLaunch(at: now)
+        XCTAssertEqual(manager.lifetimeLaunches, 1)
+
+        // Rapid foregrounding (< 2 min / 120s) should NOT increment launches
+        manager.handleAppForeground(at: now.addingTimeInterval(30))
+        XCTAssertEqual(manager.lifetimeLaunches, 1)
+
+        // Foregrounding after 2+ minutes counts as an app use
+        manager.handleAppForeground(at: now.addingTimeInterval(125))
+        XCTAssertEqual(manager.lifetimeLaunches, 2)
+    }
+
+    func testAppReviewManagerSubmissionAbsoluteLock() {
+        let testDefaults = UserDefaults(suiteName: "test.calmpal.appreview.absolutelock")!
+        testDefaults.removePersistentDomain(forName: "test.calmpal.appreview.absolutelock")
+
+        let manager = AppReviewManager(userDefaults: testDefaults, observeLifecycleNotifications: false)
+        manager.resetAllTrackingData()
+
+        let now = Date()
+        manager.originalInstallDate = now.addingTimeInterval(-60 * 86400)
+        manager.lifetimeLaunches = 50
+
+        // Before submission, eligible
+        XCTAssertTrue(manager.isEligibleForReview(at: now))
+
+        // Mark review submitted
+        manager.markReviewSubmitted()
+        XCTAssertTrue(manager.hasSubmittedReview)
+
+        // 1. Immediately ineligible
+        XCTAssertFalse(manager.isEligibleForReview(at: now))
+
+        // 2. Ineligible 100 days later
+        let hundredDaysLater = now.addingTimeInterval(100 * 86400)
+        XCTAssertFalse(manager.isEligibleForReview(at: hundredDaysLater))
+
+        // 3. Ineligible 1 year later with 1,000 launches
+        manager.lifetimeLaunches = 1000
+        let oneYearLater = now.addingTimeInterval(365 * 86400)
+        XCTAssertFalse(manager.isEligibleForReview(at: oneYearLater))
+
+        // 4. Persistence across fresh manager instances
+        let secondManager = AppReviewManager(userDefaults: testDefaults, observeLifecycleNotifications: false)
+        XCTAssertTrue(secondManager.hasSubmittedReview)
+        XCTAssertFalse(secondManager.isEligibleForReview(at: oneYearLater))
+
+        // 5. Presenting review dialog directly is a no-op when submitted
+        Task { @MainActor in
+            secondManager.presentReviewDialog()
+        }
+    }
+
+    // MARK: - Timer Selection & Zero Boundary Tests
+
+    func testZeroTimerSelectionAndFormatting() {
+        // Zero time should format cleanly as "0:00"
+        XCTAssertEqual(formatNoLeadingZeroHours(0.0), "0:00")
+        XCTAssertEqual(formatNoLeadingZeroHours(-5.0), "0:00")
+        
+        // Seconds formatting under 1 minute
+        XCTAssertEqual(formatNoLeadingZeroHours(1.0), "0:01")
+        XCTAssertEqual(formatNoLeadingZeroHours(15.0), "0:15")
+        XCTAssertEqual(formatNoLeadingZeroHours(59.0), "0:59")
+        
+        // Minutes and hours
+        XCTAssertEqual(formatNoLeadingZeroHours(60.0), "1:00")
+        XCTAssertEqual(formatNoLeadingZeroHours(600.0), "10:00")
+        XCTAssertEqual(formatNoLeadingZeroHours(3600.0), "1:00:00")
+        XCTAssertEqual(formatNoLeadingZeroHours(3665.0), "1:01:05")
+    }
+
+    @MainActor
+    func testAudioManagerSleepTimerImmediateExpiryOnZero() {
+        let audio = AudioManager.shared
+        audio.stop()
+        
+        // Setting a target date in the past or immediately at now (<= 0) should clear target
+        audio.sleepTimerTargetDate = Date().addingTimeInterval(-1.0)
+        XCTAssertNil(audio.sleepTimerTargetDate)
+    }
+
+    @MainActor
+    func testRestartFromStart() {
+        let audio = AudioManager.shared
+        audio.stop()
+        XCTAssertFalse(audio.isAudioPlaying)
+        XCTAssertFalse(audio.isBufferScheduled)
+
+        audio.restartFromStart()
+        XCTAssertTrue(audio.isAudioPlaying)
+        XCTAssertTrue(audio.isBufferScheduled)
+
+        audio.stop()
+        XCTAssertFalse(audio.isAudioPlaying)
     }
 }
