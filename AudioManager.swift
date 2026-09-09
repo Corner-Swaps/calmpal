@@ -398,6 +398,10 @@ public final class AudioManager {
             self, selector: #selector(handleAppForeground),
             name: UIApplication.willEnterForegroundNotification, object: nil
         )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleMemoryWarning),
+            name: UIApplication.didReceiveMemoryWarningNotification, object: nil
+        )
         #endif
     }
 
@@ -461,6 +465,15 @@ public final class AudioManager {
     @objc private func handleAppForeground(notification: Notification) {
         guard isAudioPlaying else { return }
         ensureEngineRunningAndPlaying(forceReschedule: false)
+    }
+
+    @objc private func handleMemoryWarning(notification: Notification) {
+        let active = activeProfile
+        let currentBuffer = bufferCache[active]
+        bufferCache.removeAll(keepingCapacity: false)
+        if let currentBuffer = currentBuffer {
+            bufferCache[active] = currentBuffer
+        }
     }
     #endif
 
