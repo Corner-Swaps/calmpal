@@ -25,6 +25,7 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '16.4'
 prepare_react_native_project!
 
 target 'Calmpal' do
+  inhibit_all_warnings!
   use_expo_modules!
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
@@ -63,5 +64,11 @@ target 'Calmpal' do
       :mac_catalyst_enabled => false,
       :ccache_enabled => ccache_enabled?(podfile_properties),
     )
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+        config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
+      end
+    end
   end
 end
