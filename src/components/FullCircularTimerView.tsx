@@ -16,7 +16,7 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
   isPlaying,
   timerEndTimestamp,
 }) => {
-  const [now, setNow] = useState(Date.now());
+  const [, setTick] = useState(0);
 
   // 60Hz TimelineView animation update when playing
   useEffect(() => {
@@ -24,7 +24,7 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
     let animationFrameId: number;
 
     const tick = () => {
-      setNow(Date.now());
+      setTick((prev) => (prev + 1) % 1000000);
       animationFrameId = requestAnimationFrame(tick);
     };
 
@@ -34,7 +34,9 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
 
   const currentRemaining = (() => {
     if (isPlaying && timerEndTimestamp !== null) {
-      return Math.max(0.0, (timerEndTimestamp - now) / 1000);
+      const remaining = (timerEndTimestamp - Date.now()) / 1000;
+      const maxAllowed = totalDuration > 0 ? totalDuration : remainingSeconds;
+      return Math.max(0.0, Math.min(maxAllowed, remaining));
     }
     return remainingSeconds;
   })();

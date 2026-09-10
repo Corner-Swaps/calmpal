@@ -126,7 +126,7 @@ export const GroundingScreenView: React.FC = () => {
       if (wasTimerOver) {
         await audioManager.restartFromStart();
       } else {
-        await audioManager.togglePlayPause();
+        await audioManager.resume();
       }
     } else {
       if (timerEndTimestamp !== null) {
@@ -200,6 +200,19 @@ export const GroundingScreenView: React.FC = () => {
     }
   }, [activeProfile, remainingTimerSeconds, totalTimerDuration, isPlaying, audioManager, hapticManager]);
 
+  // Keep mutable callback refs to avoid stale closures in panResponder
+  const togglePlayPauseRef = useRef(togglePlayPause);
+  togglePlayPauseRef.current = togglePlayPause;
+
+  const selectNextSoundRef = useRef(selectNextSound);
+  selectNextSoundRef.current = selectNextSound;
+
+  const selectPreviousSoundRef = useRef(selectPreviousSound);
+  selectPreviousSoundRef.current = selectPreviousSound;
+
+  const isArtistInfoVisibleRef = useRef(isArtistInfoVisible);
+  isArtistInfoVisibleRef.current = isArtistInfoVisible;
+
   // Background PanResponder for Swipe Gestures & Taps
   const panResponder = useRef(
     PanResponder.create({
@@ -210,16 +223,16 @@ export const GroundingScreenView: React.FC = () => {
         const vertical = gesture.dy;
         if (Math.abs(horizontal) > Math.abs(vertical) && Math.abs(horizontal) > 35) {
           if (horizontal < 0) {
-            selectNextSound();
+            selectNextSoundRef.current();
           } else {
-            selectPreviousSound();
+            selectPreviousSoundRef.current();
           }
         } else {
           // Tap / micro-drag
-          if (isArtistInfoVisible) {
+          if (isArtistInfoVisibleRef.current) {
             setIsArtistInfoVisible(false);
           } else {
-            togglePlayPause();
+            togglePlayPauseRef.current();
           }
         }
       },
@@ -388,15 +401,14 @@ export const GroundingScreenView: React.FC = () => {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={togglePlayPause}
-              style={[
-                styles.dockButton,
-                { transform: [{ translateX: isPlaying ? 0 : 1.5 }] },
-              ]}
+              style={styles.dockButton}
             >
               {isPlaying ? (
                 <PauseFillIcon size={28} weight="bold" color="#FFFFFF" />
               ) : (
-                <PlayFillIcon size={28} weight="bold" color="#FFFFFF" />
+                <View style={styles.playIconOffset}>
+                  <PlayFillIcon size={28} weight="bold" color="#FFFFFF" />
+                </View>
               )}
             </TouchableOpacity>
 
@@ -607,6 +619,9 @@ const styles = StyleSheet.create({
     height: 47,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  playIconOffset: {
+    transform: [{ translateX: 1.5 }],
   },
   dockIcon: {
     textShadowColor: 'rgba(0, 0, 0, 0.85)',

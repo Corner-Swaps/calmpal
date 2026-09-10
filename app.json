@@ -8,7 +8,7 @@
     "userInterfaceStyle": "dark",
     "ios": {
       "buildNumber": "4.2",
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.calmpal.app",
       "infoPlist": {
         "CFBundleDisplayName": "Calmpal",
