@@ -1,6 +1,7 @@
 internal import Expo
 import React
 import ReactAppDependencyProvider
+import AVFoundation
 
 @main
 class AppDelegate: ExpoAppDelegate {
@@ -23,6 +24,18 @@ class AppDelegate: ExpoAppDelegate {
 #if os(iOS) || os(tvOS)
     window = UIWindow(frame: UIScreen.main.bounds)
     window?.backgroundColor = .black
+
+    do {
+      try AVAudioSession.sharedInstance().setCategory(
+        .playback,
+        mode: .default,
+        options: [.mixWithOthers, .allowBluetoothA2DP]
+      )
+      try AVAudioSession.sharedInstance().setActive(true)
+    } catch {
+      print("[AppDelegate] AudioSession setup error: \(error)")
+    }
+
     factory.startReactNative(
       withModuleName: "main",
       in: window,
