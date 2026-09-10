@@ -1,5 +1,44 @@
+diff --git a/node_modules/expo-audio/ios/AudioModule.swift b/node_modules/expo-audio/ios/AudioModule.swift
+index d265606..5b933bd 100644
+--- a/node_modules/expo-audio/ios/AudioModule.swift
++++ b/node_modules/expo-audio/ios/AudioModule.swift
+@@ -597,7 +597,10 @@ public class AudioModule: Module {
+         case .duckOthers:
+           playerVolumes[playable.id] = playable.volume
+           playable.volume *= 0.5
+-        case .doNotMix, .mixWithOthers:
++        case .mixWithOthers:
++          // In mixWithOthers mode, do not pause. Keep playing alongside other apps and background refreshes.
++          break
++        case .doNotMix:
+           playable.pause()
+         }
+       }
+@@ -615,12 +618,10 @@ public class AudioModule: Module {
+   private func handleInterruptionEnded(with options: AVAudioSession.InterruptionOptions) {
+     do {
+       try AVAudioSession.sharedInstance().setActive(true)
+-      if options.contains(.shouldResume) {
+-        resumeInterruptedPlayers()
+-      }
+     } catch {
+       print("Failed to reactivate audio session: \(error)")
+     }
++    resumeInterruptedPlayers()
+   }
+ 
+   @objc private func handleAudioSessionRouteChange(_ notification: Notification) {
+@@ -808,6 +809,8 @@ public class AudioModule: Module {
+ #else
+         categoryOptions.insert(.allowBluetooth)
+ #endif
++      } else if category == .playback {
++        categoryOptions.insert([.allowBluetoothA2DP, .allowAirPlay])
+       }
+ #endif
+ 
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0742943..97ae067 100644
+index 0742943..4673064 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
 @@ -231,6 +231,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
@@ -27,3 +66,12 @@ index 0742943..97ae067 100644
        }
      }
    }
+@@ -500,7 +511,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+   }
+ 
+   func resumePlayback() {
+-    ref.play()
++    ref.playImmediately(atRate: effectiveRate)
+   }
+ 
+   public override func sharedObjectWillRelease() {

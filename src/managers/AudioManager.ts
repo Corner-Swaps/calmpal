@@ -1,6 +1,6 @@
 // AudioManager: Cross-platform implementation of Swift AudioManager using expo-audio
 import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from 'expo-audio';
-import { Platform } from 'react-native';
+import { Platform, AppState, AppStateStatus } from 'react-native';
 import { SoundProfile, SOUND_PROFILE_RESOURCE_FILES } from '../models/SoundProfile';
 import { allSoundBanners } from '../models/SoundBannerTheme';
 import { SOUND_ASSETS } from '../assets/assetMap';
@@ -37,6 +37,15 @@ export class AudioManager {
 
   private constructor() {
     this.configureAudioSession();
+    if (Platform.OS !== 'web' && AppState && typeof AppState.addEventListener === 'function') {
+      AppState.addEventListener('change', (state: AppStateStatus) => {
+        if (state === 'active' && this.isAudioPlaying && this.audioPlayer) {
+          try {
+            this.audioPlayer.play();
+          } catch {}
+        }
+      });
+    }
   }
 
   private async configureAudioSession() {
