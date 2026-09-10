@@ -141,7 +141,10 @@ export const GroundingScreenView: React.FC = () => {
   const selectPreviousSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
     const currentIndex = allSoundBanners.findIndex((b) => b.profile === activeProfile);
-    const newIndex = (currentIndex - 1 + allSoundBanners.length) % allSoundBanners.length;
+    const validIndex = currentIndex >= 0 ? currentIndex : 0;
+    const totalCount = allSoundBanners.length;
+    // Guaranteed wrap-around: index 0 wraps to last sound (totalCount - 1)
+    const newIndex = (validIndex - 1 + totalCount) % totalCount;
     const newProfile = allSoundBanners[newIndex].profile;
     setActiveProfileState(newProfile);
     await audioManager.setActiveProfile(newProfile);
@@ -172,7 +175,10 @@ export const GroundingScreenView: React.FC = () => {
   const selectNextSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
     const currentIndex = allSoundBanners.findIndex((b) => b.profile === activeProfile);
-    const newIndex = (currentIndex + 1) % allSoundBanners.length;
+    const validIndex = currentIndex >= 0 ? currentIndex : 0;
+    const totalCount = allSoundBanners.length;
+    // Guaranteed wrap-around: last sound wraps to first sound (0)
+    const newIndex = (validIndex + 1) % totalCount;
     const newProfile = allSoundBanners[newIndex].profile;
     setActiveProfileState(newProfile);
     await audioManager.setActiveProfile(newProfile);
@@ -217,25 +223,41 @@ export const GroundingScreenView: React.FC = () => {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 10,
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        Math.abs(gesture.dx) > 10 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+      onMoveShouldSetPanResponderCapture: (_, gesture) =>
+        Math.abs(gesture.dx) > 15 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
       onPanResponderRelease: (_, gesture) => {
         const horizontal = gesture.dx;
         const vertical = gesture.dy;
-        if (Math.abs(horizontal) > Math.abs(vertical) && Math.abs(horizontal) > 35) {
-          if (horizontal < 0) {
+        const vx = gesture.vx;
+
+        // Either enough drag distance (> 20pt) or quick flick velocity (> 0.25)
+        const isHorizontalSwipe =
+          (Math.abs(horizontal) > 20 || Math.abs(vx) > 0.25) &&
+          Math.abs(horizontal) > Math.abs(vertical) * 0.7;
+
+        if (isHorizontalSwipe) {
+          const isLeft = Math.abs(horizontal) > 20 ? horizontal < 0 : vx < 0;
+          if (isLeft) {
+            // Swiped Left -> Bring to Next sound (infinite wrap-around: last -> first)
             selectNextSoundRef.current();
           } else {
+            // Swiped Right -> Bring to Previous sound (infinite wrap-around: first -> last)
             selectPreviousSoundRef.current();
           }
         } else {
-          // Tap / micro-drag
-          if (isArtistInfoVisibleRef.current) {
-            setIsArtistInfoVisible(false);
-          } else {
-            togglePlayPauseRef.current();
+          // Tap / micro-drag: only if small movement (< 15pt) and low velocity
+          if (Math.abs(horizontal) < 15 && Math.abs(vertical) < 15 && Math.abs(vx) < 0.2) {
+            if (isArtistInfoVisibleRef.current) {
+              setIsArtistInfoVisible(false);
+            } else {
+              togglePlayPauseRef.current();
+            }
           }
         }
       },
+      onPanResponderTerminate: () => {},
     })
   ).current;
 
@@ -277,7 +299,7 @@ export const GroundingScreenView: React.FC = () => {
           <View style={StyleSheet.absoluteFill} {...panResponder.panHandlers} />
 
           {/* Top Navigation: Floating Icons (Sun/Moon and Artist Info at Top Center) */}
-          <View style={[styles.topNavContainer, { paddingTop: topInset + 6 }]} pointerEvents="box-none">
+          <View style={[styles.topNavContainer, { paddingTop: Math.max(14, insets.top - 8) }]} pointerEvents="box-none">
             <View style={styles.topNavCenter}>
               {/* ☀️ / 🌙 Sun & Moon Zen Toggle */}
               <TouchableOpacity
@@ -331,12 +353,14 @@ export const GroundingScreenView: React.FC = () => {
           {/* Main Center Stage: Circular Timer Ring or Artist Profile */}
           <View style={styles.centerStageContainer} pointerEvents="box-none">
             {!isZenMode && !isArtistInfoVisible && (
-              <FullCircularTimerView
-                remainingSeconds={remainingTimerSeconds}
-                totalDuration={totalTimerDuration}
-                isPlaying={isPlaying}
-                timerEndTimestamp={timerEndTimestamp}
-              />
+              <View pointerEvents="none">
+                <FullCircularTimerView
+                  remainingSeconds={remainingTimerSeconds}
+                  totalDuration={totalTimerDuration}
+                  isPlaying={isPlaying}
+                  timerEndTimestamp={timerEndTimestamp}
+                />
+              </View>
             )}
 
             {isArtistInfoVisible && artistCredit && (
@@ -549,7 +573,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   navButton: {
-    height: 52,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
