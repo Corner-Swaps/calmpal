@@ -1,0 +1,64 @@
+name: 🐛 Bug Report
+description: File a bug report to help us improve Calmpal
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue with Calmpal! Please provide as much detail as possible.
+  - type: input
+    id: version
+    attributes:
+      label: Calmpal Version
+      placeholder: "e.g. 4.2.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Operating Platform
+      options:
+        - "iOS"
+        - "Android"
+        - "Web"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device Model & OS Version
+      placeholder: "e.g. iPhone 16 Pro Max, iOS 18.0"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description of the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior.
+      placeholder: |
+        1. Select soundscape '...'
+        2. Set circular timer to '...'
+        3. Tap play
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Screen Recording
+      description: Drag and drop screenshots or videos to help explain the problem.

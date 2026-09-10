@@ -5,7 +5,7 @@
 [![Expo SDK](https://img.shields.io/badge/Expo%20SDK-57.0.21-000020.svg?logo=expo)](https://expo.dev/)
 [![Tests](https://img.shields.io/badge/Unit%20Tests-15%20Passing-success.svg)](#verification--testing)
 [![Offline First](https://img.shields.io/badge/Architecture-Offline--First-teal.svg)](#architecture--security)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Calmpal is a high-performance, cross-platform relaxation and ambient soundscape app built with **React Native (New Architecture)**, **Expo SDK 57**, and strict **TypeScript**. It offers 100% visual, layout, and sensory parity across **iOS**, **Android**, and **Web**.
 
@@ -110,6 +110,14 @@ The codebase maintains 100% strict verification standards:
 1. **Static Type Safety**: Full TypeScript strict mode compliance (`npx tsc --noEmit`) with zero type errors.
 2. **Unit Test Parity**: Automated Jest test suite covering audio managers, timing utilities, and theme completeness (`npm test`).
 3. **App Store Readiness**: Zero undeclared capabilities or invasive permissions.
+
+---
+
+## Community & Guidelines
+
+- **Contributing**: Please review our [Contributing Guide](CONTRIBUTING.md) for code style, pre-push quality gates, and branching rules.
+- **Security**: View our [Security Policy](SECURITY.md) to report vulnerabilities responsibly.
+- **Code of Conduct**: We adhere to the [Contributor Covenant](CODE_OF_CONDUCT.md).
 
 ---
 
