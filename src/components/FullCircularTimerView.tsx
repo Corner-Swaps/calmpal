@@ -18,19 +18,15 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
 }) => {
   const [, setTick] = useState(0);
 
-  // 60Hz TimelineView animation update when playing
+  // Smooth throttled update only when an active countdown timer is running
   useEffect(() => {
-    if (!isPlaying) return;
-    let animationFrameId: number;
-
-    const tick = () => {
+    if (!isPlaying || timerEndTimestamp === null) return;
+    const interval = setInterval(() => {
       setTick((prev) => (prev + 1) % 1000000);
-      animationFrameId = requestAnimationFrame(tick);
-    };
+    }, 100);
 
-    animationFrameId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [isPlaying]);
+    return () => clearInterval(interval);
+  }, [isPlaying, timerEndTimestamp]);
 
   const currentRemaining = (() => {
     if (isPlaying && timerEndTimestamp !== null) {

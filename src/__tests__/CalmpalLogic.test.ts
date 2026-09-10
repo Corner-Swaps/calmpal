@@ -79,6 +79,12 @@ describe('Calmpal Logic & Data Model Parity Tests', () => {
     it('formats 4 hours max (14400s) as 4:00:00', () => {
       expect(formatNoLeadingZeroHours(14400)).toBe('4:00:00');
     });
+
+    it('safely handles NaN, Infinity, and negative numbers without crashing', () => {
+      expect(formatNoLeadingZeroHours(NaN)).toBe('0:00');
+      expect(formatNoLeadingZeroHours(Infinity)).toBe('0:00');
+      expect(formatNoLeadingZeroHours(-10)).toBe('0:00');
+    });
   });
 
   describe('HapticManager Physics Smoothing', () => {

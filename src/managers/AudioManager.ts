@@ -27,22 +27,28 @@ export class AudioManager {
   public sleepTimerTargetDate: Date | null = null;
 
   private audioPlayer: AudioPlayer | null = null;
-  private webAudioElement: any | null = null;
+  private webAudioElement: HTMLAudioElement | null = null;
   private listeners: Set<AudioStateListener> = new Set();
 
-  private sleepTimerTimeout: any = null;
-  private sleepFadeTimeout: any = null;
-  private fadeInterval: any = null;
+  private sleepTimerTimeout: ReturnType<typeof setTimeout> | null = null;
+  private sleepFadeTimeout: ReturnType<typeof setTimeout> | null = null;
+  private fadeInterval: ReturnType<typeof setInterval> | null = null;
   private isAudioConfigured: boolean = false;
 
   private constructor() {
     this.configureAudioSession();
     if (Platform.OS !== 'web' && AppState && typeof AppState.addEventListener === 'function') {
       AppState.addEventListener('change', (state: AppStateStatus) => {
-        if (state === 'active' && this.isAudioPlaying && this.audioPlayer) {
-          try {
-            this.audioPlayer.play();
-          } catch {}
+        if (state === 'active') {
+          if (this.sleepTimerTargetDate && this.sleepTimerTargetDate.getTime() <= Date.now()) {
+            this.stop();
+            return;
+          }
+          if (this.isAudioPlaying && this.audioPlayer) {
+            try {
+              this.audioPlayer.play();
+            } catch {}
+          }
         }
       });
     }
@@ -371,8 +377,10 @@ export class AudioManager {
       const current = Math.max(0, Math.min(1, startVolume + (diff * step) / steps));
       this.setVolumeInternal(current);
       if (step >= steps) {
-        clearInterval(this.fadeInterval);
-        this.fadeInterval = null;
+        if (this.fadeInterval !== null) {
+          clearInterval(this.fadeInterval);
+          this.fadeInterval = null;
+        }
         this.setVolumeInternal(target);
         completion?.();
       }

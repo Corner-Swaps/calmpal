@@ -48,9 +48,10 @@ export const GroundingScreenView: React.FC = () => {
 
   // States matching GroundingScreenView.swift
   const [activeProfile, setActiveProfileState] = useState<SoundProfile>(SoundProfile.nightCrickets);
-  const [remainingTimerSeconds, setRemainingTimerSeconds] = useState<number>(600.0); // Default 10 min
+  const [remainingTimerSeconds, setRemainingTimerSeconds] = useState<number>(600.0); // Default 10 min for timer editor
   const [totalTimerDuration, setTotalTimerDuration] = useState<number>(600.0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isTimerActive, setIsTimerActive] = useState<boolean>(false); // Infinite continuous play by default
   const [activeOverlay, setActiveOverlay] = useState<ActiveScreenOverlay>('none');
   const [isDraggingTimer, setIsDraggingTimer] = useState<boolean>(false);
   const [isZenMode, setIsZenMode] = useState<boolean>(false);
@@ -70,31 +71,28 @@ export const GroundingScreenView: React.FC = () => {
     return () => unsubscribe();
   }, [audioManager]);
 
-  // 1-second countdown ticker
+  // 1-second countdown ticker only when a timer is explicitly active
   useEffect(() => {
+    if (!isPlaying || !isTimerActive || isDraggingTimer || activeOverlay === 'editTimer' || timerEndTimestamp === null) {
+      return;
+    }
+
     const interval = setInterval(() => {
-      if (isPlaying && !isDraggingTimer && activeOverlay !== 'editTimer') {
-        if (timerEndTimestamp !== null) {
-          const leftSec = (timerEndTimestamp - Date.now()) / 1000;
-          if (leftSec <= 0) {
-            setRemainingTimerSeconds(0);
-            setIsPlaying(false);
-            setTimerEndTimestamp(null);
-            audioManager.setSleepTimerTargetDate(null);
-            audioManager.stop();
-          } else {
-            setRemainingTimerSeconds(leftSec);
-          }
-        } else {
-          const end = Date.now() + remainingTimerSeconds * 1000;
-          setTimerEndTimestamp(end);
-          audioManager.setSleepTimerTargetDate(new Date(end));
-        }
+      const leftSec = (timerEndTimestamp - Date.now()) / 1000;
+      if (leftSec <= 0) {
+        setRemainingTimerSeconds(0);
+        setIsPlaying(false);
+        setIsTimerActive(false);
+        setTimerEndTimestamp(null);
+        audioManager.setSleepTimerTargetDate(null);
+        audioManager.stop();
+      } else {
+        setRemainingTimerSeconds(leftSec);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isPlaying, isDraggingTimer, activeOverlay, timerEndTimestamp, remainingTimerSeconds, audioManager]);
+  }, [isPlaying, isTimerActive, isDraggingTimer, activeOverlay, timerEndTimestamp, audioManager]);
 
   // Instagram glow animation
   const triggerInstagramGlow = useCallback(() => {
@@ -110,33 +108,24 @@ export const GroundingScreenView: React.FC = () => {
     setIsPlaying(willPlay);
 
     if (willPlay) {
-      const wasTimerOver = remainingTimerSeconds <= 0;
-      let dur = remainingTimerSeconds;
-      if (wasTimerOver) {
-        dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
-        setRemainingTimerSeconds(dur);
-        if (totalTimerDuration <= 0) {
-          setTotalTimerDuration(dur);
-        }
-      }
-      const end = Date.now() + dur * 1000;
-      setTimerEndTimestamp(end);
-      audioManager.setSleepTimerTargetDate(new Date(end));
-
-      if (wasTimerOver) {
-        await audioManager.restartFromStart();
+      if (isTimerActive && remainingTimerSeconds > 0) {
+        const end = Date.now() + remainingTimerSeconds * 1000;
+        setTimerEndTimestamp(end);
+        audioManager.setSleepTimerTargetDate(new Date(end));
       } else {
-        await audioManager.resume();
+        setTimerEndTimestamp(null);
+        audioManager.setSleepTimerTargetDate(null);
       }
+      await audioManager.resume();
     } else {
-      if (timerEndTimestamp !== null) {
+      if (isTimerActive && timerEndTimestamp !== null) {
         setRemainingTimerSeconds(Math.max(0, (timerEndTimestamp - Date.now()) / 1000));
+        setTimerEndTimestamp(null);
       }
-      setTimerEndTimestamp(null);
       audioManager.setSleepTimerTargetDate(null);
       await audioManager.pause();
     }
-  }, [isPlaying, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, audioManager, hapticManager]);
+  }, [isPlaying, isTimerActive, remainingTimerSeconds, timerEndTimestamp, audioManager, hapticManager]);
 
   const selectPreviousSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
@@ -149,28 +138,23 @@ export const GroundingScreenView: React.FC = () => {
     setActiveProfileState(newProfile);
     await audioManager.setActiveProfile(newProfile);
 
-    const wasTimerOver = remainingTimerSeconds <= 0;
-    let dur = remainingTimerSeconds;
-    if (wasTimerOver) {
-      dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
-      setRemainingTimerSeconds(dur);
-      if (totalTimerDuration <= 0) {
-        setTotalTimerDuration(dur);
-      }
-    }
     if (!isPlaying) {
       setIsPlaying(true);
     }
-    const end = Date.now() + dur * 1000;
-    setTimerEndTimestamp(end);
-    audioManager.setSleepTimerTargetDate(new Date(end));
 
-    if (wasTimerOver) {
-      await audioManager.restartFromStart();
-    } else if (!audioManager.isAudioPlaying) {
+    if (isTimerActive && remainingTimerSeconds > 0) {
+      const end = Date.now() + remainingTimerSeconds * 1000;
+      setTimerEndTimestamp(end);
+      audioManager.setSleepTimerTargetDate(new Date(end));
+    } else {
+      setTimerEndTimestamp(null);
+      audioManager.setSleepTimerTargetDate(null);
+    }
+
+    if (!audioManager.isAudioPlaying) {
       await audioManager.start();
     }
-  }, [activeProfile, remainingTimerSeconds, totalTimerDuration, isPlaying, audioManager, hapticManager]);
+  }, [activeProfile, isTimerActive, remainingTimerSeconds, isPlaying, audioManager, hapticManager]);
 
   const selectNextSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
@@ -183,28 +167,23 @@ export const GroundingScreenView: React.FC = () => {
     setActiveProfileState(newProfile);
     await audioManager.setActiveProfile(newProfile);
 
-    const wasTimerOver = remainingTimerSeconds <= 0;
-    let dur = remainingTimerSeconds;
-    if (wasTimerOver) {
-      dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
-      setRemainingTimerSeconds(dur);
-      if (totalTimerDuration <= 0) {
-        setTotalTimerDuration(dur);
-      }
-    }
     if (!isPlaying) {
       setIsPlaying(true);
     }
-    const end = Date.now() + dur * 1000;
-    setTimerEndTimestamp(end);
-    audioManager.setSleepTimerTargetDate(new Date(end));
 
-    if (wasTimerOver) {
-      await audioManager.restartFromStart();
-    } else if (!audioManager.isAudioPlaying) {
+    if (isTimerActive && remainingTimerSeconds > 0) {
+      const end = Date.now() + remainingTimerSeconds * 1000;
+      setTimerEndTimestamp(end);
+      audioManager.setSleepTimerTargetDate(new Date(end));
+    } else {
+      setTimerEndTimestamp(null);
+      audioManager.setSleepTimerTargetDate(null);
+    }
+
+    if (!audioManager.isAudioPlaying) {
       await audioManager.start();
     }
-  }, [activeProfile, remainingTimerSeconds, totalTimerDuration, isPlaying, audioManager, hapticManager]);
+  }, [activeProfile, isTimerActive, remainingTimerSeconds, isPlaying, audioManager, hapticManager]);
 
   // Keep mutable callback refs to avoid stale closures in panResponder
   const togglePlayPauseRef = useRef(togglePlayPause);
@@ -315,6 +294,9 @@ export const GroundingScreenView: React.FC = () => {
                   styles.navButton,
                   { width: artistCredit ? 54 : 72, opacity: isZenMode ? 0.6 : 1.0 },
                 ]}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel={isZenMode ? "Disable Zen immersion mode" : "Enable Zen immersion mode"}
               >
                 {isZenMode ? (
                   <MoonFillIcon size={18.5} color="rgba(255, 255, 255, 0.92)" />
@@ -339,6 +321,9 @@ export const GroundingScreenView: React.FC = () => {
                     }
                   }}
                   style={[styles.navButton, { width: 54 }]}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel={isArtistInfoVisible ? "Close artist info" : "View artist profile"}
                 >
                   {isArtistInfoVisible ? (
                     <XMarkIcon size={16} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
@@ -381,6 +366,9 @@ export const GroundingScreenView: React.FC = () => {
                       shadowOpacity: isInstagramGlowing ? 0.55 : 0.0,
                     },
                   ]}
+                  accessible={true}
+                  accessibilityRole="link"
+                  accessibilityLabel={`Open ${artistCredit.name} on Instagram`}
                 >
                   <InstagramLogoView size={27.6} />
                   <Text style={styles.instagramHandleText}>{artistCredit.instagramHandle}</Text>
@@ -405,6 +393,9 @@ export const GroundingScreenView: React.FC = () => {
               activeOpacity={0.7}
               onPress={selectPreviousSound}
               style={styles.dockButton}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Previous soundscape"
             >
               <ChevronLeftIcon size={21.4} weight="semibold" color="#FFFFFF" />
             </TouchableOpacity>
@@ -417,6 +408,9 @@ export const GroundingScreenView: React.FC = () => {
                 setActiveOverlay('soundSelection');
               }}
               style={styles.dockButton}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Open relaxing sounds library"
             >
               <MusicNoteIcon size={22.5} weight="medium" color="#FFFFFF" />
             </TouchableOpacity>
@@ -426,6 +420,9 @@ export const GroundingScreenView: React.FC = () => {
               activeOpacity={0.7}
               onPress={togglePlayPause}
               style={styles.dockButton}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={isPlaying ? "Pause soundscape" : "Play soundscape"}
             >
               {isPlaying ? (
                 <PauseFillIcon size={28} weight="bold" color="#FFFFFF" />
@@ -444,6 +441,9 @@ export const GroundingScreenView: React.FC = () => {
                 setActiveOverlay('editTimer');
               }}
               style={styles.dockButton}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Edit session timer"
             >
               <PencilIcon size={21.4} weight="medium" color="#FFFFFF" />
             </TouchableOpacity>
@@ -453,6 +453,9 @@ export const GroundingScreenView: React.FC = () => {
               activeOpacity={0.7}
               onPress={selectNextSound}
               style={styles.dockButton}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Next soundscape"
             >
               <ChevronRightIcon size={21.4} weight="semibold" color="#FFFFFF" />
             </TouchableOpacity>
@@ -487,21 +490,24 @@ export const GroundingScreenView: React.FC = () => {
             activeOpacity={0.7}
             onPress={() => {
               hapticManager.playTransientHeartbeat(0.5, 0.6);
-              if (isPlaying) {
-                if (remainingTimerSeconds <= 0) {
-                  setIsPlaying(false);
-                  setTimerEndTimestamp(null);
-                  audioManager.setSleepTimerTargetDate(null);
-                  audioManager.pause();
-                } else {
+              if (remainingTimerSeconds > 0) {
+                setIsTimerActive(true);
+                if (isPlaying) {
                   const end = Date.now() + remainingTimerSeconds * 1000;
                   setTimerEndTimestamp(end);
                   audioManager.setSleepTimerTargetDate(new Date(end));
                 }
+              } else {
+                setIsTimerActive(false);
+                setTimerEndTimestamp(null);
+                audioManager.setSleepTimerTargetDate(null);
               }
               setActiveOverlay('none');
             }}
             style={[styles.confirmCheckButton, { bottom: 36 }]}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Confirm timer duration"
           >
             <CheckmarkIcon size={21.4} weight="bold" color="#FFFFFF" shadowType="confirm" />
           </TouchableOpacity>
@@ -517,25 +523,21 @@ export const GroundingScreenView: React.FC = () => {
           isPlaying={isPlaying}
           onSelectSound={(profile) => {
             setActiveProfileState(profile);
-            const wasTimerOver = remainingTimerSeconds <= 0;
-            let dur = remainingTimerSeconds;
-            if (wasTimerOver) {
-              dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
-              setRemainingTimerSeconds(dur);
-              if (totalTimerDuration <= 0) {
-                setTotalTimerDuration(dur);
-              }
+            if (!isPlaying) {
+              setIsPlaying(true);
             }
-            setIsPlaying(true);
-            const end = Date.now() + dur * 1000;
-            setTimerEndTimestamp(end);
-            audioManager.setSleepTimerTargetDate(new Date(end));
+            if (isTimerActive && remainingTimerSeconds > 0) {
+              const end = Date.now() + remainingTimerSeconds * 1000;
+              setTimerEndTimestamp(end);
+              audioManager.setSleepTimerTargetDate(new Date(end));
+            } else {
+              setTimerEndTimestamp(null);
+              audioManager.setSleepTimerTargetDate(null);
+            }
             setActiveOverlay('none');
             audioManager.setActiveProfile(profile);
 
-            if (wasTimerOver) {
-              audioManager.restartFromStart();
-            } else if (!audioManager.isAudioPlaying) {
+            if (!audioManager.isAudioPlaying) {
               audioManager.start();
             }
           }}

@@ -101,6 +101,7 @@ export const TallFusedMeasuringLinesView: React.FC<TallFusedMeasuringLinesViewPr
   // Render loop
   useEffect(() => {
     let animId: number;
+    let lastNativeUpdateMs = 0;
 
     const render = (nowMs: number) => {
       const time = nowMs / 1000.0;
@@ -222,8 +223,10 @@ export const TallFusedMeasuringLinesView: React.FC<TallFusedMeasuringLinesViewPr
           }
         }
       } else {
-        // Native SVG calculations
-        const particleList: Array<{ x: number; y: number; r: number; opacity: number }> = [];
+        // Native SVG calculations throttled to ~25 FPS (40ms) to save CPU & battery
+        if (nowMs - lastNativeUpdateMs >= 40) {
+          lastNativeUpdateMs = nowMs;
+          const particleList: Array<{ x: number; y: number; r: number; opacity: number }> = [];
         const numParticles = 12;
         for (let i = 0; i < numParticles; i++) {
           const seed = i * 137.5;
@@ -311,6 +314,7 @@ export const TallFusedMeasuringLinesView: React.FC<TallFusedMeasuringLinesViewPr
         }
 
         setNativeFrame({ particles: particleList, lines: lineList });
+        }
       }
 
       animId = requestAnimationFrame(render);

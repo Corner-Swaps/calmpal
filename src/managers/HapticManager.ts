@@ -26,7 +26,7 @@ export class HapticManager {
   private smoothedSharpness: number = 0.0;
   private lastSentIntensity: number = -1.0;
   private lastSentSharpness: number = -1.0;
-  private tickInterval: any = null;
+  private tickInterval: ReturnType<typeof setInterval> | null = null;
 
   private constructor() {
     this.checkHardwareSupport();

@@ -1,16 +1,17 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Image,
   Platform,
+  ListRenderItemInfo,
 } from 'react-native';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import { SoundProfile } from '../models/SoundProfile';
-import { allSoundBanners } from '../models/SoundBannerTheme';
+import { allSoundBanners, SoundBannerTheme } from '../models/SoundBannerTheme';
 import { THUMB_ASSETS } from '../assets/assetMap';
 import { HapticManager } from '../managers/HapticManager';
 import { CheckmarkIcon, XMarkIcon } from './SFSymbols';
@@ -33,76 +34,104 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
   onSelectSound,
   onClose,
 }) => {
-  const scrollViewRef = useRef<ScrollView | null>(null);
+  const flatListRef = useRef<FlatList<SoundBannerTheme> | null>(null);
 
   // Auto-scroll to active track on appear
   useEffect(() => {
     const activeIndex = allSoundBanners.findIndex((b) => b.profile === activeProfile);
-    if (activeIndex >= 0 && scrollViewRef.current) {
-      // Calculate target Y so card is roughly centered
-      const targetY = Math.max(0, activeIndex * CARD_HEIGHT + 54 - (screenHeight - CARD_HEIGHT) / 2);
+    if (activeIndex >= 0 && flatListRef.current) {
       setTimeout(() => {
-        scrollViewRef.current?.scrollTo({ y: targetY, animated: false });
+        flatListRef.current?.scrollToIndex({
+          index: activeIndex,
+          animated: false,
+          viewPosition: 0.5,
+        });
       }, 50);
     }
-  }, [activeProfile, screenHeight]);
+  }, [activeProfile]);
+
+  const renderItem = useCallback(
+    ({ item: banner }: ListRenderItemInfo<SoundBannerTheme>) => {
+      const isThisActive = banner.profile === activeProfile;
+      const thumbSource = THUMB_ASSETS[banner.thumbnailImageName];
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.88}
+          onPress={() => {
+            HapticManager.shared.playTransientHeartbeat(0.5, 0.6);
+            onSelectSound(banner.profile);
+          }}
+          style={[styles.card, { width: screenWidth, height: CARD_HEIGHT }]}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`${banner.title} soundscape${isThisActive ? ', currently playing' : ''}`}
+          accessibilityHint="Double tap to play this soundscape"
+        >
+          {/* Sound Scenic Background Thumbnail */}
+          {thumbSource && (
+            <Image
+              source={thumbSource}
+              resizeMode="cover"
+              style={[styles.cardImage, { width: screenWidth, height: CARD_HEIGHT }]}
+            />
+          )}
+
+          {/* Dark Tint for High Contrast Legibility */}
+          <View
+            style={[
+              styles.cardTint,
+              {
+                width: screenWidth,
+                height: CARD_HEIGHT,
+                backgroundColor: isThisActive ? 'rgba(0, 0, 0, 0.22)' : 'rgba(0, 0, 0, 0.38)',
+              },
+            ]}
+          />
+
+          {/* Content Row: Title on Left, Pure White Checkmark on Right */}
+          <View style={[styles.cardContent, { width: screenWidth, height: CARD_HEIGHT }]}>
+            <Text style={styles.cardTitle}>{banner.title}</Text>
+
+            {isThisActive && (
+              <CheckmarkIcon size={20} weight="bold" color="#FFFFFF" shadowType="list" />
+            )}
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [activeProfile, screenWidth, onSelectSound]
+  );
 
   return (
     <View style={[styles.container, { width: screenWidth, height: screenHeight }]}>
-      {/* 1. Vertical Soundscapes Scroll View */}
-      <ScrollView
-        ref={scrollViewRef}
+      {/* 1. Virtualized Vertical Soundscapes FlatList */}
+      <FlatList
+        ref={flatListRef}
+        data={allSoundBanners}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={5}
+        getItemLayout={(_, index) => ({
+          length: CARD_HEIGHT,
+          offset: CARD_HEIGHT * index,
+          index,
+        })}
+        onScrollToIndexFailed={(info) => {
+          setTimeout(() => {
+            flatListRef.current?.scrollToIndex({
+              index: info.index,
+              animated: false,
+              viewPosition: 0.5,
+            });
+          }, 100);
+        }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         style={{ width: screenWidth, height: screenHeight }}
-      >
-        {allSoundBanners.map((banner) => {
-          const isThisActive = banner.profile === activeProfile;
-          const thumbSource = THUMB_ASSETS[banner.thumbnailImageName];
-
-          return (
-            <TouchableOpacity
-              key={banner.id}
-              activeOpacity={0.88}
-              onPress={() => {
-                HapticManager.shared.playTransientHeartbeat(0.5, 0.6);
-                onSelectSound(banner.profile);
-              }}
-              style={[styles.card, { width: screenWidth, height: CARD_HEIGHT }]}
-            >
-              {/* Sound Scenic Background Thumbnail */}
-              {thumbSource && (
-                <Image
-                  source={thumbSource}
-                  resizeMode="cover"
-                  style={[styles.cardImage, { width: screenWidth, height: CARD_HEIGHT }]}
-                />
-              )}
-
-              {/* Dark Tint for High Contrast Legibility */}
-              <View
-                style={[
-                  styles.cardTint,
-                  {
-                    width: screenWidth,
-                    height: CARD_HEIGHT,
-                    backgroundColor: isThisActive ? 'rgba(0, 0, 0, 0.22)' : 'rgba(0, 0, 0, 0.38)',
-                  },
-                ]}
-              />
-
-              {/* Content Row: Title on Left, Pure White Checkmark on Right */}
-              <View style={[styles.cardContent, { width: screenWidth, height: CARD_HEIGHT }]}>
-                <Text style={styles.cardTitle}>{banner.title}</Text>
-
-                {isThisActive && (
-                  <CheckmarkIcon size={20} weight="bold" color="#FFFFFF" shadowType="list" />
-                )}
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      />
 
       {/* 2. Top Status Bar Fade Scrim */}
       <View style={[styles.topScrim, { width: screenWidth }]} pointerEvents="none">
@@ -141,6 +170,9 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
           onClose();
         }}
         style={styles.closeButton}
+        accessible={true}
+        accessibilityRole="button"
+        accessibilityLabel="Close relaxing sounds library"
       >
         <XMarkIcon size={21.4} weight="bold" color="#FFFFFF" shadowType="confirm" />
       </TouchableOpacity>
