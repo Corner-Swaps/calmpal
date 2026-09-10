@@ -1,0 +1,29 @@
+diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
+index 0742943..97ae067 100644
+--- a/node_modules/expo-audio/ios/AudioPlayer.swift
++++ b/node_modules/expo-audio/ios/AudioPlayer.swift
+@@ -231,6 +231,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+         if self.isLooping {
+           self.enqueueNextLoopItem()
+           self.addPlaybackEndNotification()
++          self.ref.playImmediately(atRate: self.effectiveRate)
+         }
+         if self.samplingEnabled && self.isLoaded {
+           self.uninstallTap()
+@@ -467,6 +468,16 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+           "didJustFinish": true
+         ])
+         self.onPlaybackComplete?()
++      } else {
++        self.enqueueNextLoopItem()
++        if queuePlayer.currentItem == finishedItem {
++          if queuePlayer.items().count > 1 {
++            queuePlayer.advanceToNextItem()
++          } else {
++            queuePlayer.seek(to: .zero)
++          }
++        }
++        self.ref.playImmediately(atRate: self.effectiveRate)
+       }
+     }
+   }

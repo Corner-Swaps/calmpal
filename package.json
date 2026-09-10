@@ -22,6 +22,7 @@
     "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
     "jest": "^30.5.1",
+    "patch-package": "^8.0.1",
     "ts-jest": "^29.4.12",
     "typescript": "~6.0.3"
   },
@@ -31,7 +32,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "bundle:ios": "npx expo export:embed --entry-file index.ts --platform ios --dev false --bundle-output /tmp/calmpal-bundle.js --assets-dest /tmp/calmpal-assets && ios/Pods/hermes-engine/destroot/bin/hermesc -emit-binary -max-diagnostic-width=80 -O -out ios/main.jsbundle /tmp/calmpal-bundle.js && cp -R /tmp/calmpal-assets/* ios/assets/ 2>/dev/null || true",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "patch-package"
   },
   "private": true
 }

@@ -33,7 +33,6 @@ export class AudioManager {
   private sleepTimerTimeout: any = null;
   private sleepFadeTimeout: any = null;
   private fadeInterval: any = null;
-  private playerStatusSubscription: any = null;
   private isAudioConfigured: boolean = false;
 
   private constructor() {
@@ -168,12 +167,6 @@ export class AudioManager {
       clearInterval(this.fadeInterval);
       this.fadeInterval = null;
     }
-    if (this.playerStatusSubscription) {
-      try {
-        this.playerStatusSubscription.remove();
-      } catch {}
-      this.playerStatusSubscription = null;
-    }
     if (Platform.OS === 'web') {
       if (this.webAudioElement) {
         try {
@@ -223,26 +216,6 @@ export class AudioManager {
         });
         player.loop = true;
         player.volume = currentTargetVolume;
-
-        // Auto-loop failsafe: ensure continuous playback when native queue ends
-        if (typeof player.addListener === 'function') {
-          this.playerStatusSubscription = player.addListener('playbackStatusUpdate', (status) => {
-            if (this.isAudioPlaying) {
-              if (
-                status.didJustFinish ||
-                (!status.playing && status.isLoaded && !status.isBuffering && status.duration > 0 && status.currentTime >= Math.max(0, status.duration - 0.5))
-              ) {
-                try {
-                  player.seekTo(0);
-                  player.play();
-                } catch (e) {
-                  console.warn('[AudioManager] Loop fallback error:', e);
-                }
-              }
-            }
-          });
-        }
-
         player.play();
         this.audioPlayer = player;
         this.isAudioPlaying = true;
