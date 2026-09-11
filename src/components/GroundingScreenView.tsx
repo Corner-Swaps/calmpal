@@ -51,7 +51,6 @@ export const GroundingScreenView: React.FC = () => {
   const [remainingTimerSeconds, setRemainingTimerSeconds] = useState<number>(600.0); // Default 10 min for timer editor
   const [totalTimerDuration, setTotalTimerDuration] = useState<number>(600.0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isTimerActive, setIsTimerActive] = useState<boolean>(false); // Infinite continuous play by default
   const [activeOverlay, setActiveOverlay] = useState<ActiveScreenOverlay>('none');
   const [isDraggingTimer, setIsDraggingTimer] = useState<boolean>(false);
   const [isZenMode, setIsZenMode] = useState<boolean>(false);
@@ -71,18 +70,18 @@ export const GroundingScreenView: React.FC = () => {
     return () => unsubscribe();
   }, [audioManager]);
 
-  // 1-second countdown ticker only when a timer is explicitly active
+  // 1-second countdown ticker when playback is active
   useEffect(() => {
-    if (!isPlaying || !isTimerActive || isDraggingTimer || activeOverlay === 'editTimer' || timerEndTimestamp === null) {
+    if (!isPlaying || isDraggingTimer || activeOverlay === 'editTimer' || timerEndTimestamp === null) {
       return;
     }
 
     const interval = setInterval(() => {
       const leftSec = (timerEndTimestamp - Date.now()) / 1000;
       if (leftSec <= 0) {
-        setRemainingTimerSeconds(0);
+        const resetDuration = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
+        setRemainingTimerSeconds(resetDuration);
         setIsPlaying(false);
-        setIsTimerActive(false);
         setTimerEndTimestamp(null);
         audioManager.setSleepTimerTargetDate(null);
         audioManager.stop();
@@ -92,7 +91,7 @@ export const GroundingScreenView: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isPlaying, isTimerActive, isDraggingTimer, activeOverlay, timerEndTimestamp, audioManager]);
+  }, [isPlaying, isDraggingTimer, activeOverlay, timerEndTimestamp, totalTimerDuration, audioManager]);
 
   // Instagram glow animation
   const triggerInstagramGlow = useCallback(() => {
@@ -108,24 +107,21 @@ export const GroundingScreenView: React.FC = () => {
     setIsPlaying(willPlay);
 
     if (willPlay) {
-      if (isTimerActive && remainingTimerSeconds > 0) {
-        const end = Date.now() + remainingTimerSeconds * 1000;
-        setTimerEndTimestamp(end);
-        audioManager.setSleepTimerTargetDate(new Date(end));
-      } else {
-        setTimerEndTimestamp(null);
-        audioManager.setSleepTimerTargetDate(null);
-      }
+      const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
+      const end = Date.now() + dur * 1000;
+      setRemainingTimerSeconds(dur);
+      setTimerEndTimestamp(end);
+      audioManager.setSleepTimerTargetDate(new Date(end));
       await audioManager.resume();
     } else {
-      if (isTimerActive && timerEndTimestamp !== null) {
+      if (timerEndTimestamp !== null) {
         setRemainingTimerSeconds(Math.max(0, (timerEndTimestamp - Date.now()) / 1000));
-        setTimerEndTimestamp(null);
       }
+      setTimerEndTimestamp(null);
       audioManager.setSleepTimerTargetDate(null);
       await audioManager.pause();
     }
-  }, [isPlaying, isTimerActive, remainingTimerSeconds, timerEndTimestamp, audioManager, hapticManager]);
+  }, [isPlaying, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, audioManager, hapticManager]);
 
   const selectPreviousSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
@@ -142,19 +138,18 @@ export const GroundingScreenView: React.FC = () => {
       setIsPlaying(true);
     }
 
-    if (isTimerActive && remainingTimerSeconds > 0) {
-      const end = Date.now() + remainingTimerSeconds * 1000;
+    if (timerEndTimestamp === null) {
+      const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
+      const end = Date.now() + dur * 1000;
+      setRemainingTimerSeconds(dur);
       setTimerEndTimestamp(end);
       audioManager.setSleepTimerTargetDate(new Date(end));
-    } else {
-      setTimerEndTimestamp(null);
-      audioManager.setSleepTimerTargetDate(null);
     }
 
     if (!audioManager.isAudioPlaying) {
       await audioManager.start();
     }
-  }, [activeProfile, isTimerActive, remainingTimerSeconds, isPlaying, audioManager, hapticManager]);
+  }, [activeProfile, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, isPlaying, audioManager, hapticManager]);
 
   const selectNextSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
@@ -171,19 +166,18 @@ export const GroundingScreenView: React.FC = () => {
       setIsPlaying(true);
     }
 
-    if (isTimerActive && remainingTimerSeconds > 0) {
-      const end = Date.now() + remainingTimerSeconds * 1000;
+    if (timerEndTimestamp === null) {
+      const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
+      const end = Date.now() + dur * 1000;
+      setRemainingTimerSeconds(dur);
       setTimerEndTimestamp(end);
       audioManager.setSleepTimerTargetDate(new Date(end));
-    } else {
-      setTimerEndTimestamp(null);
-      audioManager.setSleepTimerTargetDate(null);
     }
 
     if (!audioManager.isAudioPlaying) {
       await audioManager.start();
     }
-  }, [activeProfile, isTimerActive, remainingTimerSeconds, isPlaying, audioManager, hapticManager]);
+  }, [activeProfile, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, isPlaying, audioManager, hapticManager]);
 
   // Keep mutable callback refs to avoid stale closures in panResponder
   const togglePlayPauseRef = useRef(togglePlayPause);
@@ -490,15 +484,12 @@ export const GroundingScreenView: React.FC = () => {
             activeOpacity={0.7}
             onPress={() => {
               hapticManager.playTransientHeartbeat(0.5, 0.6);
-              if (remainingTimerSeconds > 0) {
-                setIsTimerActive(true);
-                if (isPlaying) {
-                  const end = Date.now() + remainingTimerSeconds * 1000;
-                  setTimerEndTimestamp(end);
-                  audioManager.setSleepTimerTargetDate(new Date(end));
-                }
+              if (isPlaying) {
+                const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
+                const end = Date.now() + dur * 1000;
+                setTimerEndTimestamp(end);
+                audioManager.setSleepTimerTargetDate(new Date(end));
               } else {
-                setIsTimerActive(false);
                 setTimerEndTimestamp(null);
                 audioManager.setSleepTimerTargetDate(null);
               }
@@ -526,13 +517,12 @@ export const GroundingScreenView: React.FC = () => {
             if (!isPlaying) {
               setIsPlaying(true);
             }
-            if (isTimerActive && remainingTimerSeconds > 0) {
-              const end = Date.now() + remainingTimerSeconds * 1000;
+            if (timerEndTimestamp === null) {
+              const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
+              const end = Date.now() + dur * 1000;
+              setRemainingTimerSeconds(dur);
               setTimerEndTimestamp(end);
               audioManager.setSleepTimerTargetDate(new Date(end));
-            } else {
-              setTimerEndTimestamp(null);
-              audioManager.setSleepTimerTargetDate(null);
             }
             setActiveOverlay('none');
             audioManager.setActiveProfile(profile);

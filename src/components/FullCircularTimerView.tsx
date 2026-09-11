@@ -23,7 +23,7 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
     if (!isPlaying || timerEndTimestamp === null) return;
     const interval = setInterval(() => {
       setTick((prev) => (prev + 1) % 1000000);
-    }, 100);
+    }, 50);
 
     return () => clearInterval(interval);
   }, [isPlaying, timerEndTimestamp]);
