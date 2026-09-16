@@ -142,5 +142,14 @@ describe('Calmpal Logic & Data Model Parity Tests', () => {
       audio.setSleepTimerTargetDate(null);
       expect(audio.sleepTimerTargetDate).toBeNull();
     });
+
+    it('stops playback immediately when scheduled timer is in the past', () => {
+      const audio = AudioManager.shared;
+      audio.isAudioPlaying = true;
+      const past = new Date(Date.now() - 1000);
+      audio.setSleepTimerTargetDate(past);
+      expect(audio.isAudioPlaying).toBe(false);
+      expect(audio.sleepTimerTargetDate).toBeNull();
+    });
   });
 });

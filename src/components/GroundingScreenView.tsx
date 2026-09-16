@@ -10,9 +10,11 @@ import {
   Platform,
   useWindowDimensions,
   Animated,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
+import Svg, { Defs, LinearGradient as SvgLinearGradient, RadialGradient, Stop, Rect } from 'react-native-svg';
 import {
   SunMaxIcon,
   MoonFillIcon,
@@ -61,13 +63,59 @@ export const GroundingScreenView: React.FC = () => {
   const audioManager = AudioManager.shared;
   const hapticManager = HapticManager.shared;
 
+  const timerEndTimestampRef = useRef<number | null>(timerEndTimestamp);
+  timerEndTimestampRef.current = timerEndTimestamp;
+
+  const totalTimerDurationRef = useRef<number>(totalTimerDuration);
+  totalTimerDurationRef.current = totalTimerDuration;
+
+  const isPlayingRef = useRef<boolean>(isPlaying);
+  isPlayingRef.current = isPlaying;
+
   // Sync state with AudioManager singleton
   useEffect(() => {
     const unsubscribe = audioManager.subscribe((state) => {
       setActiveProfileState(state.activeProfile);
       setIsPlaying(state.isPlaying);
+      if (!state.isPlaying && timerEndTimestampRef.current !== null && timerEndTimestampRef.current <= Date.now()) {
+        const resetDuration = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
+        setRemainingTimerSeconds(resetDuration);
+        setTimerEndTimestamp(null);
+      }
     });
     return () => unsubscribe();
+  }, [audioManager]);
+
+  // Immediate foreground resync when returning from background or lockscreen
+  useEffect(() => {
+    if (Platform.OS === 'web' || !AppState || typeof AppState.addEventListener !== 'function') {
+      return;
+    }
+
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (nextState === 'active') {
+        const end = timerEndTimestampRef.current;
+        if (end !== null) {
+          const now = Date.now();
+          if (end <= now) {
+            // Timer expired while in background
+            const resetDuration = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
+            setRemainingTimerSeconds(resetDuration);
+            setIsPlaying(false);
+            setTimerEndTimestamp(null);
+            audioManager.setSleepTimerTargetDate(null);
+            audioManager.stop();
+          } else if (isPlayingRef.current) {
+            // Still playing, sync immediately without waiting for 1-second ticker interval
+            setRemainingTimerSeconds((end - now) / 1000);
+          }
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, [audioManager]);
 
   // 1-second countdown ticker when playback is active
@@ -205,13 +253,13 @@ export const GroundingScreenView: React.FC = () => {
         const vertical = gesture.dy;
         const vx = gesture.vx;
 
-        // Either enough drag distance (> 20pt) or quick flick velocity (> 0.25)
+        // Either enough drag distance (>= 22pt) or quick flick velocity (> 0.25)
         const isHorizontalSwipe =
-          (Math.abs(horizontal) > 20 || Math.abs(vx) > 0.25) &&
-          Math.abs(horizontal) > Math.abs(vertical) * 0.7;
+          (Math.abs(horizontal) >= 22 || Math.abs(vx) > 0.25) &&
+          Math.abs(horizontal) > Math.abs(vertical) * 0.65;
 
         if (isHorizontalSwipe) {
-          const isLeft = Math.abs(horizontal) > 20 ? horizontal < 0 : vx < 0;
+          const isLeft = Math.abs(horizontal) >= 22 ? horizontal < 0 : vx < 0;
           if (isLeft) {
             // Swiped Left -> Bring to Next sound (infinite wrap-around: last -> first)
             selectNextSoundRef.current();
@@ -220,8 +268,8 @@ export const GroundingScreenView: React.FC = () => {
             selectPreviousSoundRef.current();
           }
         } else {
-          // Tap / micro-drag: only if small movement (< 15pt) and low velocity
-          if (Math.abs(horizontal) < 15 && Math.abs(vertical) < 15 && Math.abs(vx) < 0.2) {
+          // Responsive tap: zero dead zone for micro-movements under 22pt
+          if (Math.abs(horizontal) < 22 && Math.abs(vertical) < 22) {
             if (isArtistInfoVisibleRef.current) {
               setIsArtistInfoVisible(false);
             } else {
@@ -344,6 +392,20 @@ export const GroundingScreenView: React.FC = () => {
 
             {isArtistInfoVisible && artistCredit && (
               <View style={styles.artistProfileContainer}>
+                {/* Subtle dark radial vignette for optimal outdoor contrast against bright backdrops like snow peaks */}
+                <View style={[StyleSheet.absoluteFill, styles.artistVignetteContainer]} pointerEvents="none">
+                  <Svg width={340} height={340} viewBox="0 0 340 340">
+                    <Defs>
+                      <RadialGradient id="artistVignette" cx="50%" cy="50%" rx="50%" ry="50%" fx="50%" fy="50%">
+                        <Stop offset="0%" stopColor="#000000" stopOpacity="0.55" />
+                        <Stop offset="65%" stopColor="#000000" stopOpacity="0.25" />
+                        <Stop offset="100%" stopColor="#000000" stopOpacity="0" />
+                      </RadialGradient>
+                    </Defs>
+                    <Rect x="0" y="0" width={340} height={340} fill="url(#artistVignette)" />
+                  </Svg>
+                </View>
+
                 <Text style={styles.artistNameText}>{artistCredit.name}</Text>
 
                 <TouchableOpacity
@@ -584,6 +646,11 @@ const styles = StyleSheet.create({
     height: 318,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  artistVignetteContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   artistNameText: {
     fontSize: 36.8,
@@ -595,9 +662,9 @@ const styles = StyleSheet.create({
       ios: { fontFamily: 'System' },
       web: { fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Rounded", Roboto, sans-serif' },
     }),
-    textShadowColor: 'rgba(0, 0, 0, 0.85)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.95)',
+    textShadowOffset: { width: 0, height: 2.5 },
+    textShadowRadius: 10,
   },
   instagramCapsule: {
     flexDirection: 'row',

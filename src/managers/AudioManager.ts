@@ -40,9 +40,14 @@ export class AudioManager {
     if (Platform.OS !== 'web' && AppState && typeof AppState.addEventListener === 'function') {
       AppState.addEventListener('change', (state: AppStateStatus) => {
         if (state === 'active') {
-          if (this.sleepTimerTargetDate && this.sleepTimerTargetDate.getTime() <= Date.now()) {
-            this.stop();
-            return;
+          if (this.sleepTimerTargetDate) {
+            if (this.sleepTimerTargetDate.getTime() <= Date.now()) {
+              this.stop();
+              return;
+            } else if (this.isAudioPlaying) {
+              // Reschedule timer to guarantee accurate expiration after device sleep
+              this.scheduleSleepTimer();
+            }
           }
           if (this.isAudioPlaying && this.audioPlayer) {
             try {
@@ -112,7 +117,7 @@ export class AudioManager {
 
     if (intervalMs <= 0) {
       if (this.isAudioPlaying) {
-        this.pause();
+        this.stop();
       }
       this.sleepTimerTargetDate = null;
       return;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import Svg, { Circle } from 'react-native-svg';
+import Svg, { Circle, G } from 'react-native-svg';
 import { formatNoLeadingZeroHours } from '../models/TimeUtils';
 
 interface FullCircularTimerViewProps {
@@ -66,27 +66,31 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
         />
 
         {/* Foreground Animated Flowing Remaining Arc */}
-        <Circle
-          cx={radius}
-          cy={radius}
-          r={trackRadius}
-          stroke="#FFFFFF"
-          strokeWidth={4.5}
-          strokeLinecap="round"
-          strokeDasharray={`${circumference}`}
-          strokeDashoffset={strokeDashoffset}
-          fill="none"
-          origin={`${radius}, ${radius}`}
-          rotation={-90}
-        />
+        {progress > 0.005 && (
+          <G>
+            <Circle
+              cx={radius}
+              cy={radius}
+              r={trackRadius}
+              stroke="#FFFFFF"
+              strokeWidth={4.5}
+              strokeLinecap="round"
+              strokeDasharray={`${circumference}`}
+              strokeDashoffset={strokeDashoffset}
+              fill="none"
+              origin={`${radius}, ${radius}`}
+              rotation={-90}
+            />
 
-        {/* Minimal Little White Dot */}
-        <Circle
-          cx={dotX}
-          cy={dotY}
-          r={5}
-          fill="#FFFFFF"
-        />
+            {/* Minimal Little White Dot */}
+            <Circle
+              cx={dotX}
+              cy={dotY}
+              r={5}
+              fill="#FFFFFF"
+            />
+          </G>
+        )}
       </Svg>
 
       {/* Center Digital Countdown */}
