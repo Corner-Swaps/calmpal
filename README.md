@@ -47,7 +47,7 @@ Calmpal is architected from the ground up to be **completely private, offline-fi
 calmpal/
 ├── src/
 │   ├── components/            # UI components (GroundingScreenView, CircularTimer, ErrorBoundary, etc.)
-│   ├── models/                # Data models (SoundProfile, SoundBannerTheme, TimeUtils, Theme)
+│   ├── models/                # Data models (SoundProfile, SoundBannerTheme, TimeUtils)
 │   ├── managers/              # Singletons (AudioManager, HapticManager)
 │   ├── assets/                # Statically typed asset resolution maps
 │   └── __tests__/             # Parity and logic unit test suites
@@ -118,6 +118,15 @@ The codebase maintains 100% strict verification standards:
 - **Contributing**: Please review our [Contributing Guide](CONTRIBUTING.md) for code style, pre-push quality gates, and branching rules.
 - **Security**: View our [Security Policy](SECURITY.md) to report vulnerabilities responsibly.
 - **Code of Conduct**: We adhere to the [Contributor Covenant](CODE_OF_CONDUCT.md).
+
+---
+
+## Legal, Licensing & Disclaimers
+
+- **Asset Licensing & Register**: See [LEGAL_AND_LICENSING.md](LEGAL_AND_LICENSING.md) for full compliance details on all 35 soundscapes and visual assets. All 34 ambient tracks are royalty-free field recordings. *Surrender* ("Enlightened Darkness") is composed by Jeff Oster and included with express artist authorization.
+- **Privacy First**: Calmpal does not track, collect, or transmit personal data or analytics. All settings, timers, and audio playback are executed strictly local on-device.
+- **Safety Warning**: Calmpal's soundscapes are engineered for deep relaxation and sleep. **Do not use while driving, operating a motor vehicle, or handling dangerous machinery.**
+- **Non-Medical**: Calmpal is not a medical device and is not intended to treat, diagnose, or cure clinical insomnia, anxiety disorders, or medical conditions.
 
 ---
 
