@@ -34,6 +34,7 @@ export class AudioManager {
   private sleepFadeTimeout: ReturnType<typeof setTimeout> | null = null;
   private fadeInterval: ReturnType<typeof setInterval> | null = null;
   private isAudioConfigured: boolean = false;
+  private currentPlayRequestId: number = 0;
 
   private constructor() {
     this.configureAudioSession();
@@ -183,6 +184,7 @@ export class AudioManager {
   }
 
   private async unloadCurrentSound() {
+    this.currentPlayRequestId++;
     if (this.fadeInterval) {
       clearInterval(this.fadeInterval);
       this.fadeInterval = null;
@@ -207,7 +209,10 @@ export class AudioManager {
   }
 
   private async loadAndPlay(profile: SoundProfile) {
+    const requestId = ++this.currentPlayRequestId;
     await this.configureAudioSession();
+    if (requestId !== this.currentPlayRequestId) return;
+
     const resourceFile = SOUND_PROFILE_RESOURCE_FILES[profile];
     const asset = SOUND_ASSETS[resourceFile];
 
@@ -221,11 +226,19 @@ export class AudioManager {
           audio.loop = true;
           audio.volume = currentTargetVolume;
           await audio.play();
+          if (requestId !== this.currentPlayRequestId) {
+            try {
+              audio.pause();
+              audio.src = '';
+            } catch {}
+            return;
+          }
           this.webAudioElement = audio;
         }
         this.isAudioPlaying = true;
       } catch (err) {
         console.warn('[AudioManager Web] Audio play error:', err);
+        if (requestId !== this.currentPlayRequestId) return;
         this.isAudioPlaying = true;
       }
     } else {
@@ -234,6 +247,12 @@ export class AudioManager {
           keepAudioSessionActive: true,
           updateInterval: 500,
         });
+        if (requestId !== this.currentPlayRequestId) {
+          try {
+            player.release();
+          } catch {}
+          return;
+        }
         player.loop = true;
         player.volume = currentTargetVolume;
         player.play();
@@ -241,6 +260,7 @@ export class AudioManager {
         this.isAudioPlaying = true;
       } catch (err) {
         console.warn('[AudioManager Native] Sound create error:', err);
+        if (requestId !== this.currentPlayRequestId) return;
         this.isAudioPlaying = true;
       }
     }
@@ -271,6 +291,7 @@ export class AudioManager {
   }
 
   public async pause() {
+    this.currentPlayRequestId++;
     if (!this.isAudioPlaying) return;
     if (this.sleepFadeTimeout) {
       clearTimeout(this.sleepFadeTimeout);

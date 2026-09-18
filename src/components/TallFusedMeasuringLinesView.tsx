@@ -51,8 +51,9 @@ export const TallFusedMeasuringLinesView: React.FC<TallFusedMeasuringLinesViewPr
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt) => {
         const { locationX, locationY } = evt.nativeEvent;
-        // Ignore touches near bottom checkmark area (bottom 80px)
-        if (locationY >= height - 80) return;
+        // Ignore touches directly over center checkmark button (center 90px width, bottom 90px height)
+        const isNearCheckmark = locationY >= height - 90 && Math.abs(locationX - width / 2) < 45;
+        if (isNearCheckmark) return;
 
         onDragStateChange(true);
         touchLocationRef.current = { x: locationX, y: locationY };
@@ -60,7 +61,8 @@ export const TallFusedMeasuringLinesView: React.FC<TallFusedMeasuringLinesViewPr
         dragVelocityRef.current = 0;
       },
       onPanResponderMove: (evt, gestureState) => {
-        if (gestureState.y0 >= height - 80) return;
+        const isNearCheckmark = gestureState.y0 >= height - 90 && Math.abs(gestureState.x0 - width / 2) < 45;
+        if (isNearCheckmark) return;
 
         const { moveX, moveY } = gestureState;
         touchLocationRef.current = { x: moveX, y: moveY };

@@ -9,6 +9,7 @@ import {
   Platform,
   ListRenderItemInfo,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
 import { SoundProfile } from '../models/SoundProfile';
 import { allSoundBanners, SoundBannerTheme } from '../models/SoundBannerTheme';
@@ -34,6 +35,12 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
   onSelectSound,
   onClose,
 }) => {
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(54, insets.top + 8);
+  const bottomButtonOffset = Math.max(36, insets.bottom + 12);
+  const topScrimHeight = Math.max(60, insets.top + 24);
+  const bottomScrimHeight = Math.max(85, insets.bottom + 55);
+
   const flatListRef = useRef<FlatList<SoundBannerTheme> | null>(null);
 
   // Auto-scroll to active track on appear
@@ -129,13 +136,13 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
           }, 100);
         }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: topPadding, paddingBottom: bottomButtonOffset + 58 }]}
         style={{ width: screenWidth, height: screenHeight }}
       />
 
       {/* 2. Top Status Bar Fade Scrim */}
-      <View style={[styles.topScrim, { width: screenWidth }]} pointerEvents="none">
-        <Svg width={screenWidth} height={60}>
+      <View style={[styles.topScrim, { width: screenWidth, height: topScrimHeight }]} pointerEvents="none">
+        <Svg width={screenWidth} height={topScrimHeight}>
           <Defs>
             <SvgLinearGradient id="topScrimGrad" x1="0" y1="0" x2="0" y2="1">
               <Stop offset="0" stopColor="#000000" stopOpacity="0.85" />
@@ -143,13 +150,13 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
               <Stop offset="1" stopColor="#000000" stopOpacity="0" />
             </SvgLinearGradient>
           </Defs>
-          <Rect x="0" y="0" width={screenWidth} height={60} fill="url(#topScrimGrad)" />
+          <Rect x="0" y="0" width={screenWidth} height={topScrimHeight} fill="url(#topScrimGrad)" />
         </Svg>
       </View>
 
       {/* 3. Ultra-Smooth Bottom Fade Scrim */}
-      <View style={[styles.bottomScrim, { width: screenWidth }]} pointerEvents="none">
-        <Svg width={screenWidth} height={85}>
+      <View style={[styles.bottomScrim, { width: screenWidth, height: bottomScrimHeight }]} pointerEvents="none">
+        <Svg width={screenWidth} height={bottomScrimHeight}>
           <Defs>
             <SvgLinearGradient id="bottomScrimGrad" x1="0" y1="0" x2="0" y2="1">
               <Stop offset="0" stopColor="#000000" stopOpacity="0" />
@@ -158,7 +165,7 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
               <Stop offset="1" stopColor="#000000" stopOpacity="0.95" />
             </SvgLinearGradient>
           </Defs>
-          <Rect x="0" y="0" width={screenWidth} height={85} fill="url(#bottomScrimGrad)" />
+          <Rect x="0" y="0" width={screenWidth} height={bottomScrimHeight} fill="url(#bottomScrimGrad)" />
         </Svg>
       </View>
 
@@ -169,7 +176,7 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
           HapticManager.shared.playTransientHeartbeat(0.5, 0.6);
           onClose();
         }}
-        style={styles.closeButton}
+        style={[styles.closeButton, { bottom: bottomButtonOffset }]}
         accessible={true}
         accessibilityRole="button"
         accessibilityLabel="Close relaxing sounds library"

@@ -323,29 +323,31 @@ export const GroundingScreenView: React.FC = () => {
           <View style={[styles.topNavContainer, { paddingTop: Math.max(14, insets.top - 8) }]} pointerEvents="box-none">
             <View style={styles.topNavCenter}>
               {/* ☀️ / 🌙 Sun & Moon Zen Toggle */}
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => {
-                  hapticManager.playTransientHeartbeat(0.4, 0.5);
-                  if (isArtistInfoVisible) {
-                    setIsArtistInfoVisible(false);
-                  }
-                  setIsZenMode(!isZenMode);
-                }}
-                style={[
-                  styles.navButton,
-                  { width: artistCredit ? 54 : 72, opacity: isZenMode ? 0.6 : 1.0 },
-                ]}
-                accessible={true}
-                accessibilityRole="button"
-                accessibilityLabel={isZenMode ? "Disable Zen immersion mode" : "Enable Zen immersion mode"}
-              >
-                {isZenMode ? (
-                  <MoonFillIcon size={18.5} color="rgba(255, 255, 255, 0.92)" />
-                ) : (
-                  <SunMaxIcon size={22.5} color="rgba(255, 255, 255, 0.92)" />
-                )}
-              </TouchableOpacity>
+              {!isArtistInfoVisible && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    hapticManager.playTransientHeartbeat(0.4, 0.5);
+                    if (isArtistInfoVisible) {
+                      setIsArtistInfoVisible(false);
+                    }
+                    setIsZenMode(!isZenMode);
+                  }}
+                  style={[
+                    styles.navButton,
+                    { width: artistCredit ? 54 : 72, opacity: isZenMode ? 0.6 : 1.0 },
+                  ]}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel={isZenMode ? "Disable Zen immersion mode" : "Enable Zen immersion mode"}
+                >
+                  {isZenMode ? (
+                    <MoonFillIcon size={18.5} color="rgba(255, 255, 255, 0.92)" />
+                  ) : (
+                    <SunMaxIcon size={22.5} color="rgba(255, 255, 255, 0.92)" />
+                  )}
+                </TouchableOpacity>
+              )}
 
               {/* 👤 / ✕ Profile / Exit Icon (Only shown for artist tracks) */}
               {artistCredit && (
@@ -438,7 +440,7 @@ export const GroundingScreenView: React.FC = () => {
             style={[
               styles.bottomDock,
               {
-                paddingBottom: 36,
+                paddingBottom: Math.max(36, insets.bottom + 8),
                 opacity: isZenMode || isArtistInfoVisible ? 0 : 1,
               },
             ]}
@@ -557,7 +559,7 @@ export const GroundingScreenView: React.FC = () => {
               }
               setActiveOverlay('none');
             }}
-            style={[styles.confirmCheckButton, { bottom: 36 }]}
+            style={[styles.confirmCheckButton, { bottom: Math.max(36, insets.bottom + 12) }]}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Confirm timer duration"
