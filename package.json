@@ -3,7 +3,6 @@
   "version": "4.4.0",
   "main": "index.ts",
   "dependencies": {
-    "@expo/vector-icons": "^15.0.2",
     "expo": "~57.0.21",
     "expo-audio": "~57.0.4",
     "expo-haptics": "~57.0.2",
