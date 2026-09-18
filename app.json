@@ -2,12 +2,12 @@
   "expo": {
     "name": "Calmpal",
     "slug": "calmpal",
-    "version": "4.4.0",
+    "version": "4.5.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "ios": {
-      "buildNumber": "4.4",
+      "buildNumber": "4.5",
       "supportsTablet": true,
       "bundleIdentifier": "com.calmpal.app",
       "infoPlist": {
