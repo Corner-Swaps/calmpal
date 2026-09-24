@@ -349,7 +349,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Calmpal/Calmpal.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4.7;
+				CURRENT_PROJECT_VERSION = 4.8;
 				DEVELOPMENT_TEAM = KZ8W2GCVH8;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -363,7 +363,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.4;
-				MARKETING_VERSION = 4.7;
+				MARKETING_VERSION = 4.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -388,7 +388,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Calmpal/Calmpal.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4.7;
+				CURRENT_PROJECT_VERSION = 4.8;
 				DEVELOPMENT_TEAM = KZ8W2GCVH8;
 				INFOPLIST_FILE = Calmpal/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
@@ -397,7 +397,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 13.4;
-				MARKETING_VERSION = 4.7;
+				MARKETING_VERSION = 4.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
