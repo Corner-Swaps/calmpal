@@ -1,6 +1,6 @@
 {
   "name": "calmpal-crossplatform",
-  "version": "4.8.0",
+  "version": "4.9.0",
   "main": "index.ts",
   "dependencies": {
     "expo": "~57.0.21",
