@@ -38,37 +38,68 @@ index d265606..5b933bd 100644
  #endif
  
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0742943..ba8df9b 100644
+index 0742943..d1efebc 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
-@@ -30,13 +30,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
-       guard isLooping != oldValue else {
+@@ -24,6 +24,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+   }
+   var samplingEnabled = false
+   var keepAudioSessionActive = false
++  private var playerLooper: AVPlayerLooper?
+ 
+   var isLooping = false {
+     didSet {
+@@ -31,16 +32,34 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
          return
        }
--      if isLooping {
+       if isLooping {
 -        ref.actionAtItemEnd = .advance
 -        enqueueNextLoopItem()
--      } else {
++        setupLooper()
++        if ref.timeControlStatus == .playing {
++          ref.playImmediately(atRate: effectiveRate)
++        }
+       } else {
 -        removeQueuedLoopItems()
--        ref.actionAtItemEnd = .pause
--      }
-+      ref.actionAtItemEnd = isLooping ? .none : .pause
++        playerLooper?.disableLooping()
++        playerLooper = nil
+         ref.actionAtItemEnd = .pause
+       }
        updateStatus(with: [:])
      }
    }
-@@ -100,10 +94,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+ 
++  private func setupLooper() {
++    playerLooper?.disableLooping()
++    playerLooper = nil
++
++    guard isLooping,
++          let queuePlayer = ref as? AVQueuePlayer,
++          let source = self.source,
++          let templateItem = AudioUtils.createAVPlayerItem(from: source) else {
++      return
++    }
++
++    queuePlayer.removeAllItems()
++    playerLooper = AVPlayerLooper(player: queuePlayer, templateItem: templateItem)
++  }
++
+   private var source: AudioSource?
+ 
+   // MARK: Observers
+@@ -100,9 +119,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    func play(at rate: Float) {
 -    ref.actionAtItemEnd = isLooping ? .advance : .pause
 -    if isLooping {
 -      enqueueNextLoopItem()
--    }
-+    ref.actionAtItemEnd = isLooping ? .none : .pause
++    if isLooping && playerLooper == nil {
++      setupLooper()
+     }
      addPlaybackEndNotification()
      registerTimeObserver()
-     ref.playImmediately(atRate: rate)
-@@ -207,9 +198,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -207,9 +225,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
            self.updateStatus(with: [
              "isLoaded": true
            ])
@@ -79,7 +110,7 @@ index 0742943..ba8df9b 100644
            if shouldInstallAudioTap || samplingEnabled {
              installTap()
              shouldInstallAudioTap = false
-@@ -228,10 +217,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -228,10 +244,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
          guard let self else {
            return
          }
@@ -92,7 +123,44 @@ index 0742943..ba8df9b 100644
          if self.samplingEnabled && self.isLoaded {
            self.uninstallTap()
            self.installTap()
-@@ -449,24 +436,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -264,6 +278,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+     self.source = source
+     let wasPlaying = ref.timeControlStatus == .playing
+     let wasSamplingEnabled = samplingEnabled
++    playerLooper?.disableLooping()
++    playerLooper = nil
+     removeQueuedLoopItems()
+     ref.pause()
+ 
+@@ -319,6 +335,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+   }
+ 
+   private func teardownPlayer() {
++    playerLooper?.disableLooping()
++    playerLooper = nil
+     removeQueuedLoopItems()
+     if samplingEnabled {
+       uninstallTap()
+@@ -405,6 +423,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+   }
+ 
+   private func replacePlayerItem(with item: AVPlayerItem?) {
++    playerLooper?.disableLooping()
++    playerLooper = nil
+     if let queuePlayer = ref as? AVQueuePlayer {
+       queuePlayer.removeAllItems()
+       if let item {
+@@ -413,6 +433,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+     } else {
+       ref.replaceCurrentItem(with: item)
+     }
++    if isLooping {
++      setupLooper()
++    }
+   }
+ 
+   private func enqueueNextLoopItem() {
+@@ -449,24 +472,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
        object: nil,
        queue: nil
      ) { [weak self] notification in
@@ -118,20 +186,20 @@ index 0742943..ba8df9b 100644
          ])
          self.onPlaybackComplete?()
 +      } else {
-+        // Sample-accurate zero-latency infinite looping without queue popping:
-+        if let currentItem = self.ref.currentItem {
-+          currentItem.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
-+            guard let self else { return }
-+            self.ref.playImmediately(atRate: self.effectiveRate)
++        // When looping with AVPlayerLooper, the queue player transitions seamlessly
++        // at the hardware level. No seeking or manual restarts needed.
++        if self.playerLooper == nil {
++          if let currentItem = self.ref.currentItem {
++            currentItem.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { [weak self] _ in
++              guard let self else { return }
++              self.ref.playImmediately(atRate: self.effectiveRate)
++            }
 +          }
-+        } else if let source = self.source, let newItem = AudioUtils.createAVPlayerItem(from: source) {
-+          self.replacePlayerItem(with: newItem)
-+          self.ref.playImmediately(atRate: self.effectiveRate)
 +        }
        }
      }
    }
-@@ -500,7 +493,7 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -500,10 +529,12 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    func resumePlayback() {
@@ -140,3 +208,8 @@ index 0742943..ba8df9b 100644
    }
  
    public override func sharedObjectWillRelease() {
++    playerLooper?.disableLooping()
++    playerLooper = nil
+     ref.currentItem?.cancelPendingSeeks()
+     owningRegistry?.remove(self)
+ 
