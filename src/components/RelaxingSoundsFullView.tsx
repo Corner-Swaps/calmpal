@@ -8,6 +8,7 @@ import {
   Image,
   Platform,
   ListRenderItemInfo,
+  Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Rect } from 'react-native-svg';
@@ -37,25 +38,52 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
 }) => {
   const insets = useSafeAreaInsets();
   const topPadding = Math.max(54, insets.top + 8);
-  const bottomButtonOffset = Math.max(36, insets.bottom + 12);
+  // Match exact bottom offset of Play button in bottomDock: Math.max(36, insets.bottom + 8)
+  const bottomButtonOffset = Math.max(36, insets.bottom + 8);
   const topScrimHeight = Math.max(60, insets.top + 24);
   const bottomScrimHeight = Math.max(85, insets.bottom + 55);
 
   const flatListRef = useRef<FlatList<SoundBannerTheme> | null>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Auto-scroll to active track on appear
+  // Ultra-smooth fade in on mount
   useEffect(() => {
-    const activeIndex = allSoundBanners.findIndex((b) => b.profile === activeProfile);
-    if (activeIndex >= 0 && flatListRef.current) {
-      setTimeout(() => {
-        flatListRef.current?.scrollToIndex({
-          index: activeIndex,
-          animated: false,
-          viewPosition: 0.5,
-        });
-      }, 50);
-    }
-  }, [activeProfile]);
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
+  // Smooth dismiss when closing
+  const handleClose = useCallback(() => {
+    HapticManager.shared.playTransientHeartbeat(0.5, 0.6);
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  }, [fadeAnim, onClose]);
+
+  // Smooth dismiss when selecting a soundscape
+  const handleSelectSound = useCallback(
+    (profile: SoundProfile) => {
+      HapticManager.shared.playTransientHeartbeat(0.5, 0.6);
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start(() => {
+        onSelectSound(profile);
+      });
+    },
+    [fadeAnim, onSelectSound]
+  );
+
+  const activeIndex = allSoundBanners.findIndex((b) => b.profile === activeProfile);
+  const initialIndex = activeIndex >= 0 ? activeIndex : 0;
 
   const renderItem = useCallback(
     ({ item: banner }: ListRenderItemInfo<SoundBannerTheme>) => {
@@ -65,10 +93,7 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
       return (
         <TouchableOpacity
           activeOpacity={0.88}
-          onPress={() => {
-            HapticManager.shared.playTransientHeartbeat(0.5, 0.6);
-            onSelectSound(banner.profile);
-          }}
+          onPress={() => handleSelectSound(banner.profile)}
           style={[styles.card, { width: screenWidth, height: CARD_HEIGHT }]}
           accessible={true}
           accessibilityRole="button"
@@ -107,17 +132,18 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
         </TouchableOpacity>
       );
     },
-    [activeProfile, screenWidth, onSelectSound]
+    [activeProfile, screenWidth, handleSelectSound]
   );
 
   return (
-    <View style={[styles.container, { width: screenWidth, height: screenHeight }]}>
+    <Animated.View style={[styles.container, { width: screenWidth, height: screenHeight, opacity: fadeAnim }]}>
       {/* 1. Virtualized Vertical Soundscapes FlatList */}
       <FlatList
         ref={flatListRef}
         data={allSoundBanners}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
+        initialScrollIndex={initialIndex}
         initialNumToRender={6}
         maxToRenderPerBatch={6}
         windowSize={5}
@@ -169,21 +195,18 @@ export const RelaxingSoundsFullView: React.FC<RelaxingSoundsFullViewProps> = ({
         </Svg>
       </View>
 
-      {/* 4. Floating Exit (X) Button */}
+      {/* 4. Floating Exit (X) Button - matched to play button size and position */}
       <TouchableOpacity
         activeOpacity={0.7}
-        onPress={() => {
-          HapticManager.shared.playTransientHeartbeat(0.5, 0.6);
-          onClose();
-        }}
+        onPress={handleClose}
         style={[styles.closeButton, { bottom: bottomButtonOffset }]}
         accessible={true}
         accessibilityRole="button"
         accessibilityLabel="Close relaxing sounds library"
       >
-        <XMarkIcon size={21.4} weight="bold" color="#FFFFFF" shadowType="confirm" />
+        <XMarkIcon size={28} weight="bold" color="#FFFFFF" shadowType="dock" />
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -249,10 +272,9 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    bottom: 36,
     alignSelf: 'center',
-    width: 44,
-    height: 44,
+    width: 47,
+    height: 47,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 120,

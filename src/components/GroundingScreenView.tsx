@@ -60,6 +60,18 @@ export const GroundingScreenView: React.FC = () => {
   const [isInstagramGlowing, setIsInstagramGlowing] = useState<boolean>(false);
   const [timerEndTimestamp, setTimerEndTimestamp] = useState<number | null>(null);
 
+  const editTimerFadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (activeOverlay === 'editTimer') {
+      Animated.timing(editTimerFadeAnim, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [activeOverlay, editTimerFadeAnim]);
+
   const audioManager = AudioManager.shared;
   const hapticManager = HapticManager.shared;
 
@@ -227,6 +239,26 @@ export const GroundingScreenView: React.FC = () => {
     }
   }, [activeProfile, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, isPlaying, audioManager, hapticManager]);
 
+  const handleConfirmEditTimer = useCallback(() => {
+    hapticManager.playTransientHeartbeat(0.5, 0.6);
+    Animated.timing(editTimerFadeAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      if (isPlaying) {
+        const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
+        const end = Date.now() + dur * 1000;
+        setTimerEndTimestamp(end);
+        audioManager.setSleepTimerTargetDate(new Date(end));
+      } else {
+        setTimerEndTimestamp(null);
+        audioManager.setSleepTimerTargetDate(null);
+      }
+      setActiveOverlay('none');
+    });
+  }, [editTimerFadeAnim, isPlaying, remainingTimerSeconds, totalTimerDuration, audioManager, hapticManager]);
+
   // Keep mutable callback refs to avoid stale closures in panResponder
   const togglePlayPauseRef = useRef(togglePlayPause);
   togglePlayPauseRef.current = togglePlayPause;
@@ -314,70 +346,72 @@ export const GroundingScreenView: React.FC = () => {
       </View>
 
       {/* ── Normal Mode: Main Player Interface ── */}
-      {activeOverlay === 'none' && (
-        <View style={[styles.mainInterface, { width: screenWidth, height: screenHeight }]}>
-          {/* Background Gesture Layer */}
-          <View style={StyleSheet.absoluteFill} {...panResponder.panHandlers} />
+      <View
+        style={[styles.mainInterface, { width: screenWidth, height: screenHeight }]}
+        pointerEvents={activeOverlay === 'none' ? 'auto' : 'none'}
+      >
+        {/* Background Gesture Layer */}
+        <View style={StyleSheet.absoluteFill} {...panResponder.panHandlers} />
 
-          {/* Top Navigation: Floating Icons (Sun/Moon and Artist Info at Top Center) */}
-          <View style={[styles.topNavContainer, { paddingTop: Math.max(14, insets.top - 8) }]} pointerEvents="box-none">
-            <View style={styles.topNavCenter}>
-              {/* ☀️ / 🌙 Sun & Moon Zen Toggle */}
-              {!isArtistInfoVisible && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    hapticManager.playTransientHeartbeat(0.4, 0.5);
-                    if (isArtistInfoVisible) {
-                      setIsArtistInfoVisible(false);
-                    }
-                    setIsZenMode(!isZenMode);
-                  }}
-                  style={[
-                    styles.navButton,
-                    { width: artistCredit ? 54 : 72, opacity: isZenMode ? 0.6 : 1.0 },
-                  ]}
-                  accessible={true}
-                  accessibilityRole="button"
-                  accessibilityLabel={isZenMode ? "Disable Zen immersion mode" : "Enable Zen immersion mode"}
-                >
-                  {isZenMode ? (
-                    <MoonFillIcon size={18.5} color="rgba(255, 255, 255, 0.92)" />
-                  ) : (
-                    <SunMaxIcon size={22.5} color="rgba(255, 255, 255, 0.92)" />
-                  )}
-                </TouchableOpacity>
-              )}
+        {/* Top Navigation: Floating Icons (Sun/Moon and Artist Info at Top Center) */}
+        <View style={[styles.topNavContainer, { paddingTop: Math.max(14, insets.top - 8) }]} pointerEvents="box-none">
+          <View style={styles.topNavCenter}>
+            {/* ☀️ / 🌙 Sun & Moon Zen Toggle */}
+            {!isArtistInfoVisible && (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  hapticManager.playTransientHeartbeat(0.4, 0.5);
+                  if (isArtistInfoVisible) {
+                    setIsArtistInfoVisible(false);
+                  }
+                  setIsZenMode(!isZenMode);
+                }}
+                style={[
+                  styles.navButton,
+                  { width: artistCredit ? 54 : 72, opacity: isZenMode ? 0.6 : 1.0 },
+                ]}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel={isZenMode ? "Disable Zen immersion mode" : "Enable Zen immersion mode"}
+              >
+                {isZenMode ? (
+                  <MoonFillIcon size={21.4} color="rgba(255, 255, 255, 0.92)" />
+                ) : (
+                  <SunMaxIcon size={21.4} color="rgba(255, 255, 255, 0.92)" />
+                )}
+              </TouchableOpacity>
+            )}
 
-              {/* 👤 / ✕ Profile / Exit Icon (Only shown for artist tracks) */}
-              {artistCredit && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => {
-                    hapticManager.playTransientHeartbeat(0.4, 0.5);
-                    if (isZenMode) {
-                      setIsZenMode(false);
-                    }
-                    const nextVisible = !isArtistInfoVisible;
-                    setIsArtistInfoVisible(nextVisible);
-                    if (nextVisible) {
-                      triggerInstagramGlow();
-                    }
-                  }}
-                  style={[styles.navButton, { width: 54 }]}
-                  accessible={true}
-                  accessibilityRole="button"
-                  accessibilityLabel={isArtistInfoVisible ? "Close artist info" : "View artist profile"}
-                >
-                  {isArtistInfoVisible ? (
-                    <XMarkIcon size={16} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
-                  ) : (
-                    <PersonIcon size={19} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
-                  )}
-                </TouchableOpacity>
-              )}
-            </View>
+            {/* 👤 / ✕ Profile / Exit Icon (Only shown for artist tracks) */}
+            {artistCredit && (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  hapticManager.playTransientHeartbeat(0.4, 0.5);
+                  if (isZenMode) {
+                    setIsZenMode(false);
+                  }
+                  const nextVisible = !isArtistInfoVisible;
+                  setIsArtistInfoVisible(nextVisible);
+                  if (nextVisible) {
+                    triggerInstagramGlow();
+                  }
+                }}
+                style={[styles.navButton, { width: 54 }]}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel={isArtistInfoVisible ? "Close artist info" : "View artist profile"}
+              >
+                {isArtistInfoVisible ? (
+                  <XMarkIcon size={21.4} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
+                ) : (
+                  <PersonIcon size={21.4} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
+                )}
+              </TouchableOpacity>
+            )}
           </View>
+        </View>
 
           {/* Main Center Stage: Circular Timer Ring or Artist Profile */}
           <View style={styles.centerStageContainer} pointerEvents="box-none">
@@ -519,11 +553,10 @@ export const GroundingScreenView: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
-      )}
 
       {/* ── Edit Mode: Solid Black + Top Timer + Fluid Wave Lines + Bottom Controls ── */}
       {activeOverlay === 'editTimer' && (
-        <View style={[styles.editOverlay, { width: screenWidth, height: screenHeight }]}>
+        <Animated.View style={[styles.editOverlay, { width: screenWidth, height: screenHeight, opacity: editTimerFadeAnim }]}>
           {/* Full Height Fluid Wave Measuring Lines Canvas */}
           <TallFusedMeasuringLinesView
             remainingSeconds={remainingTimerSeconds}
@@ -543,30 +576,18 @@ export const GroundingScreenView: React.FC = () => {
             </Text>
           </View>
 
-          {/* Bottom Action: Confirm (✓) Button */}
+          {/* Bottom Action: Confirm (✓) Button - matched to play button size and position */}
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => {
-              hapticManager.playTransientHeartbeat(0.5, 0.6);
-              if (isPlaying) {
-                const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
-                const end = Date.now() + dur * 1000;
-                setTimerEndTimestamp(end);
-                audioManager.setSleepTimerTargetDate(new Date(end));
-              } else {
-                setTimerEndTimestamp(null);
-                audioManager.setSleepTimerTargetDate(null);
-              }
-              setActiveOverlay('none');
-            }}
-            style={[styles.confirmCheckButton, { bottom: Math.max(36, insets.bottom + 12) }]}
+            onPress={handleConfirmEditTimer}
+            style={[styles.confirmCheckButton, { bottom: Math.max(36, insets.bottom + 8) }]}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Confirm timer duration"
           >
-            <CheckmarkIcon size={21.4} weight="bold" color="#FFFFFF" shadowType="confirm" />
+            <CheckmarkIcon size={28} weight="bold" color="#FFFFFF" shadowType="dock" />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       )}
 
       {/* ── Relaxing Sounds Selection Library Overlay ── */}
@@ -734,15 +755,12 @@ const styles = StyleSheet.create({
       ios: { fontFamily: 'System' },
       web: { fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Rounded", Roboto, sans-serif' },
     }),
-    textShadowColor: 'rgba(0, 0, 0, 0.90)',
-    textShadowOffset: { width: 0, height: 3 },
-    textShadowRadius: 8,
   },
   confirmCheckButton: {
     position: 'absolute',
     alignSelf: 'center',
-    width: 44,
-    height: 44,
+    width: 47,
+    height: 47,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 70,

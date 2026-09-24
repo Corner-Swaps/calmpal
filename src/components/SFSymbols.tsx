@@ -37,8 +37,8 @@ const styles = StyleSheet.create({
   },
 });
 
-// ☀️ sun.max: regular weight size 22.5 (optically balanced with moon.fill 18.5)
-export const SunMaxIcon: React.FC<IconProps> = ({ size = 22.5, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// ☀️ sun.max: regular weight size 21.4 (optically matched with pencil icon 21.4)
+export const SunMaxIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="sun.max" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
@@ -57,8 +57,8 @@ export const SunMaxIcon: React.FC<IconProps> = ({ size = 22.5, color = 'rgba(255
   );
 };
 
-// 🌙 moon.fill: regular weight size 18.5 (optically balanced with sun.max 22.5)
-export const MoonFillIcon: React.FC<IconProps> = ({ size = 18.5, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// 🌙 moon.fill: regular weight size 21.4 (optically matched with pencil icon 21.4)
+export const MoonFillIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="moon.fill" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
@@ -74,8 +74,8 @@ export const MoonFillIcon: React.FC<IconProps> = ({ size = 18.5, color = 'rgba(2
   );
 };
 
-// 👤 person: regular weight size 19
-export const PersonIcon: React.FC<IconProps> = ({ size = 19, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// 👤 person: regular weight size 21.4 (optically matched with pencil icon 21.4)
+export const PersonIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="person" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
@@ -89,14 +89,14 @@ export const PersonIcon: React.FC<IconProps> = ({ size = 19, color = 'rgba(255, 
   );
 };
 
-// ✕ xmark: regular/medium/bold weight size 16-21.4
+// ✕ xmark: regular/medium/bold weight size 16-28
 export const XMarkIcon: React.FC<IconProps> = ({
-  size = 16,
+  size = 21.4,
   color = 'rgba(255, 255, 255, 0.92)',
   weight = 'regular',
   shadowType = 'top',
 }) => {
-  const shadowStyle = shadowType === 'confirm' ? styles.confirmShadow : styles.topShadow;
+  const shadowStyle = shadowType === 'dock' ? styles.dockShadow : (shadowType === 'confirm' ? styles.confirmShadow : styles.topShadow);
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="xmark" size={size} weight={weight} tintColor={color} style={shadowStyle} />
@@ -246,7 +246,7 @@ export const CheckmarkIcon: React.FC<IconProps> = ({
   weight = 'bold',
   shadowType = 'confirm',
 }) => {
-  const shadowStyle = shadowType === 'list' ? styles.listShadow : styles.confirmShadow;
+  const shadowStyle = shadowType === 'dock' ? styles.dockShadow : (shadowType === 'list' ? styles.listShadow : styles.confirmShadow);
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="checkmark" size={size} weight={weight} tintColor={color} style={shadowStyle} />

@@ -127,8 +127,5 @@ const styles = StyleSheet.create({
         fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Rounded", Roboto, sans-serif',
       },
     }),
-    textShadowColor: 'rgba(0, 0, 0, 0.90)',
-    textShadowOffset: { width: 0, height: 3 },
-    textShadowRadius: 8,
   },
 });
