@@ -264,7 +264,7 @@ index 0742943..9eb5c4d 100644
      owningRegistry?.remove(self)
  
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
-index e977f57..c9d365f 100644
+index e977f57..5e07259 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
 +++ b/node_modules/expo-audio/ios/MediaController.swift
 @@ -67,10 +67,18 @@ class MediaController {
@@ -287,7 +287,22 @@ index e977f57..c9d365f 100644
      nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
    }
  
-@@ -130,6 +138,68 @@ class MediaController {
+@@ -80,10 +88,12 @@ class MediaController {
+       info.removeValue(forKey: MPMediaItemPropertyPlaybackDuration)
+       info.removeValue(forKey: MPNowPlayingInfoPropertyElapsedPlaybackTime)
+     } else {
+-      info[MPMediaItemPropertyPlaybackDuration] = player.duration
++      let duration = player.duration > 0 && !player.duration.isNaN ? player.duration : 3600.0
++      info[MPMediaItemPropertyPlaybackDuration] = duration
+       info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
+     }
+-    info[MPNowPlayingInfoPropertyPlaybackRate] = player.isPlaying ? player.ref.rate : 0.0
++    let isRateActive = player.isPlaying || player.ref.rate > 0 || player.ref.timeControlStatus != .paused
++    info[MPNowPlayingInfoPropertyPlaybackRate] = isRateActive ? 1.0 : 0.0
+     info[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
+   }
+ 
+@@ -130,6 +140,71 @@ class MediaController {
      }
    }
  
@@ -312,22 +327,25 @@ index e977f57..c9d365f 100644
 +      return nil
 +    }
 +
-+    return MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { requestedSize in
-+      let width = requestedSize.width > 0 ? requestedSize.width : 512
-+      let height = requestedSize.height > 0 ? requestedSize.height : 512
++    let boundsSize = finalImage.size.width > 0 ? finalImage.size : CGSize(width: 1024, height: 1024)
++    return MPMediaItemArtwork(boundsSize: boundsSize) { requestedSize in
++      let width = requestedSize.width > 0 ? requestedSize.width : boundsSize.width
++      let height = requestedSize.height > 0 ? requestedSize.height : boundsSize.height
 +      let targetSize = CGSize(width: width, height: height)
 +
-+      UIGraphicsBeginImageContextWithOptions(targetSize, true, 0.0)
-+      guard let ctx = UIGraphicsGetCurrentContext() else {
-+        UIGraphicsEndImageContext()
-+        return finalImage
-+      }
-+      ctx.setFillColor(UIColor.black.cgColor)
-+      ctx.fill(CGRect(origin: .zero, size: targetSize))
-+      finalImage.draw(in: CGRect(origin: .zero, size: targetSize))
-+      let rendered = UIGraphicsGetImageFromCurrentImageContext() ?? finalImage
-+      UIGraphicsEndImageContext()
-+      return rendered
++      let format = UIGraphicsImageRendererFormat.default()
++      format.opaque = true
++      let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
++      return renderer.image { ctx in
++        UIColor.black.setFill()
++        ctx.fill(CGRect(origin: .zero, size: targetSize))
++        let scaleFactor: CGFloat = 1.08
++        let scaledW = targetSize.width * scaleFactor
++        let scaledH = targetSize.height * scaleFactor
++        let originX = (targetSize.width - scaledW) / 2.0
++        let originY = (targetSize.height - scaledH) / 2.0
++        finalImage.draw(in: CGRect(x: originX, y: originY, width: scaledW, height: scaledH))
++      }.withRenderingMode(.alwaysOriginal)
 +    }
 +  }
 +
@@ -356,7 +374,7 @@ index e977f57..c9d365f 100644
    private func applyArtwork(
      _ info: inout [String: Any],
      from metadata: Metadata,
-@@ -138,7 +208,11 @@ class MediaController {
+@@ -138,7 +213,11 @@ class MediaController {
    ) {
      guard let artworkUrl = metadata.artworkUrl else {
        resetArtworkState()
@@ -369,7 +387,7 @@ index e977f57..c9d365f 100644
        return
      }
  
-@@ -173,14 +247,16 @@ class MediaController {
+@@ -173,14 +252,16 @@ class MediaController {
          return
        }
  
@@ -389,7 +407,7 @@ index e977f57..c9d365f 100644
        self.nowPlayingInfoCenter.nowPlayingInfo = latestNowPlayingInfo
      }
    }
-@@ -208,6 +284,16 @@ class MediaController {
+@@ -208,6 +289,16 @@ class MediaController {
    }
  
    private func loadArtworkFromURL(url: URL, completion: @escaping (MPMediaItemArtwork?) -> Void) {
@@ -406,7 +424,7 @@ index e977f57..c9d365f 100644
      URLSession.shared.dataTask(with: url) { data, _, error in
        if error != nil {
          self.performOnMain {
-@@ -238,6 +324,7 @@ class MediaController {
+@@ -238,6 +329,7 @@ class MediaController {
        }
  
        player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
@@ -414,28 +432,30 @@ index e977f57..c9d365f 100644
        return .success
      }
  
-@@ -246,7 +333,7 @@ class MediaController {
+@@ -246,7 +338,8 @@ class MediaController {
          return .commandFailed
        }
  
 -      player.ref.pause()
 +      player.pause()
++      player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true, "playing": false])
        return .success
      }
  
-@@ -256,9 +343,10 @@ class MediaController {
+@@ -256,9 +349,11 @@ class MediaController {
        }
  
        if player.isPlaying {
 -        player.ref.pause()
 +        player.pause()
++        player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true, "playing": false])
        } else {
          player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
 +        player.emit(event: "playbackStatusUpdate", payload: ["remotePlay": true, "playing": true])
        }
        return .success
      }
-@@ -303,9 +391,27 @@ class MediaController {
+@@ -303,9 +398,27 @@ class MediaController {
        return .success
      }
  
@@ -463,7 +483,7 @@ index e977f57..c9d365f 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
      remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
      remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
-@@ -315,6 +421,8 @@ class MediaController {
+@@ -315,6 +428,8 @@ class MediaController {
      remoteCommandCenter.playCommand.isEnabled = false
      remoteCommandCenter.pauseCommand.isEnabled = false
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = false
@@ -472,7 +492,7 @@ index e977f57..c9d365f 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = false
      remoteCommandCenter.skipForwardCommand.isEnabled = false
      remoteCommandCenter.skipBackwardCommand.isEnabled = false
-@@ -323,6 +431,8 @@ class MediaController {
+@@ -323,6 +438,8 @@ class MediaController {
      remoteCommandCenter.playCommand.removeTarget(self)
      remoteCommandCenter.pauseCommand.removeTarget(self)
      remoteCommandCenter.togglePlayPauseCommand.removeTarget(self)

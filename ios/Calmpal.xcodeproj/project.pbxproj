@@ -16,6 +16,7 @@
 		C7F5ADF39E139AFFBDA54492 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 64592D5D4C27D61BAF593218 /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 		F11748992D0307B40044C1D9 /* CalmpalArtworkData.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748982D0307B40044C1D9 /* CalmpalArtworkData.swift */; };
+		F117489A2D0307B40044C1D9 /* artwork-logo-black.png in Resources */ = {isa = PBXBuildFile; fileRef = F117489B2D0307B40044C1D9 /* artwork-logo-black.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Calmpal/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748982D0307B40044C1D9 /* CalmpalArtworkData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CalmpalArtworkData.swift; path = Calmpal/CalmpalArtworkData.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Calmpal-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Calmpal-Bridging-Header.h"; path = "Calmpal/Calmpal-Bridging-Header.h"; sourceTree = "<group>"; };
+		F117489B2D0307B40044C1D9 /* artwork-logo-black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "artwork-logo-black.png"; path = "Calmpal/artwork-logo-black.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +55,7 @@
 			children = (
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
 				F11748982D0307B40044C1D9 /* CalmpalArtworkData.swift */,
+				F117489B2D0307B40044C1D9 /* artwork-logo-black.png */,
 				F11748442D0722820044C1D9 /* Calmpal-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -203,6 +206,7 @@
 			files = (
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				F117489A2D0307B40044C1D9 /* artwork-logo-black.png in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				13B07FB71A68108700A75B9A /* main.jsbundle in Resources */,
 				C7F5ADF39E139AFFBDA54492 /* PrivacyInfo.xcprivacy in Resources */,

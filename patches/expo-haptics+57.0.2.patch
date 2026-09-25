@@ -1,11 +1,12 @@
 diff --git a/node_modules/expo-haptics/ios/HapticsModule.swift b/node_modules/expo-haptics/ios/HapticsModule.swift
-index 41659a0..066c920 100644
+index 41659a0..2d19371 100644
 --- a/node_modules/expo-haptics/ios/HapticsModule.swift
 +++ b/node_modules/expo-haptics/ios/HapticsModule.swift
-@@ -1,27 +1,113 @@
+@@ -1,27 +1,248 @@
  import ExpoModulesCore
 +import AudioToolbox
 +import CoreHaptics
++import UIKit
  
  public class HapticsModule: Module {
 +  private let lightGenerator = UIImpactFeedbackGenerator(style: .light)
@@ -17,6 +18,12 @@ index 41659a0..066c920 100644
 +  private let notificationGenerator = UINotificationFeedbackGenerator()
 +
 +  private var hapticEngine: CHHapticEngine?
++
++  // Background GCD timer for non-stop soundscape tactile vibrations
++  private let hapticsQueue = DispatchQueue(label: "com.calmpal.haptics.timer", qos: .userInteractive)
++  private var hapticsTimer: DispatchSourceTimer?
++  private var activeProfile: String = ""
++  private var stepIndex: Int = 0
 +
 +  private func setupHapticEngine() {
 +    guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
@@ -64,6 +71,126 @@ index 41659a0..066c920 100644
 +    }
 +  }
 +
++  private func startNativeHapticsLoop(profile: String) {
++    stopNativeHapticsLoop()
++    activeProfile = profile
++    stepIndex = 0
++
++    let timer = DispatchSource.makeTimerSource(queue: hapticsQueue)
++    self.hapticsTimer = timer
++    scheduleNextTick(timer: timer)
++    timer.resume()
++  }
++
++  private func stopNativeHapticsLoop() {
++    if let timer = hapticsTimer {
++      timer.cancel()
++      hapticsTimer = nil
++    }
++    activeProfile = ""
++    stepIndex = 0
++  }
++
++  private func scheduleNextTick(timer: DispatchSourceTimer) {
++    guard !timer.isCancelled else { return }
++
++    executeHapticTick(for: activeProfile)
++    let nextDelayMs = calculateDelayMs(for: activeProfile)
++
++    timer.schedule(deadline: .now() + .milliseconds(nextDelayMs))
++    timer.setEventHandler { [weak self, weak timer] in
++      guard let self = self, let timer = timer, !timer.isCancelled else { return }
++      self.scheduleNextTick(timer: timer)
++    }
++  }
++
++  private func executeHapticTick(for profile: String) {
++    var isStrong = false
++    var isMedium = false
++    var isSoft = false
++
++    switch profile {
++    case "gentleRain", "rainOnCar", "rainOnTent", "rainCanopy", "lightRain":
++      stepIndex = (stepIndex + 1) % 3
++      if stepIndex == 0 {
++        isStrong = true
++      } else {
++        isMedium = true
++      }
++    case "cozyCampfire", "campfire":
++      isStrong = true
++    case "catPurring":
++      stepIndex = (stepIndex + 1) % 4
++      if stepIndex < 3 {
++        isStrong = true
++      }
++    case "antiqueClock", "clock":
++      stepIndex = (stepIndex + 1) % 2
++      isStrong = (stepIndex == 0)
++      isMedium = (stepIndex == 1)
++    case "rollingThunder", "thunder":
++      stepIndex = (stepIndex + 1) % 7
++      if stepIndex == 0 || stepIndex == 1 {
++        isStrong = true
++      } else if stepIndex == 2 {
++        isMedium = true
++      }
++    case "oceanWaves", "deepUnderwater", "oceanWhale", "waterfall", "waves", "underwater", "whale":
++      stepIndex = (stepIndex + 1) % 5
++      if stepIndex < 2 {
++        isMedium = true
++      }
++    default:
++      isMedium = true
++    }
++
++    // Direct hardware Taptic Engine actuation:
++    // 1520 = crisp tactile pop (linear actuator transient)
++    // 1519 = light tactile peek
++    if isStrong {
++      AudioServicesPlaySystemSound(1520)
++    } else if isMedium {
++      AudioServicesPlaySystemSound(1520)
++    } else if isSoft {
++      AudioServicesPlaySystemSound(1519)
++    }
++
++    // When app is in foreground, also drive UIKit feedback generator
++    DispatchQueue.main.async { [weak self] in
++      guard let self = self, UIApplication.shared.applicationState == .active else { return }
++      if isStrong {
++        self.rigidGenerator.impactOccurred()
++      } else if isMedium {
++        self.mediumGenerator.impactOccurred()
++      } else if isSoft {
++        self.lightGenerator.impactOccurred()
++      }
++    }
++  }
++
++  private func calculateDelayMs(for profile: String) -> Int {
++    switch profile {
++    case "gentleRain", "rainOnCar", "rainOnTent", "rainCanopy", "lightRain":
++      return Int.random(in: 180...380)
++    case "cozyCampfire", "campfire":
++      return Int.random(in: 200...550)
++    case "catPurring":
++      return stepIndex < 3 ? 130 : 350
++    case "antiqueClock", "clock":
++      return 1000
++    case "rollingThunder", "thunder":
++      if stepIndex == 0 { return 180 }
++      if stepIndex == 1 { return 220 }
++      if stepIndex == 2 { return Int.random(in: 3200...4800) }
++      return 2600
++    case "oceanWaves", "deepUnderwater", "oceanWhale", "waterfall", "waves", "underwater", "whale":
++      if stepIndex < 2 { return 300 }
++      return Int.random(in: 2400...3200)
++    default:
++      return Int.random(in: 1500...2800)
++    }
++  }
++
    public func definition() -> ModuleDefinition {
      Name("ExpoHaptics")
  
@@ -71,6 +198,14 @@ index 41659a0..066c920 100644
 -      let generator = UINotificationFeedbackGenerator()
 -      generator.prepare()
 -      generator.notificationOccurred(notificationType.toFeedbackType())
++    AsyncFunction("startSoundscapeHaptics") { [weak self] (profile: String) in
++      self?.startNativeHapticsLoop(profile: profile)
++    }
++
++    AsyncFunction("stopSoundscapeHaptics") { [weak self] in
++      self?.stopNativeHapticsLoop()
++    }
++
 +    AsyncFunction("notificationAsync") { [weak self] (notificationType: NotificationType) in
 +      guard let self else { return }
 +      self.notificationGenerator.prepare()

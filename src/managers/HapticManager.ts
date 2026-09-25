@@ -156,14 +156,30 @@ export class HapticManager {
   public startSoundHaptics(profile: SoundProfile) {
     this.currentSoundProfile = profile;
     this.isSoundHapticsRunning = true;
-    this.hapticStepIndex = 0;
-    this.scheduleNextSoundHaptic();
+    try {
+      if (typeof (Haptics as any).startSoundscapeHaptics === 'function') {
+        (Haptics as any).startSoundscapeHaptics(String(profile));
+      }
+    } catch (e) {
+      console.warn('[HapticManager] startSoundscapeHaptics error:', e);
+    }
+    if (Platform.OS === 'web') {
+      this.hapticStepIndex = 0;
+      this.scheduleNextSoundHaptic();
+    }
   }
 
   public stopSoundHaptics() {
     this.isSoundHapticsRunning = false;
     this.currentSoundProfile = null;
     this.hapticStepIndex = 0;
+    try {
+      if (typeof (Haptics as any).stopSoundscapeHaptics === 'function') {
+        (Haptics as any).stopSoundscapeHaptics();
+      }
+    } catch (e) {
+      console.warn('[HapticManager] stopSoundscapeHaptics error:', e);
+    }
     if (this.soundHapticTimeout) {
       clearTimeout(this.soundHapticTimeout);
       this.soundHapticTimeout = null;

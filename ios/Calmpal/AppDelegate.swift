@@ -8,24 +8,29 @@ import MediaPlayer
 
 private func createNowPlayingArtwork() -> MPMediaItemArtwork? {
   let logo = CalmpalArtworkData.sharedImage
-  return MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { requestedSize in
-    let width = requestedSize.width > 0 ? requestedSize.width : 512
-    let height = requestedSize.height > 0 ? requestedSize.height : 512
+  guard logo.size.width > 0 && logo.size.height > 0 else {
+    return nil
+  }
+  let boundsSize = logo.size
+  return MPMediaItemArtwork(boundsSize: boundsSize) { requestedSize in
+    let width = requestedSize.width > 0 ? requestedSize.width : boundsSize.width
+    let height = requestedSize.height > 0 ? requestedSize.height : boundsSize.height
     let targetSize = CGSize(width: width, height: height)
 
-    UIGraphicsBeginImageContextWithOptions(targetSize, true, 0.0)
-    guard let ctx = UIGraphicsGetCurrentContext() else {
-      UIGraphicsEndImageContext()
-      return logo
-    }
-    // Solid pitch black background (#000000)
-    ctx.setFillColor(UIColor.black.cgColor)
-    ctx.fill(CGRect(origin: .zero, size: targetSize))
-
-    logo.draw(in: CGRect(origin: .zero, size: targetSize))
-    let rendered = UIGraphicsGetImageFromCurrentImageContext() ?? logo
-    UIGraphicsEndImageContext()
-    return rendered
+    let format = UIGraphicsImageRendererFormat.default()
+    format.opaque = true
+    let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
+    return renderer.image { ctx in
+      UIColor.black.setFill()
+      ctx.fill(CGRect(origin: .zero, size: targetSize))
+      // Scale and center logo to make icon prominent in the Dynamic Island
+      let scaleFactor: CGFloat = 1.08
+      let scaledW = targetSize.width * scaleFactor
+      let scaledH = targetSize.height * scaleFactor
+      let originX = (targetSize.width - scaledW) / 2.0
+      let originY = (targetSize.height - scaledH) / 2.0
+      logo.draw(in: CGRect(x: originX, y: originY, width: scaledW, height: scaledH))
+    }.withRenderingMode(.alwaysOriginal)
   }
 }
 
@@ -35,15 +40,27 @@ private func setupNowPlayingArtworkProtection() {
     return
   }
   let originalImp = method_getImplementation(method)
-  typealias SetterFunc = @convention(c) (AnyObject, Selector, [String: Any]?) -> Void
+  typealias SetterFunc = @convention(c) (AnyObject, Selector, NSDictionary?) -> Void
   let originalSetter = unsafeBitCast(originalImp, to: SetterFunc.self)
 
-  let newBlock: @convention(block) (AnyObject, [String: Any]?) -> Void = { center, info in
-    var updated = info ?? [String: Any]()
+  let newBlock: @convention(block) (AnyObject, NSDictionary?) -> Void = { center, info in
+    guard let infoDict = info as? [String: Any] else {
+      originalSetter(center, #selector(setter: MPNowPlayingInfoCenter.nowPlayingInfo), info)
+      return
+    }
+    var updated = infoDict
     if let artwork = createNowPlayingArtwork() {
       updated[MPMediaItemPropertyArtwork] = artwork
     }
-    originalSetter(center, #selector(setter: MPNowPlayingInfoCenter.nowPlayingInfo), updated)
+    if updated[MPMediaItemPropertyTitle] == nil {
+      updated[MPMediaItemPropertyTitle] = "Calmpal"
+    }
+    if updated[MPMediaItemPropertyArtist] == nil {
+      updated[MPMediaItemPropertyArtist] = "Soundscapes"
+    }
+    let isPlaying = (updated[MPNowPlayingInfoPropertyPlaybackRate] as? Double ?? 0) > 0
+    updated[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
+    originalSetter(center, #selector(setter: MPNowPlayingInfoCenter.nowPlayingInfo), updated as NSDictionary)
   }
   let newImp = imp_implementationWithBlock(newBlock)
   method_setImplementation(method, newImp)
