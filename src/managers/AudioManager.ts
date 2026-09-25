@@ -4,6 +4,7 @@ import { Platform, AppState, AppStateStatus } from 'react-native';
 import { SoundProfile, SOUND_PROFILE_RESOURCE_FILES, SOUND_ARTIST_CREDITS } from '../models/SoundProfile';
 import { allSoundBanners, bannerFor } from '../models/SoundBannerTheme';
 import { SOUND_ASSETS } from '../assets/assetMap';
+import { HapticManager } from './HapticManager';
 
 export type AudioStateListener = (state: {
   isPlaying: boolean;
@@ -231,8 +232,10 @@ export class AudioManager {
     await this.unloadCurrentSound();
     if (wasPlaying) {
       await this.loadAndPlay(profile);
+      HapticManager.shared.startSoundHaptics(profile);
     } else {
       await this.preloadInitialSound();
+      HapticManager.shared.stopSoundHaptics();
     }
     this.notify();
   }
@@ -325,6 +328,7 @@ export class AudioManager {
             this.audioPlayer.volume = currentTargetVolume;
             this.audioPlayer.play();
             this.isAudioPlaying = true;
+            HapticManager.shared.startSoundHaptics(this.activeProfile);
             if (this.sleepTimerTargetDate) {
               this.scheduleSleepTimer();
             }
@@ -391,6 +395,7 @@ export class AudioManager {
         player.play();
         this.audioPlayer = player;
         this.isAudioPlaying = true;
+        HapticManager.shared.startSoundHaptics(this.activeProfile);
       } catch (err) {
         console.warn('[AudioManager Native] Sound create error:', err);
         if (requestId !== this.currentPlayRequestId) return;
@@ -436,6 +441,7 @@ export class AudioManager {
     }
 
     this.isAudioPlaying = false;
+    HapticManager.shared.stopSoundHaptics();
     if (Platform.OS === 'web') {
       if (this.webAudioElement) {
         this.webAudioElement.pause();
@@ -454,6 +460,7 @@ export class AudioManager {
   public async resume() {
     if (this.isAudioPlaying) return;
     this.isAudioPlaying = true;
+    HapticManager.shared.startSoundHaptics(this.activeProfile);
 
     if (Platform.OS === 'web') {
       if (this.webAudioElement) {
@@ -483,6 +490,7 @@ export class AudioManager {
 
   public async stop() {
     this.isAudioPlaying = false;
+    HapticManager.shared.stopSoundHaptics();
     this.sleepTimerTargetDate = null;
     if (this.sleepFadeTimeout) {
       clearTimeout(this.sleepFadeTimeout);

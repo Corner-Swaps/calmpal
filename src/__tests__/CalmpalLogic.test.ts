@@ -198,5 +198,42 @@ describe('Calmpal Logic & Data Model Parity Tests', () => {
 
       await audio.stop();
     });
+
+    it('synchronizes tactile vibrations with playback state and active soundscapes', async () => {
+      const audio = AudioManager.shared;
+      const haptics = HapticManager.shared;
+      jest.useFakeTimers();
+
+      await audio.setActiveProfile(SoundProfile.gentleRain);
+      await audio.start();
+      expect(audio.isAudioPlaying).toBe(true);
+      expect((haptics as any).isSoundHapticsRunning).toBe(true);
+      expect((haptics as any).currentSoundProfile).toBe(SoundProfile.gentleRain);
+
+      // Verify timer tick triggers next sound haptic
+      jest.advanceTimersByTime(600);
+      expect((haptics as any).soundHapticTimeout).not.toBeNull();
+
+      // Pausing audio stops sound vibrations
+      await audio.pause();
+      expect(audio.isAudioPlaying).toBe(false);
+      expect((haptics as any).isSoundHapticsRunning).toBe(false);
+      expect((haptics as any).soundHapticTimeout).toBeNull();
+
+      // Resuming audio restarts sound vibrations
+      await audio.resume();
+      expect(audio.isAudioPlaying).toBe(true);
+      expect((haptics as any).isSoundHapticsRunning).toBe(true);
+
+      // Switching profile updates haptic profile
+      await audio.setActiveProfile(SoundProfile.cozyCampfire);
+      expect((haptics as any).currentSoundProfile).toBe(SoundProfile.cozyCampfire);
+
+      await audio.stop();
+      expect((haptics as any).isSoundHapticsRunning).toBe(false);
+
+      jest.useRealTimers();
+    });
   });
 });
+
