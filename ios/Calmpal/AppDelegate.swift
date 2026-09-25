@@ -7,7 +7,7 @@ import ObjectiveC
 import MediaPlayer
 
 private func createNowPlayingArtwork() -> MPMediaItemArtwork? {
-  let logo = UIImage(named: "NowPlayingLogo") ?? UIImage(named: "AppLogo")
+  let logo = CalmpalArtworkData.sharedImage
   return MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { requestedSize in
     let width = requestedSize.width > 0 ? requestedSize.width : 512
     let height = requestedSize.height > 0 ? requestedSize.height : 512
@@ -16,16 +16,14 @@ private func createNowPlayingArtwork() -> MPMediaItemArtwork? {
     UIGraphicsBeginImageContextWithOptions(targetSize, true, 0.0)
     guard let ctx = UIGraphicsGetCurrentContext() else {
       UIGraphicsEndImageContext()
-      return logo ?? UIImage()
+      return logo
     }
     // Solid pitch black background (#000000)
     ctx.setFillColor(UIColor.black.cgColor)
     ctx.fill(CGRect(origin: .zero, size: targetSize))
 
-    if let logo = logo {
-      logo.draw(in: CGRect(origin: .zero, size: targetSize))
-    }
-    let rendered = UIGraphicsGetImageFromCurrentImageContext() ?? logo ?? UIImage()
+    logo.draw(in: CGRect(origin: .zero, size: targetSize))
+    let rendered = UIGraphicsGetImageFromCurrentImageContext() ?? logo
     UIGraphicsEndImageContext()
     return rendered
   }

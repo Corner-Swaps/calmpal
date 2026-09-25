@@ -1,8 +1,8 @@
 diff --git a/node_modules/expo-haptics/ios/HapticsModule.swift b/node_modules/expo-haptics/ios/HapticsModule.swift
-index 41659a0..02dae0d 100644
+index 41659a0..066c920 100644
 --- a/node_modules/expo-haptics/ios/HapticsModule.swift
 +++ b/node_modules/expo-haptics/ios/HapticsModule.swift
-@@ -1,27 +1,104 @@
+@@ -1,27 +1,113 @@
  import ExpoModulesCore
 +import AudioToolbox
 +import CoreHaptics
@@ -34,11 +34,20 @@ index 41659a0..02dae0d 100644
 +  }
 +
 +  private func playCoreHaptic(intensity: Float, sharpness: Float) {
++    if UIApplication.shared.applicationState == .background {
++      if intensity > 0.7 {
++        AudioServicesPlaySystemSound(1520)
++      } else {
++        AudioServicesPlaySystemSound(1519)
++      }
++      return
++    }
++
 +    if hapticEngine == nil {
 +      setupHapticEngine()
 +    }
 +    guard let engine = hapticEngine else {
-+      AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
++      AudioServicesPlaySystemSound(1520)
 +      return
 +    }
 +    do {
@@ -51,7 +60,7 @@ index 41659a0..02dae0d 100644
 +      try player.start(atTime: CHHapticTimeImmediate)
 +    } catch {
 +      try? hapticEngine?.start()
-+      AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
++      AudioServicesPlaySystemSound(1520)
 +    }
 +  }
 +

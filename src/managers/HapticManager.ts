@@ -39,11 +39,8 @@ export class HapticManager {
     this.checkHardwareSupport();
     if (Platform.OS !== 'web' && AppState && typeof AppState.addEventListener === 'function') {
       AppState.addEventListener('change', (state: AppStateStatus) => {
-        if (state === 'active' && this.isSoundHapticsRunning) {
+        if (state === 'active' && this.isSoundHapticsRunning && !this.soundHapticTimeout) {
           this.scheduleNextSoundHaptic();
-        } else if (state === 'background' && this.soundHapticTimeout) {
-          clearTimeout(this.soundHapticTimeout);
-          this.soundHapticTimeout = null;
         }
       });
     }
@@ -179,8 +176,7 @@ export class HapticManager {
       this.soundHapticTimeout = null;
     }
 
-    const isAppBackgrounded = Platform.OS !== 'web' && AppState && AppState.currentState === 'background';
-    if (!this.isSoundHapticsRunning || isAppBackgrounded || !this.currentSoundProfile) {
+    if (!this.isSoundHapticsRunning || !this.currentSoundProfile) {
       return;
     }
 
