@@ -40,6 +40,7 @@ export const SOUND_ASSETS: Record<string, any> = {
 };
 
 export const IMAGE_ASSETS: Record<string, ImageSourcePropType> = {
+  'app-logo': require('../../assets/icon.png'),
   'crickets-night': require('../../assets/images/crickets-night.jpg'),
   'dune-breeze': require('../../assets/images/dune-breeze.jpg'),
   'cozy-campfire': require('../../assets/images/cozy-campfire.jpg'),

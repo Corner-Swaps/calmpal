@@ -1,10 +1,16 @@
 // HapticManager: Cross-platform implementation of Swift HapticManager
 import { Platform, AppState, AppStateStatus } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { requireOptionalNativeModule } from 'expo';
 import { SoundProfile, SOUND_HAPTIC_PROFILES } from '../models/SoundProfile';
 
-const ExpoHaptics = requireOptionalNativeModule('ExpoHaptics');
+let ExpoHaptics: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const expo = require('expo');
+  if (typeof expo?.requireOptionalNativeModule === 'function') {
+    ExpoHaptics = expo.requireOptionalNativeModule('ExpoHaptics');
+  }
+} catch {}
 
 export class HapticManager {
   private static _instance: HapticManager;

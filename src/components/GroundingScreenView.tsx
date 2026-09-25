@@ -61,6 +61,15 @@ export const GroundingScreenView: React.FC = () => {
   const [timerEndTimestamp, setTimerEndTimestamp] = useState<number | null>(null);
 
   const editTimerFadeAnim = useRef(new Animated.Value(0)).current;
+  const launchFadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(launchFadeAnim, {
+      toValue: 1,
+      duration: 350,
+      useNativeDriver: true,
+    }).start();
+  }, [launchFadeAnim]);
 
   useEffect(() => {
     if (activeOverlay === 'editTimer') {
@@ -328,34 +337,44 @@ export const GroundingScreenView: React.FC = () => {
       {/* ── Solid Deep Black Base Canvas ── */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none" />
 
-      {/* ── Deep Atmospheric Fullscreen Backdrop ── */}
-      {IMAGE_ASSETS[activeBanner.imageName] && (
+      {/* ── Seamless Native Launch Continuity Placeholder (matches SplashScreen.storyboard) ── */}
+      <View style={styles.splashCenterContainer} pointerEvents="none">
         <Image
-          source={IMAGE_ASSETS[activeBanner.imageName]}
-          resizeMode="cover"
-          style={[styles.backdropImage, { width: screenWidth, height: screenHeight }]}
+          source={IMAGE_ASSETS['app-logo'] || require('../../assets/icon.png')}
+          style={styles.splashCenterLogo}
+          resizeMode="contain"
         />
-      )}
-
-      {/* Backdrop 3-Stop Linear Gradient Overlay */}
-      <View style={[StyleSheet.absoluteFill, { width: screenWidth, height: screenHeight }]} pointerEvents="none">
-        <Svg width={screenWidth} height={screenHeight}>
-          <Defs>
-            <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor="#000000" stopOpacity="0.35" />
-              <Stop offset="0.5" stopColor="#000000" stopOpacity="0" />
-              <Stop offset="1" stopColor="#000000" stopOpacity="0.40" />
-            </SvgLinearGradient>
-          </Defs>
-          <Rect x="0" y="0" width={screenWidth} height={screenHeight} fill="url(#bgGrad)" />
-        </Svg>
       </View>
 
-      {/* ── Normal Mode: Main Player Interface ── */}
-      <View
-        style={[styles.mainInterface, { width: screenWidth, height: screenHeight }]}
-        pointerEvents={activeOverlay === 'none' ? 'auto' : 'none'}
-      >
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: launchFadeAnim }]} pointerEvents="box-none">
+        {/* ── Deep Atmospheric Fullscreen Backdrop ── */}
+        {IMAGE_ASSETS[activeBanner.imageName] && (
+          <Image
+            source={IMAGE_ASSETS[activeBanner.imageName]}
+            resizeMode="cover"
+            style={[styles.backdropImage, { width: screenWidth, height: screenHeight }]}
+          />
+        )}
+
+        {/* Backdrop 3-Stop Linear Gradient Overlay */}
+        <View style={[StyleSheet.absoluteFill, { width: screenWidth, height: screenHeight }]} pointerEvents="none">
+          <Svg width={screenWidth} height={screenHeight}>
+            <Defs>
+              <SvgLinearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor="#000000" stopOpacity="0.35" />
+                <Stop offset="0.5" stopColor="#000000" stopOpacity="0" />
+                <Stop offset="1" stopColor="#000000" stopOpacity="0.40" />
+              </SvgLinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width={screenWidth} height={screenHeight} fill="url(#bgGrad)" />
+          </Svg>
+        </View>
+
+        {/* ── Normal Mode: Main Player Interface ── */}
+        <View
+          style={[styles.mainInterface, { width: screenWidth, height: screenHeight }]}
+          pointerEvents={activeOverlay === 'none' ? 'auto' : 'none'}
+        >
         {/* Background Gesture Layer */}
         <View style={StyleSheet.absoluteFill} {...panResponder.panHandlers} />
 
@@ -548,6 +567,7 @@ export const GroundingScreenView: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
+      </Animated.View>
 
       {/* ── Edit Mode: Solid Black + Top Timer + Fluid Wave Lines + Bottom Controls ── */}
       {activeOverlay === 'editTimer' && (
@@ -622,6 +642,16 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     backgroundColor: '#000000',
     overflow: 'hidden',
+  },
+  splashCenterContainer: {
+    ...StyleSheet.absoluteFill,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+  },
+  splashCenterLogo: {
+    width: 100,
+    height: 100,
   },
   backdropImage: {
     ...StyleSheet.absoluteFill,

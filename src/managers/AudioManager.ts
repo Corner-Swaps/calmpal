@@ -113,15 +113,11 @@ export class AudioManager {
             return;
           }
           if (status?.remotePlay) {
-            if (!this.isAudioPlaying) {
-              this.resume();
-            }
+            this.resume();
             return;
           }
           if (status?.remotePause) {
-            if (this.isAudioPlaying) {
-              this.pause();
-            }
+            this.pause();
             return;
           }
         });
@@ -378,15 +374,11 @@ export class AudioManager {
               return;
             }
             if (status?.remotePlay) {
-              if (!this.isAudioPlaying) {
-                this.resume();
-              }
+              this.resume();
               return;
             }
             if (status?.remotePause) {
-              if (this.isAudioPlaying) {
-                this.pause();
-              }
+              this.pause();
               return;
             }
           });
@@ -430,7 +422,7 @@ export class AudioManager {
 
   public async pause() {
     this.currentPlayRequestId++;
-    if (!this.isAudioPlaying) return;
+    this.isAudioPlaying = false;
     if (this.sleepFadeTimeout) {
       clearTimeout(this.sleepFadeTimeout);
       this.sleepFadeTimeout = null;
@@ -440,7 +432,6 @@ export class AudioManager {
       this.sleepTimerTimeout = null;
     }
 
-    this.isAudioPlaying = false;
     HapticManager.shared.stopSoundHaptics();
     if (Platform.OS === 'web') {
       if (this.webAudioElement) {
