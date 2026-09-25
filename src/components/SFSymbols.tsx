@@ -37,8 +37,8 @@ const styles = StyleSheet.create({
   },
 });
 
-// ☀️ sun.max: regular weight size 21.4 (optically matched with pencil icon 21.4)
-export const SunMaxIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// ☀️ sun.max: regular weight size 28 (optically matched with dock exit / checkmark icons)
+export const SunMaxIcon: React.FC<IconProps> = ({ size = 28, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="sun.max" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
@@ -57,8 +57,8 @@ export const SunMaxIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(255
   );
 };
 
-// 🌙 moon.fill: regular weight size 21.4 (optically matched with pencil icon 21.4)
-export const MoonFillIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// 🌙 moon.fill: regular weight size 28 (optically matched with dock exit / checkmark icons)
+export const MoonFillIcon: React.FC<IconProps> = ({ size = 28, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="moon.fill" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
@@ -74,8 +74,8 @@ export const MoonFillIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(2
   );
 };
 
-// 👤 person: regular weight size 21.4 (optically matched with pencil icon 21.4)
-export const PersonIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// 👤 person: regular weight size 28 (optically matched with dock exit / checkmark icons)
+export const PersonIcon: React.FC<IconProps> = ({ size = 28, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="person" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
@@ -91,7 +91,7 @@ export const PersonIcon: React.FC<IconProps> = ({ size = 21.4, color = 'rgba(255
 
 // ✕ xmark: regular/medium/bold weight size 16-28
 export const XMarkIcon: React.FC<IconProps> = ({
-  size = 21.4,
+  size = 28,
   color = 'rgba(255, 255, 255, 0.92)',
   weight = 'regular',
   shadowType = 'top',
