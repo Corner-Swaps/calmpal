@@ -93,31 +93,34 @@ export const GroundingScreenView: React.FC = () => {
       setActiveProfileState(state.activeProfile);
 
       const audioPlaying = state.isPlaying;
-      setIsPlaying((prevPlaying) => {
-        if (prevPlaying !== audioPlaying) {
-          if (audioPlaying) {
-            let dur = remainingTimerSecondsRef.current;
-            if (dur <= 0) {
-              dur = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
-              setRemainingTimerSeconds(dur);
-            }
-            const end = Date.now() + dur * 1000;
-            setTimerEndTimestamp(end);
-            audioManager.setSleepTimerTargetDate(new Date(end));
-            hapticManager.startSoundHaptics(state.activeProfile);
-          } else {
-            hapticManager.stopSoundHaptics();
-            if (timerEndTimestampRef.current !== null) {
-              const left = Math.max(0, (timerEndTimestampRef.current - Date.now()) / 1000);
-              setRemainingTimerSeconds(left);
-            }
-            setTimerEndTimestamp(null);
-            audioManager.setSleepTimerTargetDate(null);
+      if (isPlayingRef.current !== audioPlaying) {
+        isPlayingRef.current = audioPlaying;
+        setIsPlaying(audioPlaying);
+
+        if (audioPlaying) {
+          let dur = remainingTimerSecondsRef.current;
+          if (dur <= 0) {
+            dur = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
+            remainingTimerSecondsRef.current = dur;
+            setRemainingTimerSeconds(dur);
           }
-          return audioPlaying;
+          const end = Date.now() + dur * 1000;
+          timerEndTimestampRef.current = end;
+          setTimerEndTimestamp(end);
+          audioManager.setSleepTimerTargetDate(new Date(end));
+          hapticManager.startSoundHaptics(state.activeProfile);
+        } else {
+          hapticManager.stopSoundHaptics();
+          if (timerEndTimestampRef.current !== null) {
+            const left = Math.max(0, (timerEndTimestampRef.current - Date.now()) / 1000);
+            remainingTimerSecondsRef.current = left;
+            setRemainingTimerSeconds(left);
+          }
+          timerEndTimestampRef.current = null;
+          setTimerEndTimestamp(null);
+          audioManager.setSleepTimerTargetDate(null);
         }
-        return prevPlaying;
-      });
+      }
     });
     return () => unsubscribe();
   }, [audioManager, hapticManager]);
@@ -136,14 +139,19 @@ export const GroundingScreenView: React.FC = () => {
           if (end <= now) {
             // Timer expired while in background
             const resetDuration = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
+            remainingTimerSecondsRef.current = resetDuration;
             setRemainingTimerSeconds(resetDuration);
+            isPlayingRef.current = false;
             setIsPlaying(false);
+            timerEndTimestampRef.current = null;
             setTimerEndTimestamp(null);
             audioManager.setSleepTimerTargetDate(null);
             audioManager.stop();
           } else if (isPlayingRef.current) {
             // Still playing, sync immediately without waiting for 1-second ticker interval
-            setRemainingTimerSeconds((end - now) / 1000);
+            const left = (end - now) / 1000;
+            remainingTimerSecondsRef.current = left;
+            setRemainingTimerSeconds(left);
           }
         }
       }
@@ -165,6 +173,7 @@ export const GroundingScreenView: React.FC = () => {
       if (end === null) {
         const dur = remainingTimerSecondsRef.current > 0 ? remainingTimerSecondsRef.current : (totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0);
         end = Date.now() + dur * 1000;
+        timerEndTimestampRef.current = end;
         setTimerEndTimestamp(end);
         audioManager.setSleepTimerTargetDate(new Date(end));
       }
@@ -172,11 +181,14 @@ export const GroundingScreenView: React.FC = () => {
       const leftSec = (end - Date.now()) / 1000;
       if (leftSec <= 0) {
         const resetDuration = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
+        remainingTimerSecondsRef.current = resetDuration;
         setRemainingTimerSeconds(resetDuration);
+        timerEndTimestampRef.current = null;
         setTimerEndTimestamp(null);
         audioManager.setSleepTimerTargetDate(null);
         audioManager.stop();
       } else {
+        remainingTimerSecondsRef.current = leftSec;
         setRemainingTimerSeconds(leftSec);
       }
     }, 1000);

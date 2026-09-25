@@ -29,9 +29,8 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
   }, [isPlaying, timerEndTimestamp]);
 
   const currentRemaining = (() => {
-    if (isPlaying) {
-      const end = timerEndTimestamp !== null ? timerEndTimestamp : (Date.now() + remainingSeconds * 1000);
-      const remaining = (end - Date.now()) / 1000;
+    if (isPlaying && timerEndTimestamp !== null) {
+      const remaining = (timerEndTimestamp - Date.now()) / 1000;
       const maxAllowed = totalDuration > 0 ? totalDuration : remainingSeconds;
       return Math.max(0.0, Math.min(maxAllowed, remaining));
     }
