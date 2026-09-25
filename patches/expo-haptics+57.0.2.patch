@@ -1,8 +1,8 @@
 diff --git a/node_modules/expo-haptics/ios/HapticsModule.swift b/node_modules/expo-haptics/ios/HapticsModule.swift
-index 41659a0..b80e957 100644
+index 41659a0..8e97a0a 100644
 --- a/node_modules/expo-haptics/ios/HapticsModule.swift
 +++ b/node_modules/expo-haptics/ios/HapticsModule.swift
-@@ -1,27 +1,251 @@
+@@ -1,27 +1,252 @@
  import ExpoModulesCore
 +import AudioToolbox
 +import CoreHaptics
@@ -28,7 +28,8 @@ index 41659a0..b80e957 100644
 +  private func setupHapticEngine() {
 +    guard CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
 +    do {
-+      let engine = try CHHapticEngine(audioSession: .sharedInstance())
++      let engine = try CHHapticEngine()
++      engine.playsHapticsOnly = true
 +      engine.isAutoShutdownEnabled = false
 +      engine.resetHandler = { [weak self] in
 +        try? self?.hapticEngine?.start()

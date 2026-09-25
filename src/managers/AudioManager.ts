@@ -113,12 +113,14 @@ export class AudioManager {
             return;
           }
           if (status?.remotePlay) {
+            HapticManager.shared.startSoundHaptics(this.activeProfile);
             if (!this.isAudioPlaying) {
               this.resume(true);
             }
             return;
           }
           if (status?.remotePause) {
+            HapticManager.shared.stopSoundHaptics();
             if (this.isAudioPlaying) {
               this.pause(true);
             }
@@ -378,12 +380,14 @@ export class AudioManager {
               return;
             }
             if (status?.remotePlay) {
+              HapticManager.shared.startSoundHaptics(this.activeProfile);
               if (!this.isAudioPlaying) {
                 this.resume(true);
               }
               return;
             }
             if (status?.remotePause) {
+              HapticManager.shared.stopSoundHaptics();
               if (this.isAudioPlaying) {
                 this.pause(true);
               }
