@@ -38,6 +38,7 @@ export class AudioManager {
 
   private constructor() {
     this.configureAudioSession();
+    this.preloadInitialSound();
     if (Platform.OS !== 'web' && AppState && typeof AppState.addEventListener === 'function') {
       AppState.addEventListener('change', (state: AppStateStatus) => {
         if (state === 'active') {
@@ -57,6 +58,77 @@ export class AudioManager {
           }
         }
       });
+    }
+  }
+
+  public async preloadInitialSound() {
+    if (Platform.OS === 'web') return;
+    try {
+      await this.configureAudioSession();
+      if (this.audioPlayer || this.isAudioPlaying) return;
+
+      const profile = this.activeProfile;
+      const resourceKey = SOUND_PROFILE_RESOURCE_FILES[profile];
+      const asset = SOUND_ASSETS[resourceKey];
+      if (!asset) return;
+
+      const player = createAudioPlayer(asset, {
+        keepAudioSessionActive: true,
+        updateInterval: 500,
+      });
+
+      if (this.audioPlayer || this.isAudioPlaying) {
+        try { player.release(); } catch {}
+        return;
+      }
+
+      const banner = bannerFor(profile);
+      const artistCredit = SOUND_ARTIST_CREDITS[profile];
+
+      player.loop = true;
+      player.volume = this.volume > 0 ? this.volume : 0.5;
+
+      if (typeof player.setActiveForLockScreen === 'function') {
+        try {
+          player.setActiveForLockScreen(true, {
+            title: banner ? banner.title : 'Soundscape',
+            artist: artistCredit ? artistCredit.name : 'Calmpal',
+            albumTitle: 'Calmpal Soundscapes',
+          }, {
+            showSeekForward: false,
+            showSeekBackward: false,
+          });
+        } catch {}
+      }
+
+      if (typeof player.addListener === 'function') {
+        player.addListener('playbackStatusUpdate', (status: any) => {
+          if (status?.remoteNext) {
+            this.selectNextSound();
+            return;
+          }
+          if (status?.remotePrevious) {
+            this.selectPreviousSound();
+            return;
+          }
+          if (status?.remotePlay) {
+            if (!this.isAudioPlaying) {
+              this.resume();
+            }
+            return;
+          }
+          if (status?.remotePause) {
+            if (this.isAudioPlaying) {
+              this.pause();
+            }
+            return;
+          }
+        });
+      }
+
+      this.audioPlayer = player;
+    } catch (err) {
+      console.warn('[AudioManager] Failed to preload initial sound:', err);
     }
   }
 
@@ -159,6 +231,8 @@ export class AudioManager {
     await this.unloadCurrentSound();
     if (wasPlaying) {
       await this.loadAndPlay(profile);
+    } else {
+      await this.preloadInitialSound();
     }
     this.notify();
   }
@@ -246,6 +320,19 @@ export class AudioManager {
       }
     } else {
       try {
+        if (this.audioPlayer) {
+          try {
+            this.audioPlayer.volume = currentTargetVolume;
+            this.audioPlayer.play();
+            this.isAudioPlaying = true;
+            if (this.sleepTimerTargetDate) {
+              this.scheduleSleepTimer();
+            }
+            this.notify();
+            return;
+          } catch {}
+        }
+
         const player = createAudioPlayer(asset, {
           keepAudioSessionActive: true,
           updateInterval: 500,
@@ -406,6 +493,7 @@ export class AudioManager {
       this.sleepTimerTimeout = null;
     }
     await this.unloadCurrentSound();
+    await this.preloadInitialSound();
     this.notify();
   }
 

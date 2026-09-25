@@ -181,5 +181,22 @@ describe('Calmpal Logic & Data Model Parity Tests', () => {
 
       await audio.stop();
     });
+
+    it('allows starting playback directly from AirPods click while paused or on launch', async () => {
+      const audio = AudioManager.shared;
+      await audio.stop();
+      expect(audio.isAudioPlaying).toBe(false);
+
+      const player = (audio as any).audioPlayer;
+      expect(player).toBeDefined();
+      const statusCallback = player.listeners?.['playbackStatusUpdate'];
+      expect(typeof statusCallback).toBe('function');
+
+      // Click AirPods to play directly without manual UI button tap
+      statusCallback({ remotePlay: true });
+      expect(audio.isAudioPlaying).toBe(true);
+
+      await audio.stop();
+    });
   });
 });
