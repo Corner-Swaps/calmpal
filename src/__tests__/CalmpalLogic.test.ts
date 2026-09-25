@@ -234,6 +234,16 @@ describe('Calmpal Logic & Data Model Parity Tests', () => {
 
       jest.useRealTimers();
     });
+
+    it('resolves valid artwork for all 35 soundscape profiles for Dynamic Island and Lock Screen', () => {
+      const audio = AudioManager.shared;
+      for (const banner of allSoundBanners) {
+        const url = audio.getArtworkUrlForProfile(banner.profile);
+        expect(url).toBeDefined();
+        expect(typeof url).toBe('string');
+        expect(url!.length).toBeGreaterThan(0);
+      }
+    });
   });
 });
 

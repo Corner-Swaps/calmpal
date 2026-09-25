@@ -1,9 +1,9 @@
 // AudioManager: Cross-platform implementation of Swift AudioManager using expo-audio
 import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from 'expo-audio';
-import { Platform, AppState, AppStateStatus } from 'react-native';
+import { Platform, AppState, AppStateStatus, Image } from 'react-native';
 import { SoundProfile, SOUND_PROFILE_RESOURCE_FILES, SOUND_ARTIST_CREDITS } from '../models/SoundProfile';
 import { allSoundBanners, bannerFor } from '../models/SoundBannerTheme';
-import { SOUND_ASSETS } from '../assets/assetMap';
+import { SOUND_ASSETS, IMAGE_ASSETS } from '../assets/assetMap';
 import { HapticManager } from './HapticManager';
 
 export type AudioStateListener = (state: {
@@ -85,6 +85,7 @@ export class AudioManager {
 
       const banner = bannerFor(profile);
       const artistCredit = SOUND_ARTIST_CREDITS[profile];
+      const artworkUrl = this.getArtworkUrlForProfile(profile);
 
       player.loop = true;
       player.volume = this.volume > 0 ? this.volume : 0.5;
@@ -95,6 +96,7 @@ export class AudioManager {
             title: banner ? banner.title : 'Soundscape',
             artist: artistCredit ? artistCredit.name : 'Calmpal',
             albumTitle: 'Calmpal Soundscapes',
+            artworkUrl,
           }, {
             showSeekForward: false,
             showSeekBackward: false,
@@ -352,6 +354,7 @@ export class AudioManager {
 
         const banner = bannerFor(profile);
         const artistCredit = SOUND_ARTIST_CREDITS[profile];
+        const artworkUrl = this.getArtworkUrlForProfile(profile);
 
         player.loop = true;
         player.volume = currentTargetVolume;
@@ -362,6 +365,7 @@ export class AudioManager {
               title: banner ? banner.title : 'Soundscape',
               artist: artistCredit ? artistCredit.name : 'Calmpal',
               albumTitle: 'Calmpal Soundscapes',
+              artworkUrl,
             }, {
               showSeekForward: false,
               showSeekBackward: false,
@@ -560,5 +564,19 @@ export class AudioManager {
         completion?.();
       }
     }, stepIntervalMs);
+  }
+
+  public getArtworkUrlForProfile(profile: SoundProfile): string | undefined {
+    try {
+      const banner = bannerFor(profile);
+      const imageAsset = banner ? IMAGE_ASSETS[banner.imageName] : null;
+      if (imageAsset) {
+        const resolved = Image.resolveAssetSource(imageAsset);
+        if (resolved?.uri) {
+          return resolved.uri;
+        }
+      }
+    } catch {}
+    return undefined;
   }
 }
