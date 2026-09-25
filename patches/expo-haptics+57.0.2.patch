@@ -1,0 +1,58 @@
+diff --git a/node_modules/expo-haptics/ios/HapticsModule.swift b/node_modules/expo-haptics/ios/HapticsModule.swift
+index 41659a0..ccade85 100644
+--- a/node_modules/expo-haptics/ios/HapticsModule.swift
++++ b/node_modules/expo-haptics/ios/HapticsModule.swift
+@@ -1,27 +1,43 @@
+ import ExpoModulesCore
+ 
+ public class HapticsModule: Module {
++  private let lightGenerator = UIImpactFeedbackGenerator(style: .light)
++  private let mediumGenerator = UIImpactFeedbackGenerator(style: .medium)
++  private let heavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
++  private let softGenerator = UIImpactFeedbackGenerator(style: .soft)
++  private let rigidGenerator = UIImpactFeedbackGenerator(style: .rigid)
++  private let selectionGenerator = UISelectionFeedbackGenerator()
++  private let notificationGenerator = UINotificationFeedbackGenerator()
++
+   public func definition() -> ModuleDefinition {
+     Name("ExpoHaptics")
+ 
+-    AsyncFunction("notificationAsync") { (notificationType: NotificationType) in
+-      let generator = UINotificationFeedbackGenerator()
+-      generator.prepare()
+-      generator.notificationOccurred(notificationType.toFeedbackType())
++    AsyncFunction("notificationAsync") { [weak self] (notificationType: NotificationType) in
++      guard let self else { return }
++      self.notificationGenerator.prepare()
++      self.notificationGenerator.notificationOccurred(notificationType.toFeedbackType())
+     }
+     .runOnQueue(.main)
+ 
+-    AsyncFunction("impactAsync") { (style: ImpactStyle) in
+-      let generator = UIImpactFeedbackGenerator(style: style.toFeedbackStyle())
++    AsyncFunction("impactAsync") { [weak self] (style: ImpactStyle) in
++      guard let self else { return }
++      let generator: UIImpactFeedbackGenerator
++      switch style {
++      case .light: generator = self.lightGenerator
++      case .medium: generator = self.mediumGenerator
++      case .heavy: generator = self.heavyGenerator
++      case .soft: generator = self.softGenerator
++      case .rigid: generator = self.rigidGenerator
++      }
+       generator.prepare()
+       generator.impactOccurred()
+     }
+     .runOnQueue(.main)
+ 
+-    AsyncFunction("selectionAsync") {
+-      let generator = UISelectionFeedbackGenerator()
+-      generator.prepare()
+-      generator.selectionChanged()
++    AsyncFunction("selectionAsync") { [weak self] in
++      guard let self else { return }
++      self.selectionGenerator.prepare()
++      self.selectionGenerator.selectionChanged()
+     }
+     .runOnQueue(.main)
+   }

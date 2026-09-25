@@ -264,10 +264,10 @@ index 0742943..9eb5c4d 100644
      owningRegistry?.remove(self)
  
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
-index e977f57..4eec5f7 100644
+index e977f57..fd354e8 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
 +++ b/node_modules/expo-audio/ios/MediaController.swift
-@@ -67,7 +67,11 @@ class MediaController {
+@@ -67,10 +67,18 @@ class MediaController {
        applyArtwork(&nowPlayingInfo, from: userMetadata, for: player, currentItemIdentifier: nextArtworkItemIdentifier)
      } else {
        resetArtworkState()
@@ -280,21 +280,67 @@ index e977f57..4eec5f7 100644
        applyAssetMetadata(&nowPlayingInfo, for: player)
      }
  
-@@ -130,6 +134,13 @@ class MediaController {
++    if nowPlayingInfo[MPMediaItemPropertyArtwork] == nil {
++      nowPlayingInfo[MPMediaItemPropertyArtwork] = defaultAppArtwork()
++    }
++
+     nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
+   }
+ 
+@@ -130,6 +138,52 @@ class MediaController {
      }
    }
  
 +  private func defaultAppArtwork() -> MPMediaItemArtwork? {
-+    if let image = UIImage(named: "NowPlayingLogo") ?? UIImage(named: "AppLogo") {
-+      return MPMediaItemArtwork(boundsSize: image.size) { _ in image }
++    let mainBundle = Bundle.main
++    var image: UIImage? = UIImage(named: "NowPlayingLogo", in: mainBundle, compatibleWith: nil)
++      ?? UIImage(named: "AppLogo", in: mainBundle, compatibleWith: nil)
++      ?? UIImage(named: "NowPlayingLogo")
++      ?? UIImage(named: "AppLogo")
++
++    if image == nil {
++      if let path = mainBundle.path(forResource: "NowPlayingLogo", ofType: "png") ?? mainBundle.path(forResource: "artwork-logo-black", ofType: "png") {
++        image = UIImage(contentsOfFile: path)
++      }
 +    }
-+    return nil
++
++    if image == nil {
++      image = generateCalmpalLogo()
++    }
++
++    guard let finalImage = image else {
++      return nil
++    }
++
++    return MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { _ in finalImage }
++  }
++
++  private func generateCalmpalLogo() -> UIImage {
++    let size = CGSize(width: 512, height: 512)
++    UIGraphicsBeginImageContextWithOptions(size, true, 0.0)
++    guard let ctx = UIGraphicsGetCurrentContext() else {
++      UIGraphicsEndImageContext()
++      return UIImage()
++    }
++    ctx.setFillColor(UIColor.black.cgColor)
++    ctx.fill(CGRect(origin: .zero, size: size))
++    ctx.setStrokeColor(UIColor.white.cgColor)
++    ctx.setLineWidth(14)
++    ctx.setLineCap(.round)
++    let center = CGPoint(x: 256, y: 256)
++    let path = UIBezierPath(arcCenter: center, radius: 180, startAngle: 0, endAngle: .pi * 2, clockwise: true)
++    path.lineWidth = 14
++    UIColor.white.setStroke()
++    path.stroke()
++    let rendered = UIGraphicsGetImageFromCurrentImageContext() ?? UIImage()
++    UIGraphicsEndImageContext()
++    return rendered
 +  }
 +
    private func applyArtwork(
      _ info: inout [String: Any],
      from metadata: Metadata,
-@@ -138,7 +149,11 @@ class MediaController {
+@@ -138,7 +192,11 @@ class MediaController {
    ) {
      guard let artworkUrl = metadata.artworkUrl else {
        resetArtworkState()
@@ -307,7 +353,7 @@ index e977f57..4eec5f7 100644
        return
      }
  
-@@ -173,14 +188,16 @@ class MediaController {
+@@ -173,14 +231,16 @@ class MediaController {
          return
        }
  
@@ -327,7 +373,7 @@ index e977f57..4eec5f7 100644
        self.nowPlayingInfoCenter.nowPlayingInfo = latestNowPlayingInfo
      }
    }
-@@ -208,6 +225,16 @@ class MediaController {
+@@ -208,6 +268,16 @@ class MediaController {
    }
  
    private func loadArtworkFromURL(url: URL, completion: @escaping (MPMediaItemArtwork?) -> Void) {
@@ -344,7 +390,7 @@ index e977f57..4eec5f7 100644
      URLSession.shared.dataTask(with: url) { data, _, error in
        if error != nil {
          self.performOnMain {
-@@ -238,6 +265,7 @@ class MediaController {
+@@ -238,6 +308,7 @@ class MediaController {
        }
  
        player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
@@ -352,7 +398,7 @@ index e977f57..4eec5f7 100644
        return .success
      }
  
-@@ -246,7 +274,7 @@ class MediaController {
+@@ -246,7 +317,7 @@ class MediaController {
          return .commandFailed
        }
  
@@ -361,7 +407,7 @@ index e977f57..4eec5f7 100644
        return .success
      }
  
-@@ -256,9 +284,10 @@ class MediaController {
+@@ -256,9 +327,10 @@ class MediaController {
        }
  
        if player.isPlaying {
@@ -373,7 +419,7 @@ index e977f57..4eec5f7 100644
        }
        return .success
      }
-@@ -303,9 +332,27 @@ class MediaController {
+@@ -303,9 +375,27 @@ class MediaController {
        return .success
      }
  
@@ -401,7 +447,7 @@ index e977f57..4eec5f7 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
      remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
      remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
-@@ -315,6 +362,8 @@ class MediaController {
+@@ -315,6 +405,8 @@ class MediaController {
      remoteCommandCenter.playCommand.isEnabled = false
      remoteCommandCenter.pauseCommand.isEnabled = false
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = false
@@ -410,7 +456,7 @@ index e977f57..4eec5f7 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = false
      remoteCommandCenter.skipForwardCommand.isEnabled = false
      remoteCommandCenter.skipBackwardCommand.isEnabled = false
-@@ -323,6 +372,8 @@ class MediaController {
+@@ -323,6 +415,8 @@ class MediaController {
      remoteCommandCenter.playCommand.removeTarget(self)
      remoteCommandCenter.pauseCommand.removeTarget(self)
      remoteCommandCenter.togglePlayPauseCommand.removeTarget(self)

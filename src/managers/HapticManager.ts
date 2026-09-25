@@ -161,6 +161,7 @@ export class HapticManager {
   public startSoundHaptics(profile: SoundProfile) {
     this.currentSoundProfile = profile;
     this.isSoundHapticsRunning = true;
+    this.hapticStepIndex = 0;
     this.scheduleNextSoundHaptic();
   }
 
@@ -180,7 +181,8 @@ export class HapticManager {
       this.soundHapticTimeout = null;
     }
 
-    if (!this.isSoundHapticsRunning || !this.isAppInForeground || !this.currentSoundProfile) {
+    const isAppBackgrounded = Platform.OS !== 'web' && AppState && AppState.currentState === 'background';
+    if (!this.isSoundHapticsRunning || isAppBackgrounded || !this.currentSoundProfile) {
       return;
     }
 
@@ -193,75 +195,76 @@ export class HapticManager {
       case SoundProfile.rainOnCar:
       case SoundProfile.rainOnTent:
       case SoundProfile.rainCanopy:
-        // Raindrops: organic random patter
-        this.triggerHaptic(Haptics.ImpactFeedbackStyle.Light);
-        nextDelayMs = 240 + Math.random() * 260;
+        // Raindrops: distinct tactile raindrop impacts
+        this.hapticStepIndex = (this.hapticStepIndex + 1) % 3;
+        this.triggerHaptic(this.hapticStepIndex === 0 ? Haptics.ImpactFeedbackStyle.Rigid : Haptics.ImpactFeedbackStyle.Medium);
+        nextDelayMs = 200 + Math.random() * 240;
         break;
 
       case SoundProfile.cozyCampfire:
-        // Campfire: random crackles & pops
-        this.triggerHaptic(Math.random() > 0.4 ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Soft);
-        nextDelayMs = 280 + Math.random() * 550;
+        // Campfire: crisp tactile crackles & ember snaps
+        this.triggerHaptic(Math.random() > 0.4 ? Haptics.ImpactFeedbackStyle.Rigid : Haptics.ImpactFeedbackStyle.Medium);
+        nextDelayMs = 220 + Math.random() * 450;
         break;
 
       case SoundProfile.catPurring:
-        // Purr: rhythmic motor pulse
+        // Purr: rhythmic motor pulse that feels like a cat purring in your hand
         this.hapticStepIndex = (this.hapticStepIndex + 1) % 4;
         if (this.hapticStepIndex < 3) {
-          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Soft);
-          nextDelayMs = 180;
+          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Rigid);
+          nextDelayMs = 140;
         } else {
-          nextDelayMs = 450;
+          nextDelayMs = 360;
         }
         break;
 
       case SoundProfile.antiqueClock:
-        // Clock: rhythmic 1.0s tick-tock
+        // Clock: rhythmic crisp 1.0s tick-tock
         this.hapticStepIndex = (this.hapticStepIndex + 1) % 2;
-        this.triggerHaptic(this.hapticStepIndex === 0 ? Haptics.ImpactFeedbackStyle.Light : Haptics.ImpactFeedbackStyle.Soft);
+        this.triggerHaptic(this.hapticStepIndex === 0 ? Haptics.ImpactFeedbackStyle.Rigid : Haptics.ImpactFeedbackStyle.Medium);
         nextDelayMs = 1000;
         break;
 
       case SoundProfile.rollingThunder:
         // Thunder: deep rumble bursts
-        this.hapticStepIndex = (this.hapticStepIndex + 1) % 8;
+        this.hapticStepIndex = (this.hapticStepIndex + 1) % 7;
         if (this.hapticStepIndex === 0) {
-          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Medium);
-          nextDelayMs = 200;
+          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Heavy);
+          nextDelayMs = 180;
         } else if (this.hapticStepIndex === 1) {
-          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Soft);
-          nextDelayMs = 250;
+          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Heavy);
+          nextDelayMs = 220;
         } else if (this.hapticStepIndex === 2) {
-          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Soft);
-          nextDelayMs = 3500 + Math.random() * 2000;
+          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Medium);
+          nextDelayMs = 3200 + Math.random() * 1800;
         } else {
-          nextDelayMs = 3000;
+          nextDelayMs = 2800;
         }
         break;
 
       case SoundProfile.oceanWaves:
       case SoundProfile.deepUnderwater:
       case SoundProfile.oceanWhale:
-        // Ocean swells: rhythmic surging waves
+        // Ocean swells: rhythmic surging wave crests
         this.hapticStepIndex = (this.hapticStepIndex + 1) % 5;
         if (this.hapticStepIndex < 2) {
-          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Soft);
-          nextDelayMs = 350;
+          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Medium);
+          nextDelayMs = 300;
         } else {
-          nextDelayMs = 2800 + Math.random() * 800;
+          nextDelayMs = 2600 + Math.random() * 700;
         }
         break;
 
       case SoundProfile.nightCrickets:
       case SoundProfile.forestBirdsong:
       case SoundProfile.eveningFrogs:
-        // Nature chirps: double tap then pause
+        // Nature chirps: distinct double tap chirp then pause
         this.hapticStepIndex = (this.hapticStepIndex + 1) % 3;
         if (this.hapticStepIndex < 2) {
-          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Light);
-          nextDelayMs = 160;
+          this.triggerHaptic(Haptics.ImpactFeedbackStyle.Medium);
+          nextDelayMs = 150;
         } else {
-          nextDelayMs = 1400 + Math.random() * 800;
+          nextDelayMs = 1300 + Math.random() * 700;
         }
         break;
 
@@ -269,17 +272,17 @@ export class HapticManager {
       case SoundProfile.windChimes:
       case SoundProfile.cathedralChimes:
         // Resonant bells & chimes
-        this.triggerHaptic(Haptics.ImpactFeedbackStyle.Medium);
-        nextDelayMs = 2400 + Math.random() * 1600;
+        this.triggerHaptic(Haptics.ImpactFeedbackStyle.Heavy);
+        nextDelayMs = 2200 + Math.random() * 1400;
         break;
 
       default:
         // Ambient wind, river, library, walk on leaves, etc.
         const intensity = hapticInfo ? hapticInfo.baseIntensity : 0.4;
-        const style = intensity > 0.5 ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Soft;
+        const style = intensity > 0.5 ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Medium;
         this.triggerHaptic(style);
         const freq = hapticInfo ? hapticInfo.pulseFrequency : 0.25;
-        nextDelayMs = Math.max(400, Math.min(2500, Math.round(1000 / Math.max(0.1, freq))));
+        nextDelayMs = Math.max(350, Math.min(2200, Math.round(1000 / Math.max(0.1, freq))));
         break;
     }
 
