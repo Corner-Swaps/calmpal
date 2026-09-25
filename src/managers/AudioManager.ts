@@ -113,11 +113,15 @@ export class AudioManager {
             return;
           }
           if (status?.remotePlay) {
-            this.resume();
+            if (!this.isAudioPlaying) {
+              this.resume();
+            }
             return;
           }
           if (status?.remotePause) {
-            this.pause();
+            if (this.isAudioPlaying) {
+              this.pause();
+            }
             return;
           }
         });
@@ -374,11 +378,15 @@ export class AudioManager {
               return;
             }
             if (status?.remotePlay) {
-              this.resume();
+              if (!this.isAudioPlaying) {
+                this.resume();
+              }
               return;
             }
             if (status?.remotePause) {
-              this.pause();
+              if (this.isAudioPlaying) {
+                this.pause();
+              }
               return;
             }
           });

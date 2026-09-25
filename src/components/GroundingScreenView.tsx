@@ -61,15 +61,6 @@ export const GroundingScreenView: React.FC = () => {
   const [timerEndTimestamp, setTimerEndTimestamp] = useState<number | null>(null);
 
   const editTimerFadeAnim = useRef(new Animated.Value(0)).current;
-  const launchFadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(launchFadeAnim, {
-      toValue: 1,
-      duration: 350,
-      useNativeDriver: true,
-    }).start();
-  }, [launchFadeAnim]);
 
   useEffect(() => {
     if (activeOverlay === 'editTimer') {
@@ -337,17 +328,7 @@ export const GroundingScreenView: React.FC = () => {
       {/* ── Solid Deep Black Base Canvas ── */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none" />
 
-      {/* ── Seamless Native Launch Continuity Placeholder (matches SplashScreen.storyboard) ── */}
-      <View style={styles.splashCenterContainer} pointerEvents="none">
-        <Image
-          source={IMAGE_ASSETS['app-logo'] || require('../../assets/icon.png')}
-          style={styles.splashCenterLogo}
-          resizeMode="contain"
-        />
-      </View>
-
-      <Animated.View style={[StyleSheet.absoluteFill, { opacity: launchFadeAnim }]} pointerEvents="box-none">
-        {/* ── Deep Atmospheric Fullscreen Backdrop ── */}
+      {/* ── Deep Atmospheric Fullscreen Backdrop ── */}
         {IMAGE_ASSETS[activeBanner.imageName] && (
           <Image
             source={IMAGE_ASSETS[activeBanner.imageName]}
@@ -567,7 +548,6 @@ export const GroundingScreenView: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </Animated.View>
 
       {/* ── Edit Mode: Solid Black + Top Timer + Fluid Wave Lines + Bottom Controls ── */}
       {activeOverlay === 'editTimer' && (
@@ -642,16 +622,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     backgroundColor: '#000000',
     overflow: 'hidden',
-  },
-  splashCenterContainer: {
-    ...StyleSheet.absoluteFill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000000',
-  },
-  splashCenterLogo: {
-    width: 100,
-    height: 100,
   },
   backdropImage: {
     ...StyleSheet.absoluteFill,
