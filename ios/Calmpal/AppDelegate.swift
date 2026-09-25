@@ -72,11 +72,7 @@ class AppDelegate: ExpoAppDelegate {
     window?.backgroundColor = .black
 
     do {
-      try AVAudioSession.sharedInstance().setCategory(
-        .playback,
-        mode: .default,
-        options: [.allowBluetoothA2DP, .allowAirPlay]
-      )
+      try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
       try AVAudioSession.sharedInstance().setActive(true)
       UIApplication.shared.beginReceivingRemoteControlEvents()
     } catch {

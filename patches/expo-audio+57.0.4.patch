@@ -1,5 +1,5 @@
 diff --git a/node_modules/expo-audio/ios/AudioModule.swift b/node_modules/expo-audio/ios/AudioModule.swift
-index d265606..7fce9ee 100644
+index d265606..4e76cd0 100644
 --- a/node_modules/expo-audio/ios/AudioModule.swift
 +++ b/node_modules/expo-audio/ios/AudioModule.swift
 @@ -597,7 +597,10 @@ public class AudioModule: Module {
@@ -41,15 +41,6 @@ index d265606..7fce9ee 100644
      default:
        break
      }
-@@ -808,6 +815,8 @@ public class AudioModule: Module {
- #else
-         categoryOptions.insert(.allowBluetooth)
- #endif
-+      } else if category == .playback {
-+        categoryOptions.insert([.allowBluetoothA2DP, .allowAirPlay])
-       }
- #endif
- 
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
 index 0742943..0b45f0d 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
