@@ -6,6 +6,31 @@ import AVFoundation
 import ObjectiveC
 import MediaPlayer
 
+private func createNowPlayingArtwork() -> MPMediaItemArtwork? {
+  let logo = UIImage(named: "NowPlayingLogo") ?? UIImage(named: "AppLogo")
+  return MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { requestedSize in
+    let width = requestedSize.width > 0 ? requestedSize.width : 512
+    let height = requestedSize.height > 0 ? requestedSize.height : 512
+    let targetSize = CGSize(width: width, height: height)
+
+    UIGraphicsBeginImageContextWithOptions(targetSize, true, 0.0)
+    guard let ctx = UIGraphicsGetCurrentContext() else {
+      UIGraphicsEndImageContext()
+      return logo ?? UIImage()
+    }
+    // Solid pitch black background (#000000)
+    ctx.setFillColor(UIColor.black.cgColor)
+    ctx.fill(CGRect(origin: .zero, size: targetSize))
+
+    if let logo = logo {
+      logo.draw(in: CGRect(origin: .zero, size: targetSize))
+    }
+    let rendered = UIGraphicsGetImageFromCurrentImageContext() ?? logo ?? UIImage()
+    UIGraphicsEndImageContext()
+    return rendered
+  }
+}
+
 // Ensures MPMediaItemPropertyArtwork is NEVER empty or replaced with a generic speaker icon
 private func setupNowPlayingArtworkProtection() {
   guard let method = class_getInstanceMethod(MPNowPlayingInfoCenter.self, #selector(setter: MPNowPlayingInfoCenter.nowPlayingInfo)) else {
@@ -17,10 +42,8 @@ private func setupNowPlayingArtworkProtection() {
 
   let newBlock: @convention(block) (AnyObject, [String: Any]?) -> Void = { center, info in
     var updated = info ?? [String: Any]()
-    if updated[MPMediaItemPropertyArtwork] == nil {
-      if let logo = UIImage(named: "NowPlayingLogo") ?? UIImage(named: "AppLogo") {
-        updated[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { _ in logo }
-      }
+    if let artwork = createNowPlayingArtwork() {
+      updated[MPMediaItemPropertyArtwork] = artwork
     }
     originalSetter(center, #selector(setter: MPNowPlayingInfoCenter.nowPlayingInfo), updated)
   }
@@ -101,8 +124,7 @@ class AppDelegate: ExpoAppDelegate {
       try AVAudioSession.sharedInstance().setActive(true)
       UIApplication.shared.beginReceivingRemoteControlEvents()
 
-      if let logo = UIImage(named: "NowPlayingLogo") ?? UIImage(named: "AppLogo") {
-        let artwork = MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { _ in logo }
+      if let artwork = createNowPlayingArtwork() {
         var initialInfo = [String: Any]()
         initialInfo[MPMediaItemPropertyTitle] = "Calmpal"
         initialInfo[MPMediaItemPropertyArtwork] = artwork
