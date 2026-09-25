@@ -176,8 +176,10 @@ export const GroundingScreenView: React.FC = () => {
       setRemainingTimerSeconds(dur);
       setTimerEndTimestamp(end);
       audioManager.setSleepTimerTargetDate(new Date(end));
+      hapticManager.startSoundHaptics(activeProfile);
       await audioManager.resume();
     } else {
+      hapticManager.stopSoundHaptics();
       if (timerEndTimestamp !== null) {
         setRemainingTimerSeconds(Math.max(0, (timerEndTimestamp - Date.now()) / 1000));
       }
@@ -185,7 +187,7 @@ export const GroundingScreenView: React.FC = () => {
       audioManager.setSleepTimerTargetDate(null);
       await audioManager.pause();
     }
-  }, [isPlaying, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, audioManager, hapticManager]);
+  }, [isPlaying, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, activeProfile, audioManager, hapticManager]);
 
   const selectPreviousSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
@@ -201,6 +203,7 @@ export const GroundingScreenView: React.FC = () => {
     if (!isPlaying) {
       setIsPlaying(true);
     }
+    hapticManager.startSoundHaptics(newProfile);
 
     // Always restart timer from the full configured session duration when skipping sections
     const dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
@@ -228,6 +231,7 @@ export const GroundingScreenView: React.FC = () => {
     if (!isPlaying) {
       setIsPlaying(true);
     }
+    hapticManager.startSoundHaptics(newProfile);
 
     // Always restart timer from the full configured session duration when skipping sections
     const dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;

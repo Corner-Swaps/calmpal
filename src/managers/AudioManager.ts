@@ -458,9 +458,9 @@ export class AudioManager {
   }
 
   public async resume() {
+    HapticManager.shared.startSoundHaptics(this.activeProfile);
     if (this.isAudioPlaying) return;
     this.isAudioPlaying = true;
-    HapticManager.shared.startSoundHaptics(this.activeProfile);
 
     if (Platform.OS === 'web') {
       if (this.webAudioElement) {

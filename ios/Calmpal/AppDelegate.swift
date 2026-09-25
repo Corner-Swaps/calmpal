@@ -4,6 +4,29 @@ import ReactAppDependencyProvider
 import AVFoundation
 
 import ObjectiveC
+import MediaPlayer
+
+// Ensures MPMediaItemPropertyArtwork is NEVER empty or replaced with a generic speaker icon
+private func setupNowPlayingArtworkProtection() {
+  guard let method = class_getInstanceMethod(MPNowPlayingInfoCenter.self, #selector(setter: MPNowPlayingInfoCenter.nowPlayingInfo)) else {
+    return
+  }
+  let originalImp = method_getImplementation(method)
+  typealias SetterFunc = @convention(c) (AnyObject, Selector, [String: Any]?) -> Void
+  let originalSetter = unsafeBitCast(originalImp, to: SetterFunc.self)
+
+  let newBlock: @convention(block) (AnyObject, [String: Any]?) -> Void = { center, info in
+    var updated = info ?? [String: Any]()
+    if updated[MPMediaItemPropertyArtwork] == nil {
+      if let logo = UIImage(named: "NowPlayingLogo") ?? UIImage(named: "AppLogo") {
+        updated[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { _ in logo }
+      }
+    }
+    originalSetter(center, #selector(setter: MPNowPlayingInfoCenter.nowPlayingInfo), updated)
+  }
+  let newImp = imp_implementationWithBlock(newBlock)
+  method_setImplementation(method, newImp)
+}
 
 // Custom UIWindow subclass that completely suppresses the shake-to-open Dev Menu gesture
 final class NonShakingWindow: UIWindow {
@@ -53,6 +76,7 @@ class AppDelegate: ExpoAppDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     permanentlyDisableDevMenu()
+    setupNowPlayingArtworkProtection()
 
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
@@ -76,6 +100,14 @@ class AppDelegate: ExpoAppDelegate {
       )
       try AVAudioSession.sharedInstance().setActive(true)
       UIApplication.shared.beginReceivingRemoteControlEvents()
+
+      if let logo = UIImage(named: "NowPlayingLogo") ?? UIImage(named: "AppLogo") {
+        let artwork = MPMediaItemArtwork(boundsSize: CGSize(width: 512, height: 512)) { _ in logo }
+        var initialInfo = [String: Any]()
+        initialInfo[MPMediaItemPropertyTitle] = "Calmpal"
+        initialInfo[MPMediaItemPropertyArtwork] = artwork
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = initialInfo
+      }
     } catch {
       print("[AppDelegate] AudioSession setup error: \(error)")
     }

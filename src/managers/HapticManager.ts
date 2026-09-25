@@ -33,17 +33,15 @@ export class HapticManager {
   private soundHapticTimeout: ReturnType<typeof setTimeout> | null = null;
   private currentSoundProfile: SoundProfile | null = null;
   private isSoundHapticsRunning: boolean = false;
-  private isAppInForeground: boolean = true;
   private hapticStepIndex: number = 0;
 
   private constructor() {
     this.checkHardwareSupport();
     if (Platform.OS !== 'web' && AppState && typeof AppState.addEventListener === 'function') {
       AppState.addEventListener('change', (state: AppStateStatus) => {
-        this.isAppInForeground = state === 'active';
-        if (this.isAppInForeground && this.isSoundHapticsRunning) {
+        if (state === 'active' && this.isSoundHapticsRunning) {
           this.scheduleNextSoundHaptic();
-        } else if (!this.isAppInForeground && this.soundHapticTimeout) {
+        } else if (state === 'background' && this.soundHapticTimeout) {
           clearTimeout(this.soundHapticTimeout);
           this.soundHapticTimeout = null;
         }

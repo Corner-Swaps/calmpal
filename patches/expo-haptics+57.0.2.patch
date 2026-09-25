@@ -1,9 +1,10 @@
 diff --git a/node_modules/expo-haptics/ios/HapticsModule.swift b/node_modules/expo-haptics/ios/HapticsModule.swift
-index 41659a0..ccade85 100644
+index 41659a0..e6ac971 100644
 --- a/node_modules/expo-haptics/ios/HapticsModule.swift
 +++ b/node_modules/expo-haptics/ios/HapticsModule.swift
-@@ -1,27 +1,43 @@
+@@ -1,27 +1,58 @@
  import ExpoModulesCore
++import AudioToolbox
  
  public class HapticsModule: Module {
 +  private let lightGenerator = UIImpactFeedbackGenerator(style: .light)
@@ -25,6 +26,7 @@ index 41659a0..ccade85 100644
 +      guard let self else { return }
 +      self.notificationGenerator.prepare()
 +      self.notificationGenerator.notificationOccurred(notificationType.toFeedbackType())
++      AudioServicesPlaySystemSound(1521)
      }
      .runOnQueue(.main)
  
@@ -33,15 +35,27 @@ index 41659a0..ccade85 100644
 +    AsyncFunction("impactAsync") { [weak self] (style: ImpactStyle) in
 +      guard let self else { return }
 +      let generator: UIImpactFeedbackGenerator
++      let soundID: SystemSoundID
 +      switch style {
-+      case .light: generator = self.lightGenerator
-+      case .medium: generator = self.mediumGenerator
-+      case .heavy: generator = self.heavyGenerator
-+      case .soft: generator = self.softGenerator
-+      case .rigid: generator = self.rigidGenerator
++      case .light:
++        generator = self.lightGenerator
++        soundID = 1519
++      case .medium:
++        generator = self.mediumGenerator
++        soundID = 1520
++      case .heavy:
++        generator = self.heavyGenerator
++        soundID = 1521
++      case .soft:
++        generator = self.softGenerator
++        soundID = 1519
++      case .rigid:
++        generator = self.rigidGenerator
++        soundID = 1520
 +      }
        generator.prepare()
        generator.impactOccurred()
++      AudioServicesPlaySystemSound(soundID)
      }
      .runOnQueue(.main)
  
@@ -53,6 +67,7 @@ index 41659a0..ccade85 100644
 +      guard let self else { return }
 +      self.selectionGenerator.prepare()
 +      self.selectionGenerator.selectionChanged()
++      AudioServicesPlaySystemSound(1519)
      }
      .runOnQueue(.main)
    }
