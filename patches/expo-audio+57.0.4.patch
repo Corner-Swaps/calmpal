@@ -350,18 +350,48 @@ index 0742943..6d5867a 100644
      owningRegistry?.remove(self)
  
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
-index e977f57..b4946ff 100644
+index e977f57..876078a 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
 +++ b/node_modules/expo-audio/ios/MediaController.swift
-@@ -14,6 +14,7 @@ class MediaController {
+@@ -14,6 +14,11 @@ class MediaController {
    private var artworkLoadToken: UUID?
    private var currentArtworkItemIdentifier: ObjectIdentifier?
    private var isLiveStream = false
 +  private var areRemoteCommandsConfigured = false
++  private var lastAppliedIsRateActive: Bool?
++  private var lastAppliedPlayerId: String?
++  private var lastAppliedCurrentItem: ObjectIdentifier?
++  private var lastInfoUpdateTime: TimeInterval = 0
  
    func setActivePlayer(_ player: AudioPlayer?, options: LockScreenOptions? = nil) {
      performOnMain {
-@@ -67,10 +68,18 @@ class MediaController {
+@@ -53,6 +58,25 @@ class MediaController {
+     }
+ 
+     let nextArtworkItemIdentifier = player.ref.currentItem.map { ObjectIdentifier($0) }
++    let isRateActive = player.isPlayingIntent
++    let now = ProcessInfo.processInfo.systemUptime
++
++    let stateChanged = (isRateActive != lastAppliedIsRateActive) ||
++                       (player.id != lastAppliedPlayerId) ||
++                       (nextArtworkItemIdentifier != lastAppliedCurrentItem)
++
++    // Only update nowPlayingInfo if playback state changed (play/pause/track change),
++    // or if at least 5 seconds have elapsed to keep elapsed time calibrated.
++    // This prevents frequent updates from interrupting the Dynamic Island waveform animation.
++    if !stateChanged && (now - lastInfoUpdateTime < 5.0) {
++      return
++    }
++
++    lastAppliedIsRateActive = isRateActive
++    lastAppliedPlayerId = player.id
++    lastAppliedCurrentItem = nextArtworkItemIdentifier
++    lastInfoUpdateTime = now
++
+     if currentArtworkItemIdentifier != nextArtworkItemIdentifier {
+       resetArtworkState()
+       currentArtworkItemIdentifier = nextArtworkItemIdentifier
+@@ -67,10 +91,18 @@ class MediaController {
        applyArtwork(&nowPlayingInfo, from: userMetadata, for: player, currentItemIdentifier: nextArtworkItemIdentifier)
      } else {
        resetArtworkState()
@@ -381,7 +411,7 @@ index e977f57..b4946ff 100644
      nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
    }
  
-@@ -80,11 +89,20 @@ class MediaController {
+@@ -80,11 +112,19 @@ class MediaController {
        info.removeValue(forKey: MPMediaItemPropertyPlaybackDuration)
        info.removeValue(forKey: MPNowPlayingInfoPropertyElapsedPlaybackTime)
      } else {
@@ -399,12 +429,11 @@ index e977f57..b4946ff 100644
 +    remoteCommandCenter.playCommand.isEnabled = true
 +    remoteCommandCenter.pauseCommand.isEnabled = true
 +    remoteCommandCenter.togglePlayPauseCommand.isEnabled = true
-+    nowPlayingInfoCenter.playbackState = isRateActive ? .playing : .paused
-+    logDebug("applyPlaybackInfo: isRateActive=\(isRateActive), playingIntent=\(player.isPlayingIntent), isPlaying=\(player.isPlaying), rate=\(player.ref.rate), playbackState=\(nowPlayingInfoCenter.playbackState.rawValue)")
++    logDebug("applyPlaybackInfo: isRateActive=\(isRateActive), playingIntent=\(player.isPlayingIntent), isPlaying=\(player.isPlaying), rate=\(player.ref.rate)")
    }
  
    private func applyUserMetadata(_ info: inout [String: Any], from metadata: Metadata) {
-@@ -130,6 +148,53 @@ class MediaController {
+@@ -130,6 +170,53 @@ class MediaController {
      }
    }
  
@@ -458,7 +487,7 @@ index e977f57..b4946ff 100644
    private func applyArtwork(
      _ info: inout [String: Any],
      from metadata: Metadata,
-@@ -138,7 +203,11 @@ class MediaController {
+@@ -138,7 +225,11 @@ class MediaController {
    ) {
      guard let artworkUrl = metadata.artworkUrl else {
        resetArtworkState()
@@ -471,7 +500,7 @@ index e977f57..b4946ff 100644
        return
      }
  
-@@ -173,20 +242,23 @@ class MediaController {
+@@ -173,14 +264,16 @@ class MediaController {
          return
        }
  
@@ -491,14 +520,18 @@ index e977f57..b4946ff 100644
        self.nowPlayingInfoCenter.nowPlayingInfo = latestNowPlayingInfo
      }
    }
- 
-   private func clearNowPlayingInfoOnMain() {
-     nowPlayingInfoCenter.nowPlayingInfo = nil
-+    nowPlayingInfoCenter.playbackState = .stopped
-     activePlayer = nil
+@@ -191,6 +284,10 @@ class MediaController {
      isLiveStream = false
      resetArtworkState()
-@@ -208,6 +280,16 @@ class MediaController {
+     currentArtworkItemIdentifier = nil
++    lastAppliedIsRateActive = nil
++    lastAppliedPlayerId = nil
++    lastAppliedCurrentItem = nil
++    lastInfoUpdateTime = 0
+   }
+ 
+   private func performOnMain(_ operation: @escaping () -> Void) {
+@@ -208,6 +305,16 @@ class MediaController {
    }
  
    private func loadArtworkFromURL(url: URL, completion: @escaping (MPMediaItemArtwork?) -> Void) {
@@ -515,7 +548,7 @@ index e977f57..b4946ff 100644
      URLSession.shared.dataTask(with: url) { data, _, error in
        if error != nil {
          self.performOnMain {
-@@ -231,81 +313,191 @@ class MediaController {
+@@ -231,81 +338,191 @@ class MediaController {
      .resume()
    }
  
@@ -540,10 +573,10 @@ index e977f57..b4946ff 100644
        }
 +    }
 +  }
++
++  private var lastRemoteCommandTime: TimeInterval = 0
  
 -      player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
-+  private var lastRemoteCommandTime: TimeInterval = 0
-+
 +  private func handleRemotePlay() -> MPRemoteCommandHandlerStatus {
 +    let now = ProcessInfo.processInfo.systemUptime
 +    logDebug("handleRemotePlay triggered at \(now), lastCmdTime=\(lastRemoteCommandTime), player=\(self.activePlayer?.id ?? "nil")")
@@ -641,31 +674,31 @@ index e977f57..b4946ff 100644
      }
 +    return .success
 +  }
- 
--    remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
--      guard let player = self?.activePlayer,
--      let event = event as? MPChangePlaybackPositionCommandEvent else {
--        return .commandFailed
++
 +  private func enableRemoteCommands(options: LockScreenOptions?) {
 +    if !areRemoteCommandsConfigured {
 +      areRemoteCommandsConfigured = true
 +
 +      remoteCommandCenter.playCommand.addTarget { [weak self] _ in
 +        return self?.handleRemotePlay() ?? .commandFailed
++      }
+ 
+-    remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+-      guard let player = self?.activePlayer,
+-      let event = event as? MPChangePlaybackPositionCommandEvent else {
+-        return .commandFailed
++      remoteCommandCenter.pauseCommand.addTarget { [weak self] _ in
++        return self?.handleRemotePause() ?? .commandFailed
        }
  
 -      let seekTime = CMTime(seconds: event.positionTime, preferredTimescale: 1)
 -      player.ref.seek(to: seekTime)
-+      remoteCommandCenter.pauseCommand.addTarget { [weak self] _ in
-+        return self?.handleRemotePause() ?? .commandFailed
++      remoteCommandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
++        return self?.handleRemoteToggle() ?? .commandFailed
 +      }
  
 -      return .success
 -    }
-+      remoteCommandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
-+        return self?.handleRemoteToggle() ?? .commandFailed
-+      }
-+
 +      remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
 +        guard let player = self?.activePlayer,
 +        let event = event as? MPChangePlaybackPositionCommandEvent else {
@@ -698,18 +731,10 @@ index e977f57..b4946ff 100644
 +        let currentTime = player.ref.currentTime()
 +        let seekTime = currentTime + CMTime(seconds: event.interval, preferredTimescale: 1)
 +        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
- 
--    remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
--    remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in
--      guard let player = self?.activePlayer,
--      let event = event as? MPSkipIntervalCommandEvent else {
--        return .commandFailed
++
 +        return .success
-       }
- 
--      let currentTime = player.ref.currentTime()
--      let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
--      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
++      }
++
 +      remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
 +      remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in
 +        guard let player = self?.activePlayer,
@@ -717,14 +742,21 @@ index e977f57..b4946ff 100644
 +          return .commandFailed
 +        }
  
--      return .success
+-    remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
+-    remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in
+-      guard let player = self?.activePlayer,
+-      let event = event as? MPSkipIntervalCommandEvent else {
+-        return .commandFailed
 +        let currentTime = player.ref.currentTime()
 +        let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
 +        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
 +
 +        return .success
-+      }
-+
+       }
+ 
+-      let currentTime = player.ref.currentTime()
+-      let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
+-      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
 +      remoteCommandCenter.nextTrackCommand.addTarget { [weak self] _ in
 +        guard let player = self?.activePlayer else {
 +          return .commandFailed
@@ -732,7 +764,8 @@ index e977f57..b4946ff 100644
 +        player.emit(event: "playbackStatusUpdate", payload: ["remoteNext": true])
 +        return .success
 +      }
-+
+ 
+-      return .success
 +      remoteCommandCenter.previousTrackCommand.addTarget { [weak self] _ in
 +        guard let player = self?.activePlayer else {
 +          return .commandFailed
@@ -750,7 +783,7 @@ index e977f57..b4946ff 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
      remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
      remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
-@@ -315,16 +507,10 @@ class MediaController {
+@@ -315,16 +532,10 @@ class MediaController {
      remoteCommandCenter.playCommand.isEnabled = false
      remoteCommandCenter.pauseCommand.isEnabled = false
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = false
