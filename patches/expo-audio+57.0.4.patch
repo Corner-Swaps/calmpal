@@ -51,10 +51,19 @@ index d265606..7fce9ee 100644
  #endif
  
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0742943..f229d6a 100644
+index 0742943..0b45f0d 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
-@@ -24,6 +24,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -17,13 +17,16 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+       currentRate = max(0, currentRate)
+     }
+   }
++  var isPlayingIntent: Bool = false
+   let interval: Double
+   var wasPlaying = false
+   var isPaused: Bool {
+-    ref.rate == 0.0
++    !isPlayingIntent || ref.rate == 0.0
    }
    var samplingEnabled = false
    var keepAudioSessionActive = false
@@ -63,14 +72,14 @@ index 0742943..f229d6a 100644
  
    var isLooping = false {
      didSet {
-@@ -31,16 +33,46 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -31,16 +34,46 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
          return
        }
        if isLooping {
 -        ref.actionAtItemEnd = .advance
 -        enqueueNextLoopItem()
 +        setupLooper()
-+        if ref.timeControlStatus == .playing {
++        if ref.timeControlStatus == .playing || isPlayingIntent {
 +          ref.playImmediately(atRate: effectiveRate)
 +        }
        } else {
@@ -103,7 +112,7 @@ index 0742943..f229d6a 100644
 +    looperStatusObserver = looper.observe(\.status, options: [.initial, .new]) { [weak self, weak queuePlayer] l, _ in
 +      guard let self, let queuePlayer else { return }
 +      if l.status == .ready {
-+        if self.ref.timeControlStatus == .playing || self.wasPlaying {
++        if self.isPlayingIntent || self.ref.timeControlStatus == .playing || self.wasPlaying {
 +          queuePlayer.playImmediately(atRate: self.effectiveRate)
 +        }
 +      }
@@ -113,7 +122,15 @@ index 0742943..f229d6a 100644
    private var source: AudioSource?
  
    // MARK: Observers
-@@ -95,14 +127,16 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -88,29 +121,39 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+   }
+ 
+   var isPlaying: Bool {
+-    ref.timeControlStatus == .playing
++    isPlayingIntent && (ref.timeControlStatus == .playing || ref.timeControlStatus == .waitingToPlayAtSpecifiedRate || ref.rate > 0)
+   }
+ 
+   var isBuffering: Bool {
      ref.isBuffering(isPlaying: isPlaying)
    }
  
@@ -126,6 +143,8 @@ index 0742943..f229d6a 100644
 -    ref.actionAtItemEnd = isLooping ? .advance : .pause
 -    if isLooping {
 -      enqueueNextLoopItem()
++    isPlayingIntent = true
++    try? AVAudioSession.sharedInstance().setActive(true)
 +    if isLooping && playerLooper == nil {
 +      setupLooper()
 +    }
@@ -134,7 +153,21 @@ index 0742943..f229d6a 100644
      }
      addPlaybackEndNotification()
      registerTimeObserver()
-@@ -207,8 +241,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
++    currentRate = rate
+     ref.playImmediately(atRate: rate)
++    ref.rate = rate
+ 
+     if isActiveForLockScreen {
+       MediaController.shared.updateNowPlayingInfo(for: self)
+     }
++    self.emit(event: AudioConstants.playbackStatus, payload: [
++      "remotePlay": true,
++      "playing": true
++    ])
+   }
+ 
+   func setSamplingEnabled(enabled: Bool) {
+@@ -207,8 +250,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
            self.updateStatus(with: [
              "isLoaded": true
            ])
@@ -145,7 +178,7 @@ index 0742943..f229d6a 100644
            }
            if shouldInstallAudioTap || samplingEnabled {
              installTap()
-@@ -228,10 +262,10 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -228,10 +271,10 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
          guard let self else {
            return
          }
@@ -159,7 +192,7 @@ index 0742943..f229d6a 100644
          if self.samplingEnabled && self.isLoaded {
            self.uninstallTap()
            self.installTap()
-@@ -264,6 +298,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -264,6 +307,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
      self.source = source
      let wasPlaying = ref.timeControlStatus == .playing
      let wasSamplingEnabled = samplingEnabled
@@ -168,7 +201,7 @@ index 0742943..f229d6a 100644
      removeQueuedLoopItems()
      ref.pause()
  
-@@ -319,6 +355,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -319,6 +364,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    private func teardownPlayer() {
@@ -178,7 +211,7 @@ index 0742943..f229d6a 100644
      removeQueuedLoopItems()
      if samplingEnabled {
        uninstallTap()
-@@ -405,6 +444,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -405,6 +453,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    private func replacePlayerItem(with item: AVPlayerItem?) {
@@ -188,7 +221,7 @@ index 0742943..f229d6a 100644
      if let queuePlayer = ref as? AVQueuePlayer {
        queuePlayer.removeAllItems()
        if let item {
-@@ -413,6 +455,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -413,6 +464,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
      } else {
        ref.replaceCurrentItem(with: item)
      }
@@ -198,7 +231,7 @@ index 0742943..f229d6a 100644
    }
  
    private func enqueueNextLoopItem() {
-@@ -449,24 +494,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -449,24 +503,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
        object: nil,
        queue: nil
      ) { [weak self] notification in
@@ -237,9 +270,11 @@ index 0742943..f229d6a 100644
        }
      }
    }
-@@ -497,13 +548,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -496,14 +556,35 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+   }
  
    func pause() {
++    isPlayingIntent = false
      ref.pause()
 +    if isActiveForLockScreen {
 +      MediaController.shared.updateNowPlayingInfo(for: self)
@@ -252,7 +287,10 @@ index 0742943..f229d6a 100644
  
    func resumePlayback() {
 -    ref.play()
++    isPlayingIntent = true
++    try? AVAudioSession.sharedInstance().setActive(true)
 +    ref.playImmediately(atRate: effectiveRate)
++    ref.rate = effectiveRate
 +    if isActiveForLockScreen {
 +      MediaController.shared.updateNowPlayingInfo(for: self)
 +    }
@@ -270,7 +308,7 @@ index 0742943..f229d6a 100644
      owningRegistry?.remove(self)
  
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
-index e977f57..8ef056f 100644
+index e977f57..819000b 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
 +++ b/node_modules/expo-audio/ios/MediaController.swift
 @@ -14,6 +14,7 @@ class MediaController {
@@ -311,7 +349,7 @@ index e977f57..8ef056f 100644
        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
      }
 -    info[MPNowPlayingInfoPropertyPlaybackRate] = player.isPlaying ? player.ref.rate : 0.0
-+    let isRateActive = player.isPlaying || player.ref.rate > 0 || player.ref.timeControlStatus != .paused
++    let isRateActive = player.isPlayingIntent || player.isPlaying || player.ref.rate > 0
 +    info[MPNowPlayingInfoPropertyPlaybackRate] = isRateActive ? 1.0 : 0.0
      info[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
    }
@@ -420,7 +458,7 @@ index e977f57..8ef056f 100644
      URLSession.shared.dataTask(with: url) { data, _, error in
        if error != nil {
          self.performOnMain {
-@@ -232,80 +306,113 @@ class MediaController {
+@@ -232,80 +306,104 @@ class MediaController {
    }
  
    private func enableRemoteCommands(options: LockScreenOptions?) {
@@ -444,8 +482,6 @@ index e977f57..8ef056f 100644
 -        return .commandFailed
 +        let rate: Float = player.currentRate > 0 ? player.currentRate : 1.0
 +        player.play(at: rate)
-+        self.updateNowPlayingInfo(for: player)
-+        player.emit(event: "playbackStatusUpdate", payload: ["remotePlay": true, "playing": true])
 +        return .success
        }
  
@@ -461,8 +497,6 @@ index e977f57..8ef056f 100644
 -      guard let player = self?.activePlayer else {
 -        return .commandFailed
 +        player.pause()
-+        self.updateNowPlayingInfo(for: player)
-+        player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true, "playing": false])
 +        return .success
        }
  
@@ -475,16 +509,11 @@ index e977f57..8ef056f 100644
 +          return .commandFailed
 +        }
 +
-+        let isCurrentlyPlaying = player.isPlaying || player.ref.rate > 0 || player.ref.timeControlStatus != .paused
-+        if isCurrentlyPlaying {
++        if player.isPlayingIntent {
 +          player.pause()
-+          self.updateNowPlayingInfo(for: player)
-+          player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true, "playing": false])
 +        } else {
 +          let rate: Float = player.currentRate > 0 ? player.currentRate : 1.0
 +          player.play(at: rate)
-+          self.updateNowPlayingInfo(for: player)
-+          player.emit(event: "playbackStatusUpdate", payload: ["remotePlay": true, "playing": true])
 +        }
 +        return .success
        }
@@ -583,7 +612,7 @@ index e977f57..8ef056f 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
      remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
      remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
-@@ -315,16 +422,10 @@ class MediaController {
+@@ -315,16 +413,10 @@ class MediaController {
      remoteCommandCenter.playCommand.isEnabled = false
      remoteCommandCenter.pauseCommand.isEnabled = false
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = false
