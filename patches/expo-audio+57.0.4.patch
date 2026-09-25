@@ -54,7 +54,7 @@ index d265606..556d872 100644
        break
      }
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0742943..e8439f6 100644
+index 0742943..799d412 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
 @@ -17,13 +17,16 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
@@ -148,7 +148,7 @@ index 0742943..e8439f6 100644
 -      enqueueNextLoopItem()
 +    isPlayingIntent = true
 +    try? AVAudioSession.sharedInstance().setActive(true)
-+    if isLooping && playerLooper == nil {
++    if isLooping && (playerLooper == nil || playerLooper?.status != .ready) {
 +      setupLooper()
 +    }
 +    if playerLooper == nil {
