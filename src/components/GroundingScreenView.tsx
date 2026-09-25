@@ -40,6 +40,7 @@ import { InstagramLogoView } from './InstagramLogoView';
 import { FullCircularTimerView } from './FullCircularTimerView';
 import { TallFusedMeasuringLinesView } from './TallFusedMeasuringLinesView';
 import { RelaxingSoundsFullView } from './RelaxingSoundsFullView';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 export type ActiveScreenOverlay = 'none' | 'editTimer' | 'soundSelection';
 
@@ -57,7 +58,6 @@ export const GroundingScreenView: React.FC = () => {
   const [isDraggingTimer, setIsDraggingTimer] = useState<boolean>(false);
   const [isZenMode, setIsZenMode] = useState<boolean>(false);
   const [isArtistInfoVisible, setIsArtistInfoVisible] = useState<boolean>(false);
-  const [isInstagramGlowing, setIsInstagramGlowing] = useState<boolean>(false);
   const [timerEndTimestamp, setTimerEndTimestamp] = useState<number | null>(null);
 
   const editTimerFadeAnim = useRef(new Animated.Value(0)).current;
@@ -153,13 +153,17 @@ export const GroundingScreenView: React.FC = () => {
     return () => clearInterval(interval);
   }, [isPlaying, isDraggingTimer, activeOverlay, timerEndTimestamp, totalTimerDuration, audioManager]);
 
-  // Instagram glow animation
-  const triggerInstagramGlow = useCallback(() => {
-    setIsInstagramGlowing(true);
-    setTimeout(() => {
-      setIsInstagramGlowing(false);
-    }, 2000);
-  }, []);
+  // Keep screen awake while audio playback is active
+  useEffect(() => {
+    if (isPlaying) {
+      activateKeepAwakeAsync().catch(() => {});
+    } else {
+      deactivateKeepAwake().catch(() => {});
+    }
+    return () => {
+      deactivateKeepAwake().catch(() => {});
+    };
+  }, [isPlaying]);
 
   const togglePlayPause = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.6, 0.6);
@@ -198,18 +202,17 @@ export const GroundingScreenView: React.FC = () => {
       setIsPlaying(true);
     }
 
-    if (timerEndTimestamp === null) {
-      const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
-      const end = Date.now() + dur * 1000;
-      setRemainingTimerSeconds(dur);
-      setTimerEndTimestamp(end);
-      audioManager.setSleepTimerTargetDate(new Date(end));
-    }
+    // Always restart timer from the full configured session duration when skipping sections
+    const dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
+    const end = Date.now() + dur * 1000;
+    setRemainingTimerSeconds(dur);
+    setTimerEndTimestamp(end);
+    audioManager.setSleepTimerTargetDate(new Date(end));
 
     if (!audioManager.isAudioPlaying) {
       await audioManager.start();
     }
-  }, [activeProfile, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, isPlaying, audioManager, hapticManager]);
+  }, [activeProfile, totalTimerDuration, isPlaying, audioManager, hapticManager]);
 
   const selectNextSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
@@ -226,18 +229,17 @@ export const GroundingScreenView: React.FC = () => {
       setIsPlaying(true);
     }
 
-    if (timerEndTimestamp === null) {
-      const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
-      const end = Date.now() + dur * 1000;
-      setRemainingTimerSeconds(dur);
-      setTimerEndTimestamp(end);
-      audioManager.setSleepTimerTargetDate(new Date(end));
-    }
+    // Always restart timer from the full configured session duration when skipping sections
+    const dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
+    const end = Date.now() + dur * 1000;
+    setRemainingTimerSeconds(dur);
+    setTimerEndTimestamp(end);
+    audioManager.setSleepTimerTargetDate(new Date(end));
 
     if (!audioManager.isAudioPlaying) {
       await audioManager.start();
     }
-  }, [activeProfile, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, isPlaying, audioManager, hapticManager]);
+  }, [activeProfile, totalTimerDuration, isPlaying, audioManager, hapticManager]);
 
   const handleConfirmEditTimer = useCallback(() => {
     hapticManager.playTransientHeartbeat(0.5, 0.6);
@@ -369,7 +371,7 @@ export const GroundingScreenView: React.FC = () => {
                 }}
                 style={[
                   styles.navButton,
-                  { width: artistCredit ? 54 : 72, opacity: isZenMode ? 0.6 : 1.0 },
+                  { opacity: isZenMode ? 0.6 : 1.0 },
                 ]}
                 accessible={true}
                 accessibilityRole="button"
@@ -394,11 +396,8 @@ export const GroundingScreenView: React.FC = () => {
                   }
                   const nextVisible = !isArtistInfoVisible;
                   setIsArtistInfoVisible(nextVisible);
-                  if (nextVisible) {
-                    triggerInstagramGlow();
-                  }
                 }}
-                style={[styles.navButton, { width: 54 }]}
+                style={styles.navButton}
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel={isArtistInfoVisible ? "Close artist info" : "View artist profile"}
@@ -449,15 +448,7 @@ export const GroundingScreenView: React.FC = () => {
                   onPress={() => {
                     Linking.openURL(artistCredit.instagramURL).catch(() => {});
                   }}
-                  style={[
-                    styles.instagramCapsule,
-                    {
-                      backgroundColor: isInstagramGlowing ? 'rgba(255, 255, 255, 0.26)' : 'rgba(255, 255, 255, 0.18)',
-                      borderColor: isInstagramGlowing ? 'rgba(255, 255, 255, 0.78)' : 'rgba(255, 255, 255, 0.35)',
-                      borderWidth: isInstagramGlowing ? 1.3 : 1.0,
-                      shadowOpacity: isInstagramGlowing ? 0.55 : 0.0,
-                    },
-                  ]}
+                  style={styles.instagramCapsule}
                   accessible={true}
                   accessibilityRole="link"
                   accessibilityLabel={`Open ${artistCredit.name} on Instagram`}
@@ -602,13 +593,12 @@ export const GroundingScreenView: React.FC = () => {
             if (!isPlaying) {
               setIsPlaying(true);
             }
-            if (timerEndTimestamp === null) {
-              const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
-              const end = Date.now() + dur * 1000;
-              setRemainingTimerSeconds(dur);
-              setTimerEndTimestamp(end);
-              audioManager.setSleepTimerTargetDate(new Date(end));
-            }
+            // Always restart timer from the full configured session duration when selecting a sound
+            const dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
+            const end = Date.now() + dur * 1000;
+            setRemainingTimerSeconds(dur);
+            setTimerEndTimestamp(end);
+            audioManager.setSleepTimerTargetDate(new Date(end));
             setActiveOverlay('none');
             audioManager.setActiveProfile(profile);
 
@@ -648,9 +638,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 16,
   },
   navButton: {
-    height: 44,
+    width: 47,
+    height: 47,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -695,9 +687,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 23,
     paddingVertical: 11.5,
     borderRadius: 999,
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    borderColor: 'rgba(255, 255, 255, 0.35)',
+    borderWidth: 1.0,
   },
   instagramHandleText: {
     fontSize: 18.4,

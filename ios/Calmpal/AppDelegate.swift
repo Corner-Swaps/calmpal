@@ -19,6 +19,9 @@ class AppDelegate: ExpoAppDelegate {
     delegate.dependencyProvider = RCTAppDependencyProvider()
 
     reactNativeDelegate = delegate
+    #if DEBUG && canImport(React)
+    factory.devMenuConfiguration = RCTDevMenuConfiguration(devMenuEnabled: false, shakeGestureEnabled: false, keyboardShortcutsEnabled: false)
+    #endif
     reactNativeFactory = factory
 
 #if os(iOS) || os(tvOS)
