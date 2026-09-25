@@ -11,6 +11,9 @@ class MockAudioPlayer {
   });
   release = jest.fn();
   remove = jest.fn();
+  setActiveForLockScreen = jest.fn();
+  clearLockScreenControls = jest.fn();
+  addListener = jest.fn().mockReturnValue({ remove: jest.fn() });
 }
 
 module.exports = {

@@ -1,5 +1,5 @@
 diff --git a/node_modules/expo-audio/ios/AudioModule.swift b/node_modules/expo-audio/ios/AudioModule.swift
-index d265606..5b933bd 100644
+index d265606..32a5e06 100644
 --- a/node_modules/expo-audio/ios/AudioModule.swift
 +++ b/node_modules/expo-audio/ios/AudioModule.swift
 @@ -597,7 +597,10 @@ public class AudioModule: Module {
@@ -28,7 +28,20 @@ index d265606..5b933bd 100644
    }
  
    @objc private func handleAudioSessionRouteChange(_ notification: Notification) {
-@@ -808,6 +809,8 @@ public class AudioModule: Module {
+@@ -633,6 +634,12 @@ public class AudioModule: Module {
+     switch reason {
+     case .oldDeviceUnavailable:
+       pauseAllPlayers()
++    case .newDeviceAvailable:
++      registry.allPlayers.values.forEach { player in
++        if player.isPlaying || player.wasPlaying {
++          player.ref.playImmediately(atRate: player.effectiveRate)
++        }
++      }
+     default:
+       break
+     }
+@@ -808,6 +815,8 @@ public class AudioModule: Module {
  #else
          categoryOptions.insert(.allowBluetooth)
  #endif
@@ -38,7 +51,7 @@ index d265606..5b933bd 100644
  #endif
  
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0742943..9cc2f92 100644
+index 0742943..b238452 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
 @@ -24,6 +24,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
@@ -100,7 +113,13 @@ index 0742943..9cc2f92 100644
    private var source: AudioSource?
  
    // MARK: Observers
-@@ -100,9 +132,11 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -95,14 +127,16 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+     ref.isBuffering(isPlaying: isPlaying)
+   }
+ 
+-  private var effectiveRate: Float {
++  var effectiveRate: Float {
+     currentRate > 0 ? currentRate : 1.0
    }
  
    func play(at rate: Float) {
@@ -126,7 +145,7 @@ index 0742943..9cc2f92 100644
            }
            if shouldInstallAudioTap || samplingEnabled {
              installTap()
-@@ -228,10 +262,10 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -228,16 +262,27 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
          guard let self else {
            return
          }
@@ -140,7 +159,24 @@ index 0742943..9cc2f92 100644
          if self.samplingEnabled && self.isLoaded {
            self.uninstallTap()
            self.installTap()
-@@ -264,6 +298,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+         }
+       }
+       .store(in: &cancellables)
++
++    ref.publisher(for: \.timeControlStatus)
++      .sink { [weak self] status in
++        guard let self else {
++          return
++        }
++        self.updateStatus(with: [
++          "playing": status == .playing
++        ])
++      }
++      .store(in: &cancellables)
+   }
+ 
+   func replaceWithPreloadedItem(_ item: AVPlayerItem?) {
+@@ -264,6 +309,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
      self.source = source
      let wasPlaying = ref.timeControlStatus == .playing
      let wasSamplingEnabled = samplingEnabled
@@ -149,7 +185,7 @@ index 0742943..9cc2f92 100644
      removeQueuedLoopItems()
      ref.pause()
  
-@@ -319,6 +355,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -319,6 +366,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    private func teardownPlayer() {
@@ -159,7 +195,7 @@ index 0742943..9cc2f92 100644
      removeQueuedLoopItems()
      if samplingEnabled {
        uninstallTap()
-@@ -405,6 +444,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -405,6 +455,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    private func replacePlayerItem(with item: AVPlayerItem?) {
@@ -169,7 +205,7 @@ index 0742943..9cc2f92 100644
      if let queuePlayer = ref as? AVQueuePlayer {
        queuePlayer.removeAllItems()
        if let item {
-@@ -413,6 +455,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -413,6 +466,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
      } else {
        ref.replaceCurrentItem(with: item)
      }
@@ -179,7 +215,7 @@ index 0742943..9cc2f92 100644
    }
  
    private func enqueueNextLoopItem() {
-@@ -449,24 +494,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -449,24 +505,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
        object: nil,
        queue: nil
      ) { [weak self] notification in
@@ -218,7 +254,13 @@ index 0742943..9cc2f92 100644
        }
      }
    }
-@@ -500,10 +551,13 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -497,13 +559,19 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+ 
+   func pause() {
+     ref.pause()
++    updateStatus(with: [
++      "playing": false
++    ])
    }
  
    func resumePlayback() {
@@ -233,3 +275,53 @@ index 0742943..9cc2f92 100644
      ref.currentItem?.cancelPendingSeeks()
      owningRegistry?.remove(self)
  
+diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
+index e977f57..966573a 100644
+--- a/node_modules/expo-audio/ios/MediaController.swift
++++ b/node_modules/expo-audio/ios/MediaController.swift
+@@ -303,9 +303,27 @@ class MediaController {
+       return .success
+     }
+ 
++    remoteCommandCenter.nextTrackCommand.addTarget { [weak self] _ in
++      guard let player = self?.activePlayer else {
++        return .commandFailed
++      }
++      player.emit(event: "playbackStatusUpdate", payload: ["remoteNext": true])
++      return .success
++    }
++
++    remoteCommandCenter.previousTrackCommand.addTarget { [weak self] _ in
++      guard let player = self?.activePlayer else {
++        return .commandFailed
++      }
++      player.emit(event: "playbackStatusUpdate", payload: ["remotePrevious": true])
++      return .success
++    }
++
+     remoteCommandCenter.playCommand.isEnabled = true
+     remoteCommandCenter.pauseCommand.isEnabled = true
+     remoteCommandCenter.togglePlayPauseCommand.isEnabled = true
++    remoteCommandCenter.nextTrackCommand.isEnabled = true
++    remoteCommandCenter.previousTrackCommand.isEnabled = true
+     remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
+     remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
+     remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
+@@ -315,6 +333,8 @@ class MediaController {
+     remoteCommandCenter.playCommand.isEnabled = false
+     remoteCommandCenter.pauseCommand.isEnabled = false
+     remoteCommandCenter.togglePlayPauseCommand.isEnabled = false
++    remoteCommandCenter.nextTrackCommand.isEnabled = false
++    remoteCommandCenter.previousTrackCommand.isEnabled = false
+     remoteCommandCenter.changePlaybackPositionCommand.isEnabled = false
+     remoteCommandCenter.skipForwardCommand.isEnabled = false
+     remoteCommandCenter.skipBackwardCommand.isEnabled = false
+@@ -323,6 +343,8 @@ class MediaController {
+     remoteCommandCenter.playCommand.removeTarget(self)
+     remoteCommandCenter.pauseCommand.removeTarget(self)
+     remoteCommandCenter.togglePlayPauseCommand.removeTarget(self)
++    remoteCommandCenter.nextTrackCommand.removeTarget(self)
++    remoteCommandCenter.previousTrackCommand.removeTarget(self)
+     remoteCommandCenter.changePlaybackPositionCommand.removeTarget(self)
+     remoteCommandCenter.skipForwardCommand.removeTarget(self)
+     remoteCommandCenter.skipBackwardCommand.removeTarget(self)

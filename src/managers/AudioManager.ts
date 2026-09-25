@@ -1,8 +1,8 @@
 // AudioManager: Cross-platform implementation of Swift AudioManager using expo-audio
 import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from 'expo-audio';
 import { Platform, AppState, AppStateStatus } from 'react-native';
-import { SoundProfile, SOUND_PROFILE_RESOURCE_FILES } from '../models/SoundProfile';
-import { allSoundBanners } from '../models/SoundBannerTheme';
+import { SoundProfile, SOUND_PROFILE_RESOURCE_FILES, SOUND_ARTIST_CREDITS } from '../models/SoundProfile';
+import { allSoundBanners, bannerFor } from '../models/SoundBannerTheme';
 import { SOUND_ASSETS } from '../assets/assetMap';
 
 export type AudioStateListener = (state: {
@@ -67,7 +67,7 @@ export class AudioManager {
         await setAudioModeAsync({
           playsInSilentMode: true,
           shouldPlayInBackground: true,
-          interruptionMode: 'mixWithOthers',
+          interruptionMode: 'doNotMix',
         });
         this.isAudioConfigured = true;
       } catch (err) {
@@ -201,6 +201,9 @@ export class AudioManager {
       if (this.audioPlayer) {
         try {
           this.audioPlayer.pause();
+          if (typeof this.audioPlayer.clearLockScreenControls === 'function') {
+            this.audioPlayer.clearLockScreenControls();
+          }
           this.audioPlayer.release();
         } catch {}
         this.audioPlayer = null;
@@ -253,8 +256,43 @@ export class AudioManager {
           } catch {}
           return;
         }
+
+        const banner = bannerFor(profile);
+        const artistCredit = SOUND_ARTIST_CREDITS[profile];
+
         player.loop = true;
         player.volume = currentTargetVolume;
+
+        if (typeof player.setActiveForLockScreen === 'function') {
+          try {
+            player.setActiveForLockScreen(true, {
+              title: banner ? banner.title : 'Soundscape',
+              artist: artistCredit ? artistCredit.name : 'Calmpal',
+              albumTitle: 'Calmpal Soundscapes',
+            }, {
+              showSeekForward: false,
+              showSeekBackward: false,
+            });
+          } catch {}
+        }
+
+        if (typeof player.addListener === 'function') {
+          player.addListener('playbackStatusUpdate', (status: any) => {
+            if (status?.remoteNext) {
+              this.selectNextSound();
+              return;
+            }
+            if (status?.remotePrevious) {
+              this.selectPreviousSound();
+              return;
+            }
+            if (typeof status?.playing === 'boolean' && this.isAudioPlaying !== status.playing) {
+              this.isAudioPlaying = status.playing;
+              this.notify();
+            }
+          });
+        }
+
         player.play();
         this.audioPlayer = player;
         this.isAudioPlaying = true;

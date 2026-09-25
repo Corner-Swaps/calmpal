@@ -72,9 +72,10 @@ class AppDelegate: ExpoAppDelegate {
       try AVAudioSession.sharedInstance().setCategory(
         .playback,
         mode: .default,
-        options: [.mixWithOthers, .allowBluetoothA2DP]
+        options: [.allowBluetoothA2DP, .allowAirPlay]
       )
       try AVAudioSession.sharedInstance().setActive(true)
+      UIApplication.shared.beginReceivingRemoteControlEvents()
     } catch {
       print("[AppDelegate] AudioSession setup error: \(error)")
     }
