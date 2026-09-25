@@ -54,7 +54,7 @@ index d265606..556d872 100644
        break
      }
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0742943..2bf2318 100644
+index 0742943..6d5867a 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
 @@ -17,13 +17,16 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
@@ -75,7 +75,7 @@ index 0742943..2bf2318 100644
  
    var isLooping = false {
      didSet {
-@@ -31,16 +34,46 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -31,16 +34,48 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
          return
        }
        if isLooping {
@@ -117,6 +117,8 @@ index 0742943..2bf2318 100644
 +      if l.status == .ready {
 +        if self.isPlayingIntent || self.ref.timeControlStatus == .playing || self.wasPlaying {
 +          queuePlayer.playImmediately(atRate: self.effectiveRate)
++          queuePlayer.rate = self.effectiveRate
++          queuePlayer.play()
 +        }
 +      }
 +    }
@@ -125,7 +127,7 @@ index 0742943..2bf2318 100644
    private var source: AudioSource?
  
    // MARK: Observers
-@@ -88,25 +121,38 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -88,28 +123,50 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    var isPlaying: Bool {
@@ -144,31 +146,49 @@ index 0742943..2bf2318 100644
  
    func play(at rate: Float) {
 -    ref.actionAtItemEnd = isLooping ? .advance : .pause
-+    isPlayingIntent = true
-+    try? AVAudioSession.sharedInstance().setActive(true)
-     if isLooping {
+-    if isLooping {
 -      enqueueNextLoopItem()
-+      if let queuePlayer = ref as? AVQueuePlayer {
-+        if playerLooper == nil || playerLooper?.status != .ready || queuePlayer.items().isEmpty || queuePlayer.currentItem == nil {
-+          setupLooper()
-+        } else if let currentItem = queuePlayer.currentItem, currentItem.currentTime() >= currentItem.duration {
-+          currentItem.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero, completionHandler: nil)
++    let playBlock = { [weak self] in
++      guard let self else { return }
++      self.isPlayingIntent = true
++      try? AVAudioSession.sharedInstance().setActive(true)
++      if self.isLooping {
++        if let queuePlayer = self.ref as? AVQueuePlayer {
++          if self.playerLooper == nil || self.playerLooper?.status == .failed || self.playerLooper?.status == .cancelled {
++            self.setupLooper()
++          } else if let currentItem = queuePlayer.currentItem, currentItem.currentTime() >= currentItem.duration {
++            currentItem.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero, completionHandler: nil)
++          }
 +        }
 +      }
-+    }
-+    if playerLooper == nil {
-+      ref.actionAtItemEnd = isLooping ? .advance : .pause
++      if self.playerLooper == nil {
++        self.ref.actionAtItemEnd = self.isLooping ? .advance : .pause
++      }
++      self.addPlaybackEndNotification()
++      self.registerTimeObserver()
++      self.currentRate = rate
++      self.ref.playImmediately(atRate: rate)
++      self.ref.rate = rate
++      self.ref.play()
++
++      if self.isActiveForLockScreen {
++        MediaController.shared.updateNowPlayingInfo(for: self)
++      }
      }
-     addPlaybackEndNotification()
-     registerTimeObserver()
-+    currentRate = rate
-     ref.playImmediately(atRate: rate)
-+    ref.rate = rate
-+    ref.play()
+-    addPlaybackEndNotification()
+-    registerTimeObserver()
+-    ref.playImmediately(atRate: rate)
  
-     if isActiveForLockScreen {
-       MediaController.shared.updateNowPlayingInfo(for: self)
-@@ -207,8 +253,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+-    if isActiveForLockScreen {
+-      MediaController.shared.updateNowPlayingInfo(for: self)
++    if Thread.isMainThread {
++      playBlock()
++    } else {
++      DispatchQueue.main.async(execute: playBlock)
+     }
+   }
+ 
+@@ -207,8 +264,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
            self.updateStatus(with: [
              "isLoaded": true
            ])
@@ -179,7 +199,7 @@ index 0742943..2bf2318 100644
            }
            if shouldInstallAudioTap || samplingEnabled {
              installTap()
-@@ -228,10 +274,10 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -228,10 +285,10 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
          guard let self else {
            return
          }
@@ -193,7 +213,7 @@ index 0742943..2bf2318 100644
          if self.samplingEnabled && self.isLoaded {
            self.uninstallTap()
            self.installTap()
-@@ -264,6 +310,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -264,6 +321,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
      self.source = source
      let wasPlaying = ref.timeControlStatus == .playing
      let wasSamplingEnabled = samplingEnabled
@@ -202,7 +222,7 @@ index 0742943..2bf2318 100644
      removeQueuedLoopItems()
      ref.pause()
  
-@@ -319,6 +367,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -319,6 +378,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    private func teardownPlayer() {
@@ -212,7 +232,7 @@ index 0742943..2bf2318 100644
      removeQueuedLoopItems()
      if samplingEnabled {
        uninstallTap()
-@@ -405,6 +456,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -405,6 +467,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    private func replacePlayerItem(with item: AVPlayerItem?) {
@@ -222,7 +242,7 @@ index 0742943..2bf2318 100644
      if let queuePlayer = ref as? AVQueuePlayer {
        queuePlayer.removeAllItems()
        if let item {
-@@ -413,6 +467,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -413,6 +478,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
      } else {
        ref.replaceCurrentItem(with: item)
      }
@@ -232,7 +252,7 @@ index 0742943..2bf2318 100644
    }
  
    private func enqueueNextLoopItem() {
-@@ -449,24 +506,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -449,24 +517,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
        object: nil,
        queue: nil
      ) { [weak self] notification in
@@ -271,34 +291,54 @@ index 0742943..2bf2318 100644
        }
      }
    }
-@@ -496,14 +559,37 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -496,14 +570,55 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    func pause() {
-+    isPlayingIntent = false
-     ref.pause()
-+    if isActiveForLockScreen {
-+      MediaController.shared.updateNowPlayingInfo(for: self)
+-    ref.pause()
++    let pauseBlock = { [weak self] in
++      guard let self else { return }
++      self.isPlayingIntent = false
++      self.ref.pause()
++      if self.isActiveForLockScreen {
++        MediaController.shared.updateNowPlayingInfo(for: self)
++      }
++    }
++
++    if Thread.isMainThread {
++      pauseBlock()
++    } else {
++      DispatchQueue.main.async(execute: pauseBlock)
 +    }
    }
  
    func resumePlayback() {
-+    isPlayingIntent = true
-+    try? AVAudioSession.sharedInstance().setActive(true)
-+    if isLooping {
-+      if let queuePlayer = ref as? AVQueuePlayer {
-+        if playerLooper == nil || playerLooper?.status != .ready || queuePlayer.items().isEmpty || queuePlayer.currentItem == nil {
-+          setupLooper()
-+        } else if let currentItem = queuePlayer.currentItem, currentItem.currentTime() >= currentItem.duration {
-+          currentItem.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero, completionHandler: nil)
+-    ref.play()
++    let resumeBlock = { [weak self] in
++      guard let self else { return }
++      self.isPlayingIntent = true
++      try? AVAudioSession.sharedInstance().setActive(true)
++      if self.isLooping {
++        if let queuePlayer = self.ref as? AVQueuePlayer {
++          if self.playerLooper == nil || self.playerLooper?.status == .failed || self.playerLooper?.status == .cancelled {
++            self.setupLooper()
++          } else if let currentItem = queuePlayer.currentItem, currentItem.currentTime() >= currentItem.duration {
++            currentItem.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero, completionHandler: nil)
++          }
 +        }
 +      }
++      self.ref.playImmediately(atRate: self.effectiveRate)
++      self.ref.rate = self.effectiveRate
++      self.ref.play()
++      if self.isActiveForLockScreen {
++        MediaController.shared.updateNowPlayingInfo(for: self)
++      }
 +    }
-+    ref.playImmediately(atRate: effectiveRate)
-+    ref.rate = effectiveRate
-     ref.play()
-+    if isActiveForLockScreen {
-+      MediaController.shared.updateNowPlayingInfo(for: self)
++
++    if Thread.isMainThread {
++      resumeBlock()
++    } else {
++      DispatchQueue.main.async(execute: resumeBlock)
 +    }
    }
  
@@ -310,7 +350,7 @@ index 0742943..2bf2318 100644
      owningRegistry?.remove(self)
  
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
-index e977f57..af6b82a 100644
+index e977f57..39a0eaa 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
 +++ b/node_modules/expo-audio/ios/MediaController.swift
 @@ -14,6 +14,7 @@ class MediaController {
@@ -341,7 +381,7 @@ index e977f57..af6b82a 100644
      nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
    }
  
-@@ -80,10 +89,12 @@ class MediaController {
+@@ -80,10 +89,13 @@ class MediaController {
        info.removeValue(forKey: MPMediaItemPropertyPlaybackDuration)
        info.removeValue(forKey: MPNowPlayingInfoPropertyElapsedPlaybackTime)
      } else {
@@ -353,10 +393,11 @@ index e977f57..af6b82a 100644
 -    info[MPNowPlayingInfoPropertyPlaybackRate] = player.isPlaying ? player.ref.rate : 0.0
 +    let isRateActive = player.isPlayingIntent || player.isPlaying || player.ref.rate > 0
 +    info[MPNowPlayingInfoPropertyPlaybackRate] = isRateActive ? 1.0 : 0.0
++    info[MPNowPlayingInfoPropertyDefaultPlaybackRate] = 1.0
      info[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
    }
  
-@@ -130,6 +141,53 @@ class MediaController {
+@@ -130,6 +142,53 @@ class MediaController {
      }
    }
  
@@ -410,7 +451,7 @@ index e977f57..af6b82a 100644
    private func applyArtwork(
      _ info: inout [String: Any],
      from metadata: Metadata,
-@@ -138,7 +196,11 @@ class MediaController {
+@@ -138,7 +197,11 @@ class MediaController {
    ) {
      guard let artworkUrl = metadata.artworkUrl else {
        resetArtworkState()
@@ -423,7 +464,7 @@ index e977f57..af6b82a 100644
        return
      }
  
-@@ -173,14 +235,16 @@ class MediaController {
+@@ -173,14 +236,16 @@ class MediaController {
          return
        }
  
@@ -443,7 +484,7 @@ index e977f57..af6b82a 100644
        self.nowPlayingInfoCenter.nowPlayingInfo = latestNowPlayingInfo
      }
    }
-@@ -208,6 +272,16 @@ class MediaController {
+@@ -208,6 +273,16 @@ class MediaController {
    }
  
    private func loadArtworkFromURL(url: URL, completion: @escaping (MPMediaItemArtwork?) -> Void) {
@@ -460,7 +501,7 @@ index e977f57..af6b82a 100644
      URLSession.shared.dataTask(with: url) { data, _, error in
        if error != nil {
          self.performOnMain {
-@@ -231,81 +305,139 @@ class MediaController {
+@@ -231,81 +306,147 @@ class MediaController {
      .resume()
    }
  
@@ -486,13 +527,40 @@ index e977f57..af6b82a 100644
 -      guard let player = self?.activePlayer else {
 -        return .commandFailed
 -      }
-+    let rate: Float = player.currentRate > 0 ? player.currentRate : 1.0
-+    player.play(at: rate)
-+    player.emit(event: "playbackStatusUpdate", payload: ["remotePlay": true])
++    performOnMain {
++      try? AVAudioSession.sharedInstance().setActive(true)
++      let rate: Float = player.currentRate > 0 ? player.currentRate : 1.0
++      player.play(at: rate)
++      player.emit(event: "playbackStatusUpdate", payload: ["remotePlay": true])
++    }
 +    return .success
 +  }
-+
+ 
+-      player.ref.pause()
 +  private func handleRemotePause() -> MPRemoteCommandHandlerStatus {
++    let now = ProcessInfo.processInfo.systemUptime
++    if now - lastRemoteCommandTime < 0.35 {
+       return .success
+     }
++    guard let player = self.activePlayer else {
++      return .commandFailed
++    }
++    lastRemoteCommandTime = now
+ 
+-    remoteCommandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+-      guard let player = self?.activePlayer else {
+-        return .commandFailed
+-      }
++    performOnMain {
++      player.pause()
++      player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true])
++    }
++    return .success
++  }
+ 
+-      if player.isPlaying {
+-        player.ref.pause()
++  private func handleRemoteToggle() -> MPRemoteCommandHandlerStatus {
 +    let now = ProcessInfo.processInfo.systemUptime
 +    if now - lastRemoteCommandTime < 0.35 {
 +      return .success
@@ -502,31 +570,20 @@ index e977f57..af6b82a 100644
 +    }
 +    lastRemoteCommandTime = now
 +
-+    player.pause()
-+    player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true])
-+    return .success
-+  }
- 
--      player.ref.pause()
-+  private func handleRemoteToggle() -> MPRemoteCommandHandlerStatus {
-+    let now = ProcessInfo.processInfo.systemUptime
-+    if now - lastRemoteCommandTime < 0.35 {
-       return .success
++    performOnMain {
++      let isPlaying = player.isPlayingIntent || player.isPlaying || player.ref.rate > 0
++      if isPlaying {
++        player.pause()
++        player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true])
+       } else {
+-        player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
++        try? AVAudioSession.sharedInstance().setActive(true)
++        let rate: Float = player.currentRate > 0 ? player.currentRate : 1.0
++        player.play(at: rate)
++        player.emit(event: "playbackStatusUpdate", payload: ["remotePlay": true])
+       }
+-      return .success
      }
-+    guard let player = self.activePlayer else {
-+      return .commandFailed
-+    }
-+    lastRemoteCommandTime = now
-+
-+    let isPlaying = player.isPlayingIntent || player.isPlaying || player.ref.rate > 0
-+    if isPlaying {
-+      player.pause()
-+      player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true])
-+    } else {
-+      let rate: Float = player.currentRate > 0 ? player.currentRate : 1.0
-+      player.play(at: rate)
-+      player.emit(event: "playbackStatusUpdate", payload: ["remotePlay": true])
-+    }
 +    return .success
 +  }
 +
@@ -534,31 +591,31 @@ index e977f57..af6b82a 100644
 +    if !areRemoteCommandsConfigured {
 +      areRemoteCommandsConfigured = true
  
--    remoteCommandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
--      guard let player = self?.activePlayer else {
+-    remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
+-      guard let player = self?.activePlayer,
+-      let event = event as? MPChangePlaybackPositionCommandEvent else {
 -        return .commandFailed
 +      remoteCommandCenter.playCommand.addTarget { [weak self] _ in
 +        return self?.handleRemotePlay() ?? .commandFailed
        }
  
--      if player.isPlaying {
--        player.ref.pause()
--      } else {
--        player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
+-      let seekTime = CMTime(seconds: event.positionTime, preferredTimescale: 1)
+-      player.ref.seek(to: seekTime)
 +      remoteCommandCenter.pauseCommand.addTarget { [weak self] _ in
 +        return self?.handleRemotePause() ?? .commandFailed
-       }
++      }
+ 
 -      return .success
 -    }
- 
--    remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
--      guard let player = self?.activePlayer,
--      let event = event as? MPChangePlaybackPositionCommandEvent else {
--        return .commandFailed
 +      remoteCommandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
 +        return self?.handleRemoteToggle() ?? .commandFailed
 +      }
-+
+ 
+-    remoteCommandCenter.skipForwardCommand.preferredIntervals = [10.0]
+-    remoteCommandCenter.skipForwardCommand.addTarget { [weak self] event in
+-      guard let player = self?.activePlayer,
+-      let event = event as? MPSkipIntervalCommandEvent else {
+-        return .commandFailed
 +      remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
 +        guard let player = self?.activePlayer,
 +        let event = event as? MPChangePlaybackPositionCommandEvent else {
@@ -571,8 +628,9 @@ index e977f57..af6b82a 100644
 +        return .success
        }
  
--      let seekTime = CMTime(seconds: event.positionTime, preferredTimescale: 1)
--      player.ref.seek(to: seekTime)
+-      let currentTime = player.ref.currentTime()
+-      let seekTime = currentTime + CMTime(seconds: event.interval, preferredTimescale: 1)
+-      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
 +      remoteCommandCenter.skipForwardCommand.preferredIntervals = [10.0]
 +      remoteCommandCenter.skipForwardCommand.addTarget { [weak self] event in
 +        guard let player = self?.activePlayer,
@@ -586,30 +644,6 @@ index e977f57..af6b82a 100644
 +        let seekTime = currentTime + CMTime(seconds: event.interval, preferredTimescale: 1)
 +        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
  
--    remoteCommandCenter.skipForwardCommand.preferredIntervals = [10.0]
--    remoteCommandCenter.skipForwardCommand.addTarget { [weak self] event in
--      guard let player = self?.activePlayer,
--      let event = event as? MPSkipIntervalCommandEvent else {
--        return .commandFailed
-+        return .success
-       }
- 
--      let currentTime = player.ref.currentTime()
--      let seekTime = currentTime + CMTime(seconds: event.interval, preferredTimescale: 1)
--      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
-+      remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
-+      remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in
-+        guard let player = self?.activePlayer,
-+        let event = event as? MPSkipIntervalCommandEvent else {
-+          return .commandFailed
-+        }
- 
--      return .success
--    }
-+        let currentTime = player.ref.currentTime()
-+        let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
-+        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
- 
 -    remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
 -    remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in
 -      guard let player = self?.activePlayer,
@@ -621,6 +655,21 @@ index e977f57..af6b82a 100644
 -      let currentTime = player.ref.currentTime()
 -      let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
 -      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
++      remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
++      remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in
++        guard let player = self?.activePlayer,
++        let event = event as? MPSkipIntervalCommandEvent else {
++          return .commandFailed
++        }
++
++        let currentTime = player.ref.currentTime()
++        let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
++        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
+ 
+-      return .success
++        return .success
++      }
++
 +      remoteCommandCenter.nextTrackCommand.addTarget { [weak self] _ in
 +        guard let player = self?.activePlayer else {
 +          return .commandFailed
@@ -628,8 +677,7 @@ index e977f57..af6b82a 100644
 +        player.emit(event: "playbackStatusUpdate", payload: ["remoteNext": true])
 +        return .success
 +      }
- 
--      return .success
++
 +      remoteCommandCenter.previousTrackCommand.addTarget { [weak self] _ in
 +        guard let player = self?.activePlayer else {
 +          return .commandFailed
@@ -647,7 +695,7 @@ index e977f57..af6b82a 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
      remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
      remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
-@@ -315,16 +447,10 @@ class MediaController {
+@@ -315,16 +456,10 @@ class MediaController {
      remoteCommandCenter.playCommand.isEnabled = false
      remoteCommandCenter.pauseCommand.isEnabled = false
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = false

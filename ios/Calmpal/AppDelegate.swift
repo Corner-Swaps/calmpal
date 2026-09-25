@@ -74,6 +74,7 @@ class AppDelegate: ExpoAppDelegate {
     do {
       try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
       try AVAudioSession.sharedInstance().setActive(true)
+      UIApplication.shared.beginReceivingRemoteControlEvents()
     } catch {
       print("[AppDelegate] AudioSession setup error: \(error)")
     }
