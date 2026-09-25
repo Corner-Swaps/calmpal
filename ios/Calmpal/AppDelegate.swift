@@ -7,14 +7,10 @@ import ObjectiveC
 import MediaPlayer
 
 private func createNowPlayingArtwork() -> MPMediaItemArtwork? {
-  let logo = CalmpalArtworkData.sharedImage
-  guard logo.size.width > 0 && logo.size.height > 0 else {
-    return nil
-  }
-  let boundsSize = logo.size
-  return MPMediaItemArtwork(boundsSize: boundsSize) { requestedSize in
-    let width = requestedSize.width > 0 ? requestedSize.width : boundsSize.width
-    let height = requestedSize.height > 0 ? requestedSize.height : boundsSize.height
+  let size = CGSize(width: 256, height: 256)
+  return MPMediaItemArtwork(boundsSize: size) { requestedSize in
+    let width = requestedSize.width > 0 ? requestedSize.width : size.width
+    let height = requestedSize.height > 0 ? requestedSize.height : size.height
     let targetSize = CGSize(width: width, height: height)
 
     let format = UIGraphicsImageRendererFormat.default()
@@ -23,13 +19,6 @@ private func createNowPlayingArtwork() -> MPMediaItemArtwork? {
     return renderer.image { ctx in
       UIColor.black.setFill()
       ctx.fill(CGRect(origin: .zero, size: targetSize))
-      // Scale and center logo to make icon prominent in the Dynamic Island
-      let scaleFactor: CGFloat = 1.08
-      let scaledW = targetSize.width * scaleFactor
-      let scaledH = targetSize.height * scaleFactor
-      let originX = (targetSize.width - scaledW) / 2.0
-      let originY = (targetSize.height - scaledH) / 2.0
-      logo.draw(in: CGRect(x: originX, y: originY, width: scaledW, height: scaledH))
     }.withRenderingMode(.alwaysOriginal)
   }
 }

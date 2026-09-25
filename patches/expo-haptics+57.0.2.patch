@@ -1,8 +1,8 @@
 diff --git a/node_modules/expo-haptics/ios/HapticsModule.swift b/node_modules/expo-haptics/ios/HapticsModule.swift
-index 41659a0..2d19371 100644
+index 41659a0..b80e957 100644
 --- a/node_modules/expo-haptics/ios/HapticsModule.swift
 +++ b/node_modules/expo-haptics/ios/HapticsModule.swift
-@@ -1,27 +1,248 @@
+@@ -1,27 +1,251 @@
  import ExpoModulesCore
 +import AudioToolbox
 +import CoreHaptics
@@ -159,10 +159,13 @@ index 41659a0..2d19371 100644
 +    DispatchQueue.main.async { [weak self] in
 +      guard let self = self, UIApplication.shared.applicationState == .active else { return }
 +      if isStrong {
++        self.rigidGenerator.prepare()
 +        self.rigidGenerator.impactOccurred()
 +      } else if isMedium {
++        self.mediumGenerator.prepare()
 +        self.mediumGenerator.impactOccurred()
 +      } else if isSoft {
++        self.lightGenerator.prepare()
 +        self.lightGenerator.impactOccurred()
 +      }
 +    }
@@ -261,3 +264,20 @@ index 41659a0..2d19371 100644
      }
      .runOnQueue(.main)
    }
+diff --git a/node_modules/expo-haptics/src/Haptics.ts b/node_modules/expo-haptics/src/Haptics.ts
+index ffa7d34..fe0c4d3 100644
+--- a/node_modules/expo-haptics/src/Haptics.ts
++++ b/node_modules/expo-haptics/src/Haptics.ts
+@@ -63,4 +63,12 @@ export async function performAndroidHapticsAsync(type: AndroidHaptics) {
+   await ExpoHaptics.performHapticsAsync(type);
+ }
+ 
++export async function startSoundscapeHaptics(profile: string): Promise<void> {
++  await ExpoHaptics?.startSoundscapeHaptics?.(profile);
++}
++
++export async function stopSoundscapeHaptics(): Promise<void> {
++  await ExpoHaptics?.stopSoundscapeHaptics?.();
++}
++
+ export { NotificationFeedbackType, ImpactFeedbackStyle, AndroidHaptics };

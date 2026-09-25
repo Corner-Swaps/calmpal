@@ -1,7 +1,10 @@
 // HapticManager: Cross-platform implementation of Swift HapticManager
 import { Platform, AppState, AppStateStatus } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { requireOptionalNativeModule } from 'expo';
 import { SoundProfile, SOUND_HAPTIC_PROFILES } from '../models/SoundProfile';
+
+const ExpoHaptics = requireOptionalNativeModule('ExpoHaptics');
 
 export class HapticManager {
   private static _instance: HapticManager;
@@ -156,30 +159,38 @@ export class HapticManager {
   public startSoundHaptics(profile: SoundProfile) {
     this.currentSoundProfile = profile;
     this.isSoundHapticsRunning = true;
+    this.hapticStepIndex = 0;
+
+    // 1. Invoke native background GCD loop (runs in background / Dynamic Island)
     try {
-      if (typeof (Haptics as any).startSoundscapeHaptics === 'function') {
+      if (ExpoHaptics && typeof ExpoHaptics.startSoundscapeHaptics === 'function') {
+        ExpoHaptics.startSoundscapeHaptics(String(profile));
+      } else if (typeof (Haptics as any).startSoundscapeHaptics === 'function') {
         (Haptics as any).startSoundscapeHaptics(String(profile));
       }
     } catch (e) {
       console.warn('[HapticManager] startSoundscapeHaptics error:', e);
     }
-    if (Platform.OS === 'web') {
-      this.hapticStepIndex = 0;
-      this.scheduleNextSoundHaptic();
-    }
+
+    // 2. Also run foreground JavaScript loop (ensures immediate tactile feedback)
+    this.scheduleNextSoundHaptic();
   }
 
   public stopSoundHaptics() {
     this.isSoundHapticsRunning = false;
     this.currentSoundProfile = null;
     this.hapticStepIndex = 0;
+
     try {
-      if (typeof (Haptics as any).stopSoundscapeHaptics === 'function') {
+      if (ExpoHaptics && typeof ExpoHaptics.stopSoundscapeHaptics === 'function') {
+        ExpoHaptics.stopSoundscapeHaptics();
+      } else if (typeof (Haptics as any).stopSoundscapeHaptics === 'function') {
         (Haptics as any).stopSoundscapeHaptics();
       }
     } catch (e) {
       console.warn('[HapticManager] stopSoundscapeHaptics error:', e);
     }
+
     if (this.soundHapticTimeout) {
       clearTimeout(this.soundHapticTimeout);
       this.soundHapticTimeout = null;
