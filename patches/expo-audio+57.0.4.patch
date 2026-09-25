@@ -350,7 +350,7 @@ index 0742943..6d5867a 100644
      owningRegistry?.remove(self)
  
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
-index e977f57..39a0eaa 100644
+index e977f57..42951c2 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
 +++ b/node_modules/expo-audio/ios/MediaController.swift
 @@ -14,6 +14,7 @@ class MediaController {
@@ -381,7 +381,7 @@ index e977f57..39a0eaa 100644
      nowPlayingInfoCenter.nowPlayingInfo = nowPlayingInfo
    }
  
-@@ -80,10 +89,13 @@ class MediaController {
+@@ -80,11 +89,19 @@ class MediaController {
        info.removeValue(forKey: MPMediaItemPropertyPlaybackDuration)
        info.removeValue(forKey: MPNowPlayingInfoPropertyElapsedPlaybackTime)
      } else {
@@ -391,13 +391,19 @@ index e977f57..39a0eaa 100644
        info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = player.currentTime
      }
 -    info[MPNowPlayingInfoPropertyPlaybackRate] = player.isPlaying ? player.ref.rate : 0.0
-+    let isRateActive = player.isPlayingIntent || player.isPlaying || player.ref.rate > 0
++    let isRateActive = player.isPlayingIntent
 +    info[MPNowPlayingInfoPropertyPlaybackRate] = isRateActive ? 1.0 : 0.0
 +    info[MPNowPlayingInfoPropertyDefaultPlaybackRate] = 1.0
      info[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.audio.rawValue
++
++    remoteCommandCenter.playCommand.isEnabled = !isRateActive
++    remoteCommandCenter.pauseCommand.isEnabled = isRateActive
++    remoteCommandCenter.togglePlayPauseCommand.isEnabled = true
++    logDebug("applyPlaybackInfo: isRateActive=\(isRateActive), playingIntent=\(player.isPlayingIntent), isPlaying=\(player.isPlaying), rate=\(player.ref.rate)")
    }
  
-@@ -130,6 +142,53 @@ class MediaController {
+   private func applyUserMetadata(_ info: inout [String: Any], from metadata: Metadata) {
+@@ -130,6 +147,53 @@ class MediaController {
      }
    }
  
@@ -451,7 +457,7 @@ index e977f57..39a0eaa 100644
    private func applyArtwork(
      _ info: inout [String: Any],
      from metadata: Metadata,
-@@ -138,7 +197,11 @@ class MediaController {
+@@ -138,7 +202,11 @@ class MediaController {
    ) {
      guard let artworkUrl = metadata.artworkUrl else {
        resetArtworkState()
@@ -464,7 +470,7 @@ index e977f57..39a0eaa 100644
        return
      }
  
-@@ -173,14 +236,16 @@ class MediaController {
+@@ -173,14 +241,16 @@ class MediaController {
          return
        }
  
@@ -484,7 +490,7 @@ index e977f57..39a0eaa 100644
        self.nowPlayingInfoCenter.nowPlayingInfo = latestNowPlayingInfo
      }
    }
-@@ -208,6 +273,16 @@ class MediaController {
+@@ -208,6 +278,16 @@ class MediaController {
    }
  
    private func loadArtworkFromURL(url: URL, completion: @escaping (MPMediaItemArtwork?) -> Void) {
@@ -501,7 +507,7 @@ index e977f57..39a0eaa 100644
      URLSession.shared.dataTask(with: url) { data, _, error in
        if error != nil {
          self.performOnMain {
-@@ -231,81 +306,147 @@ class MediaController {
+@@ -231,81 +311,178 @@ class MediaController {
      .resume()
    }
  
@@ -509,16 +515,36 @@ index e977f57..39a0eaa 100644
 -    remoteCommandCenter.playCommand.addTarget { [weak self] _ in
 -      guard let player = self?.activePlayer else {
 -        return .commandFailed
--      }
++  private func logDebug(_ message: String) {
++    let line = "[\(Date())] \(message)\n"
++    if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
++      let fileURL = dir.appendingPathComponent("airpods_debug.log")
++      if let data = line.data(using: .utf8) {
++        if FileManager.default.fileExists(atPath: fileURL.path) {
++          if let fileHandle = try? FileHandle(forWritingTo: fileURL) {
++            fileHandle.seekToEndOfFile()
++            fileHandle.write(data)
++            fileHandle.closeFile()
++          }
++        } else {
++          try? data.write(to: fileURL)
++        }
+       }
++    }
++  }
++
 +  private var lastRemoteCommandTime: TimeInterval = 0
  
 -      player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
 +  private func handleRemotePlay() -> MPRemoteCommandHandlerStatus {
 +    let now = ProcessInfo.processInfo.systemUptime
++    logDebug("handleRemotePlay triggered at \(now), lastCmdTime=\(lastRemoteCommandTime), player=\(self.activePlayer?.id ?? "nil")")
 +    if now - lastRemoteCommandTime < 0.35 {
++      logDebug("handleRemotePlay debounced")
        return .success
      }
 +    guard let player = self.activePlayer else {
++      logDebug("handleRemotePlay failed: activePlayer is nil")
 +      return .commandFailed
 +    }
 +    lastRemoteCommandTime = now
@@ -530,6 +556,7 @@ index e977f57..39a0eaa 100644
 +    performOnMain {
 +      try? AVAudioSession.sharedInstance().setActive(true)
 +      let rate: Float = player.currentRate > 0 ? player.currentRate : 1.0
++      self.logDebug("handleRemotePlay executing player.play(at: \(rate))")
 +      player.play(at: rate)
 +      player.emit(event: "playbackStatusUpdate", payload: ["remotePlay": true])
 +    }
@@ -539,10 +566,13 @@ index e977f57..39a0eaa 100644
 -      player.ref.pause()
 +  private func handleRemotePause() -> MPRemoteCommandHandlerStatus {
 +    let now = ProcessInfo.processInfo.systemUptime
++    logDebug("handleRemotePause triggered at \(now), lastCmdTime=\(lastRemoteCommandTime), player=\(self.activePlayer?.id ?? "nil")")
 +    if now - lastRemoteCommandTime < 0.35 {
++      logDebug("handleRemotePause debounced")
        return .success
      }
 +    guard let player = self.activePlayer else {
++      logDebug("handleRemotePause failed: activePlayer is nil")
 +      return .commandFailed
 +    }
 +    lastRemoteCommandTime = now
@@ -552,26 +582,31 @@ index e977f57..39a0eaa 100644
 -        return .commandFailed
 -      }
 +    performOnMain {
++      self.logDebug("handleRemotePause executing player.pause()")
 +      player.pause()
 +      player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true])
 +    }
 +    return .success
 +  }
- 
--      if player.isPlaying {
--        player.ref.pause()
++
 +  private func handleRemoteToggle() -> MPRemoteCommandHandlerStatus {
 +    let now = ProcessInfo.processInfo.systemUptime
++    logDebug("handleRemoteToggle triggered at \(now), lastCmdTime=\(lastRemoteCommandTime), player=\(self.activePlayer?.id ?? "nil")")
 +    if now - lastRemoteCommandTime < 0.35 {
++      logDebug("handleRemoteToggle debounced")
 +      return .success
 +    }
 +    guard let player = self.activePlayer else {
++      logDebug("handleRemoteToggle failed: activePlayer is nil")
 +      return .commandFailed
 +    }
 +    lastRemoteCommandTime = now
-+
+ 
+-      if player.isPlaying {
+-        player.ref.pause()
 +    performOnMain {
-+      let isPlaying = player.isPlayingIntent || player.isPlaying || player.ref.rate > 0
++      let isPlaying = player.isPlayingIntent
++      self.logDebug("handleRemoteToggle performOnMain: isPlayingIntent=\(isPlaying)")
 +      if isPlaying {
 +        player.pause()
 +        player.emit(event: "playbackStatusUpdate", payload: ["remotePause": true])
@@ -586,15 +621,15 @@ index e977f57..39a0eaa 100644
      }
 +    return .success
 +  }
-+
-+  private func enableRemoteCommands(options: LockScreenOptions?) {
-+    if !areRemoteCommandsConfigured {
-+      areRemoteCommandsConfigured = true
  
 -    remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
 -      guard let player = self?.activePlayer,
 -      let event = event as? MPChangePlaybackPositionCommandEvent else {
 -        return .commandFailed
++  private func enableRemoteCommands(options: LockScreenOptions?) {
++    if !areRemoteCommandsConfigured {
++      areRemoteCommandsConfigured = true
++
 +      remoteCommandCenter.playCommand.addTarget { [weak self] _ in
 +        return self?.handleRemotePlay() ?? .commandFailed
        }
@@ -610,18 +645,18 @@ index e977f57..39a0eaa 100644
 +      remoteCommandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
 +        return self?.handleRemoteToggle() ?? .commandFailed
 +      }
++
++      remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
++        guard let player = self?.activePlayer,
++        let event = event as? MPChangePlaybackPositionCommandEvent else {
++          return .commandFailed
++        }
  
 -    remoteCommandCenter.skipForwardCommand.preferredIntervals = [10.0]
 -    remoteCommandCenter.skipForwardCommand.addTarget { [weak self] event in
 -      guard let player = self?.activePlayer,
 -      let event = event as? MPSkipIntervalCommandEvent else {
 -        return .commandFailed
-+      remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
-+        guard let player = self?.activePlayer,
-+        let event = event as? MPChangePlaybackPositionCommandEvent else {
-+          return .commandFailed
-+        }
-+
 +        let seekTime = CMTime(seconds: event.positionTime, preferredTimescale: 1)
 +        player.ref.seek(to: seekTime)
 +
@@ -661,12 +696,12 @@ index e977f57..39a0eaa 100644
 +        let event = event as? MPSkipIntervalCommandEvent else {
 +          return .commandFailed
 +        }
-+
+ 
+-      return .success
 +        let currentTime = player.ref.currentTime()
 +        let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
 +        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
- 
--      return .success
++
 +        return .success
 +      }
 +
@@ -687,15 +722,18 @@ index e977f57..39a0eaa 100644
 +      }
      }
  
-     remoteCommandCenter.playCommand.isEnabled = true
-     remoteCommandCenter.pauseCommand.isEnabled = true
+-    remoteCommandCenter.playCommand.isEnabled = true
+-    remoteCommandCenter.pauseCommand.isEnabled = true
++    let isRateActive = activePlayer?.isPlayingIntent ?? false
++    remoteCommandCenter.playCommand.isEnabled = !isRateActive
++    remoteCommandCenter.pauseCommand.isEnabled = isRateActive
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = true
 +    remoteCommandCenter.nextTrackCommand.isEnabled = true
 +    remoteCommandCenter.previousTrackCommand.isEnabled = true
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
      remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
      remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
-@@ -315,16 +456,10 @@ class MediaController {
+@@ -315,16 +492,10 @@ class MediaController {
      remoteCommandCenter.playCommand.isEnabled = false
      remoteCommandCenter.pauseCommand.isEnabled = false
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = false

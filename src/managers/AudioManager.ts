@@ -114,13 +114,13 @@ export class AudioManager {
           }
           if (status?.remotePlay) {
             if (!this.isAudioPlaying) {
-              this.resume();
+              this.resume(true);
             }
             return;
           }
           if (status?.remotePause) {
             if (this.isAudioPlaying) {
-              this.pause();
+              this.pause(true);
             }
             return;
           }
@@ -379,13 +379,13 @@ export class AudioManager {
             }
             if (status?.remotePlay) {
               if (!this.isAudioPlaying) {
-                this.resume();
+                this.resume(true);
               }
               return;
             }
             if (status?.remotePause) {
               if (this.isAudioPlaying) {
-                this.pause();
+                this.pause(true);
               }
               return;
             }
@@ -428,7 +428,7 @@ export class AudioManager {
     }
   }
 
-  public async pause() {
+  public async pause(fromRemote: boolean = false) {
     this.currentPlayRequestId++;
     this.isAudioPlaying = false;
     if (this.sleepFadeTimeout) {
@@ -441,43 +441,47 @@ export class AudioManager {
     }
 
     HapticManager.shared.stopSoundHaptics();
-    if (Platform.OS === 'web') {
-      if (this.webAudioElement) {
-        this.webAudioElement.pause();
-      }
-    } else {
-      if (this.audioPlayer) {
-        try {
-          this.audioPlayer.pause();
-        } catch {}
+    if (!fromRemote) {
+      if (Platform.OS === 'web') {
+        if (this.webAudioElement) {
+          this.webAudioElement.pause();
+        }
+      } else {
+        if (this.audioPlayer) {
+          try {
+            this.audioPlayer.pause();
+          } catch {}
+        }
       }
     }
     this.setVolumeInternal(this.volume > 0 ? this.volume : 0.5);
     this.notify();
   }
 
-  public async resume() {
+  public async resume(fromRemote: boolean = false) {
     HapticManager.shared.startSoundHaptics(this.activeProfile);
     if (this.isAudioPlaying) return;
     this.isAudioPlaying = true;
 
-    if (Platform.OS === 'web') {
-      if (this.webAudioElement) {
-        this.webAudioElement.volume = this.volume > 0 ? this.volume : 0.5;
-        this.webAudioElement.play().catch(() => {});
-      } else {
-        await this.loadAndPlay(this.activeProfile);
-      }
-    } else {
-      if (this.audioPlayer) {
-        try {
-          this.audioPlayer.volume = this.volume > 0 ? this.volume : 0.5;
-          this.audioPlayer.play();
-        } catch {
+    if (!fromRemote) {
+      if (Platform.OS === 'web') {
+        if (this.webAudioElement) {
+          this.webAudioElement.volume = this.volume > 0 ? this.volume : 0.5;
+          this.webAudioElement.play().catch(() => {});
+        } else {
           await this.loadAndPlay(this.activeProfile);
         }
       } else {
-        await this.loadAndPlay(this.activeProfile);
+        if (this.audioPlayer) {
+          try {
+            this.audioPlayer.volume = this.volume > 0 ? this.volume : 0.5;
+            this.audioPlayer.play();
+          } catch {
+            await this.loadAndPlay(this.activeProfile);
+          }
+        } else {
+          await this.loadAndPlay(this.activeProfile);
+        }
       }
     }
 
