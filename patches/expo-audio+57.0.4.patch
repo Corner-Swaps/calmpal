@@ -360,7 +360,7 @@ index 0742943..6a63b21 100644
      owningRegistry?.remove(self)
  
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
-index e977f57..bff738c 100644
+index e977f57..28d0be5 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
 +++ b/node_modules/expo-audio/ios/MediaController.swift
 @@ -14,6 +14,15 @@ class MediaController {
@@ -484,7 +484,7 @@ index e977f57..bff738c 100644
    }
  
    private func applyUserMetadata(_ info: inout [String: Any], from metadata: Metadata) {
-@@ -130,15 +184,76 @@ class MediaController {
+@@ -130,15 +184,97 @@ class MediaController {
      }
    }
  
@@ -513,10 +513,31 @@ index e977f57..bff738c 100644
 +      return nil
 +    }
 +
-+    let boundsSize = finalImage.size.width > 0 ? finalImage.size : CGSize(width: 512, height: 512)
-+    let artwork = MPMediaItemArtwork(boundsSize: boundsSize) { _ in finalImage }
++    let squareFinal = cropToSquare(image: finalImage)
++    let boundsSize = squareFinal.size.width > 0 ? squareFinal.size : CGSize(width: 512, height: 512)
++    let artwork = MPMediaItemArtwork(boundsSize: boundsSize) { _ in squareFinal }
 +    cachedDefaultArtwork = artwork
 +    return artwork
++  }
++
++  private func cropToSquare(image: UIImage) -> UIImage {
++    let width = image.size.width
++    let height = image.size.height
++    guard width > 0, height > 0 else { return image }
++    if width == height { return image }
++
++    let side = min(width, height)
++    let x = (width - side) / 2.0
++    let y = (height - side) / 2.0
++    let drawRect = CGRect(x: -x, y: -y, width: width, height: height)
++
++    let format = UIGraphicsImageRendererFormat.default()
++    format.scale = image.scale > 0 ? image.scale : 1.0
++    format.opaque = true
++    let renderer = UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format)
++    return renderer.image { _ in
++      image.draw(in: drawRect)
++    }
 +  }
 +
 +  private func generateCalmpalLogo() -> UIImage {
@@ -562,7 +583,7 @@ index e977f57..bff738c 100644
        return
      }
  
-@@ -154,6 +269,7 @@ class MediaController {
+@@ -154,6 +290,7 @@ class MediaController {
      }
  
      guard artworkLoadToken == nil else {
@@ -570,7 +591,7 @@ index e977f57..bff738c 100644
        return
      }
  
-@@ -173,16 +289,24 @@ class MediaController {
+@@ -173,16 +310,24 @@ class MediaController {
          return
        }
  
@@ -598,7 +619,7 @@ index e977f57..bff738c 100644
    }
  
    private func clearNowPlayingInfoOnMain() {
-@@ -191,6 +315,14 @@ class MediaController {
+@@ -191,6 +336,14 @@ class MediaController {
      isLiveStream = false
      resetArtworkState()
      currentArtworkItemIdentifier = nil
@@ -613,7 +634,7 @@ index e977f57..bff738c 100644
    }
  
    private func performOnMain(_ operation: @escaping () -> Void) {
-@@ -208,104 +340,266 @@ class MediaController {
+@@ -208,104 +361,268 @@ class MediaController {
    }
  
    private func loadArtworkFromURL(url: URL, completion: @escaping (MPMediaItemArtwork?) -> Void) {
@@ -662,8 +683,10 @@ index e977f57..bff738c 100644
        }
 +    }
  
+-      let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
 +    if let image, image.size.width > 0, image.size.height > 0 {
-       let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
++      let squareImage = self.cropToSquare(image: image)
++      let artwork = MPMediaItemArtwork(boundsSize: squareImage.size) { _ in squareImage }
        self.performOnMain {
          completion(artwork)
        }
@@ -688,7 +711,8 @@ index e977f57..bff738c 100644
 +          return
 +        }
 +
-+        let artwork = MPMediaItemArtwork(boundsSize: downloadedImage.size) { _ in downloadedImage }
++        let squareImage = self.cropToSquare(image: downloadedImage)
++        let artwork = MPMediaItemArtwork(boundsSize: squareImage.size) { _ in squareImage }
 +        self.performOnMain {
 +          completion(artwork)
 +        }
@@ -724,10 +748,10 @@ index e977f57..bff738c 100644
        }
 +    }
 +  }
++
++  private var lastRemoteCommandTime: TimeInterval = 0
  
 -      player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
-+  private var lastRemoteCommandTime: TimeInterval = 0
-+
 +  private func handleRemotePlay() -> MPRemoteCommandHandlerStatus {
 +    let now = ProcessInfo.processInfo.systemUptime
 +    logDebug("handleRemotePlay triggered at \(now), lastCmdTime=\(lastRemoteCommandTime), player=\(self.activePlayer?.id ?? "nil")")
@@ -825,15 +849,15 @@ index e977f57..bff738c 100644
      }
 +    return .success
 +  }
-+
-+  private func enableRemoteCommands(options: LockScreenOptions?) {
-+    if !areRemoteCommandsConfigured {
-+      areRemoteCommandsConfigured = true
  
 -    remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in
 -      guard let player = self?.activePlayer,
 -      let event = event as? MPChangePlaybackPositionCommandEvent else {
 -        return .commandFailed
++  private func enableRemoteCommands(options: LockScreenOptions?) {
++    if !areRemoteCommandsConfigured {
++      areRemoteCommandsConfigured = true
++
 +      remoteCommandCenter.playCommand.addTarget { [weak self] _ in
 +        return self?.handleRemotePlay() ?? .commandFailed
        }
@@ -855,23 +879,37 @@ index e977f57..bff738c 100644
 +        let event = event as? MPChangePlaybackPositionCommandEvent else {
 +          return .commandFailed
 +        }
++
++        let seekTime = CMTime(seconds: event.positionTime, preferredTimescale: 1)
++        player.ref.seek(to: seekTime)
++
++        return .success
++      }
++
++      remoteCommandCenter.skipForwardCommand.preferredIntervals = [10.0]
++      remoteCommandCenter.skipForwardCommand.addTarget { [weak self] event in
++        guard let player = self?.activePlayer,
++        let event = event as? MPSkipIntervalCommandEvent else {
++          return .commandFailed
++        }
++
++        let currentTime = player.ref.currentTime()
++        let seekTime = currentTime + CMTime(seconds: event.interval, preferredTimescale: 1)
++        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
  
 -    remoteCommandCenter.skipForwardCommand.preferredIntervals = [10.0]
 -    remoteCommandCenter.skipForwardCommand.addTarget { [weak self] event in
 -      guard let player = self?.activePlayer,
 -      let event = event as? MPSkipIntervalCommandEvent else {
 -        return .commandFailed
-+        let seekTime = CMTime(seconds: event.positionTime, preferredTimescale: 1)
-+        player.ref.seek(to: seekTime)
-+
 +        return .success
        }
  
 -      let currentTime = player.ref.currentTime()
 -      let seekTime = currentTime + CMTime(seconds: event.interval, preferredTimescale: 1)
 -      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
-+      remoteCommandCenter.skipForwardCommand.preferredIntervals = [10.0]
-+      remoteCommandCenter.skipForwardCommand.addTarget { [weak self] event in
++      remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
++      remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in
 +        guard let player = self?.activePlayer,
 +        let event = event as? MPSkipIntervalCommandEvent else {
 +          return .commandFailed
@@ -880,7 +918,7 @@ index e977f57..bff738c 100644
 -      return .success
 -    }
 +        let currentTime = player.ref.currentTime()
-+        let seekTime = currentTime + CMTime(seconds: event.interval, preferredTimescale: 1)
++        let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
 +        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
  
 -    remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
@@ -894,21 +932,6 @@ index e977f57..bff738c 100644
 -      let currentTime = player.ref.currentTime()
 -      let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
 -      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
-+      remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]
-+      remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in
-+        guard let player = self?.activePlayer,
-+        let event = event as? MPSkipIntervalCommandEvent else {
-+          return .commandFailed
-+        }
- 
--      return .success
-+        let currentTime = player.ref.currentTime()
-+        let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)
-+        player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)
-+
-+        return .success
-+      }
-+
 +      remoteCommandCenter.nextTrackCommand.addTarget { [weak self] _ in
 +        guard let player = self?.activePlayer else {
 +          return .commandFailed
@@ -916,7 +939,8 @@ index e977f57..bff738c 100644
 +        player.emit(event: "playbackStatusUpdate", payload: ["remoteNext": true])
 +        return .success
 +      }
-+
+ 
+-      return .success
 +      remoteCommandCenter.previousTrackCommand.addTarget { [weak self] _ in
 +        guard let player = self?.activePlayer else {
 +          return .commandFailed
@@ -934,7 +958,7 @@ index e977f57..bff738c 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
      remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
      remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
-@@ -315,16 +609,10 @@ class MediaController {
+@@ -315,16 +632,10 @@ class MediaController {
      remoteCommandCenter.playCommand.isEnabled = false
      remoteCommandCenter.pauseCommand.isEnabled = false
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = false
