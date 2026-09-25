@@ -378,9 +378,9 @@ export const GroundingScreenView: React.FC = () => {
                 accessibilityLabel={isZenMode ? "Disable Zen immersion mode" : "Enable Zen immersion mode"}
               >
                 {isZenMode ? (
-                  <MoonFillIcon size={28} color="rgba(255, 255, 255, 0.92)" />
+                  <MoonFillIcon size={23.8} color="rgba(255, 255, 255, 0.92)" />
                 ) : (
-                  <SunMaxIcon size={28} color="rgba(255, 255, 255, 0.92)" />
+                  <SunMaxIcon size={23.8} color="rgba(255, 255, 255, 0.92)" />
                 )}
               </TouchableOpacity>
             )}
@@ -403,9 +403,9 @@ export const GroundingScreenView: React.FC = () => {
                 accessibilityLabel={isArtistInfoVisible ? "Close artist info" : "View artist profile"}
               >
                 {isArtistInfoVisible ? (
-                  <XMarkIcon size={28} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
+                  <XMarkIcon size={23.8} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
                 ) : (
-                  <PersonIcon size={28} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
+                  <PersonIcon size={23.8} weight="regular" color="rgba(255, 255, 255, 0.92)" shadowType="top" />
                 )}
               </TouchableOpacity>
             )}

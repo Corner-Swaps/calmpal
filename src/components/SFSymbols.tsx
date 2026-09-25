@@ -37,8 +37,8 @@ const styles = StyleSheet.create({
   },
 });
 
-// ☀️ sun.max: regular weight size 28 (optically matched with dock exit / checkmark icons)
-export const SunMaxIcon: React.FC<IconProps> = ({ size = 28, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// ☀️ sun.max: regular weight size 23.8 (15% smaller than 28pt)
+export const SunMaxIcon: React.FC<IconProps> = ({ size = 23.8, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="sun.max" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
@@ -57,8 +57,8 @@ export const SunMaxIcon: React.FC<IconProps> = ({ size = 28, color = 'rgba(255, 
   );
 };
 
-// 🌙 moon.fill: regular weight size 28 (optically matched with dock exit / checkmark icons)
-export const MoonFillIcon: React.FC<IconProps> = ({ size = 28, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// 🌙 moon.fill: regular weight size 23.8 (15% smaller than 28pt)
+export const MoonFillIcon: React.FC<IconProps> = ({ size = 23.8, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="moon.fill" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
@@ -74,8 +74,8 @@ export const MoonFillIcon: React.FC<IconProps> = ({ size = 28, color = 'rgba(255
   );
 };
 
-// 👤 person: regular weight size 28 (optically matched with dock exit / checkmark icons)
-export const PersonIcon: React.FC<IconProps> = ({ size = 28, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
+// 👤 person: regular weight size 23.8 (15% smaller than 28pt)
+export const PersonIcon: React.FC<IconProps> = ({ size = 23.8, color = 'rgba(255, 255, 255, 0.92)', weight = 'regular' }) => {
   if (Platform.OS === 'ios') {
     return (
       <SymbolView name="person" size={size} weight={weight} tintColor={color} style={styles.topShadow} />
