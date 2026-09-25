@@ -286,9 +286,17 @@ export class AudioManager {
               this.selectPreviousSound();
               return;
             }
-            if (typeof status?.playing === 'boolean' && this.isAudioPlaying !== status.playing) {
-              this.isAudioPlaying = status.playing;
-              this.notify();
+            if (status?.remotePlay) {
+              if (!this.isAudioPlaying) {
+                this.resume();
+              }
+              return;
+            }
+            if (status?.remotePause) {
+              if (this.isAudioPlaying) {
+                this.pause();
+              }
+              return;
             }
           });
         }

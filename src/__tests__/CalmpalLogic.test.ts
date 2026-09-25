@@ -151,5 +151,35 @@ describe('Calmpal Logic & Data Model Parity Tests', () => {
       expect(audio.isAudioPlaying).toBe(false);
       expect(audio.sleepTimerTargetDate).toBeNull();
     });
+
+    it('handles remote controls (play, pause, next, prev) without spurious playing:false cancelation', async () => {
+      const audio = AudioManager.shared;
+      await audio.start();
+      expect(audio.isAudioPlaying).toBe(true);
+
+      const player = (audio as any).audioPlayer;
+      expect(player).toBeDefined();
+      const statusCallback = player.listeners?.['playbackStatusUpdate'];
+      expect(typeof statusCallback).toBe('function');
+
+      // 1. Spurious initial status update with playing: false (e.g. while buffering) should NOT cancel playback!
+      statusCallback({ isLoaded: true, playing: false });
+      expect(audio.isAudioPlaying).toBe(true);
+
+      // 2. Remote pause from AirPods / Lock Screen pauses playback
+      statusCallback({ remotePause: true });
+      expect(audio.isAudioPlaying).toBe(false);
+
+      // 3. Remote play from AirPods / Lock Screen resumes playback
+      statusCallback({ remotePlay: true });
+      expect(audio.isAudioPlaying).toBe(true);
+
+      // 4. Remote next track switches sound
+      const current = audio.activeProfile;
+      statusCallback({ remoteNext: true });
+      expect(audio.activeProfile).not.toBe(current);
+
+      await audio.stop();
+    });
   });
 });
