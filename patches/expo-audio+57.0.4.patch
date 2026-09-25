@@ -264,10 +264,87 @@ index 0742943..9eb5c4d 100644
      owningRegistry?.remove(self)
  
 diff --git a/node_modules/expo-audio/ios/MediaController.swift b/node_modules/expo-audio/ios/MediaController.swift
-index e977f57..7fbb3ac 100644
+index e977f57..4eec5f7 100644
 --- a/node_modules/expo-audio/ios/MediaController.swift
 +++ b/node_modules/expo-audio/ios/MediaController.swift
-@@ -238,6 +238,7 @@ class MediaController {
+@@ -67,7 +67,11 @@ class MediaController {
+       applyArtwork(&nowPlayingInfo, from: userMetadata, for: player, currentItemIdentifier: nextArtworkItemIdentifier)
+     } else {
+       resetArtworkState()
+-      nowPlayingInfo.removeValue(forKey: MPMediaItemPropertyArtwork)
++      if let defaultArtwork = defaultAppArtwork() {
++        nowPlayingInfo[MPMediaItemPropertyArtwork] = defaultArtwork
++      } else {
++        nowPlayingInfo.removeValue(forKey: MPMediaItemPropertyArtwork)
++      }
+       applyAssetMetadata(&nowPlayingInfo, for: player)
+     }
+ 
+@@ -130,6 +134,13 @@ class MediaController {
+     }
+   }
+ 
++  private func defaultAppArtwork() -> MPMediaItemArtwork? {
++    if let image = UIImage(named: "NowPlayingLogo") ?? UIImage(named: "AppLogo") {
++      return MPMediaItemArtwork(boundsSize: image.size) { _ in image }
++    }
++    return nil
++  }
++
+   private func applyArtwork(
+     _ info: inout [String: Any],
+     from metadata: Metadata,
+@@ -138,7 +149,11 @@ class MediaController {
+   ) {
+     guard let artworkUrl = metadata.artworkUrl else {
+       resetArtworkState()
+-      info.removeValue(forKey: MPMediaItemPropertyArtwork)
++      if let defaultArtwork = defaultAppArtwork() {
++        info[MPMediaItemPropertyArtwork] = defaultArtwork
++      } else {
++        info.removeValue(forKey: MPMediaItemPropertyArtwork)
++      }
+       return
+     }
+ 
+@@ -173,14 +188,16 @@ class MediaController {
+         return
+       }
+ 
+-      guard let artwork else {
++      let finalArtwork = artwork ?? self.defaultAppArtwork()
++
++      guard let finalArtwork else {
+         return
+       }
+ 
+-      self.cachedArtwork = artwork
++      self.cachedArtwork = finalArtwork
+ 
+       var latestNowPlayingInfo = self.nowPlayingInfoCenter.nowPlayingInfo ?? [String: Any]()
+-      latestNowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
++      latestNowPlayingInfo[MPMediaItemPropertyArtwork] = finalArtwork
+       self.nowPlayingInfoCenter.nowPlayingInfo = latestNowPlayingInfo
+     }
+   }
+@@ -208,6 +225,16 @@ class MediaController {
+   }
+ 
+   private func loadArtworkFromURL(url: URL, completion: @escaping (MPMediaItemArtwork?) -> Void) {
++    if url.isFileURL {
++      if let image = UIImage(contentsOfFile: url.path) {
++        let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
++        self.performOnMain {
++          completion(artwork)
++        }
++        return
++      }
++    }
++
+     URLSession.shared.dataTask(with: url) { data, _, error in
+       if error != nil {
+         self.performOnMain {
+@@ -238,6 +265,7 @@ class MediaController {
        }
  
        player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))
@@ -275,7 +352,7 @@ index e977f57..7fbb3ac 100644
        return .success
      }
  
-@@ -246,7 +247,7 @@ class MediaController {
+@@ -246,7 +274,7 @@ class MediaController {
          return .commandFailed
        }
  
@@ -284,7 +361,7 @@ index e977f57..7fbb3ac 100644
        return .success
      }
  
-@@ -256,9 +257,10 @@ class MediaController {
+@@ -256,9 +284,10 @@ class MediaController {
        }
  
        if player.isPlaying {
@@ -296,7 +373,7 @@ index e977f57..7fbb3ac 100644
        }
        return .success
      }
-@@ -303,9 +305,27 @@ class MediaController {
+@@ -303,9 +332,27 @@ class MediaController {
        return .success
      }
  
@@ -324,7 +401,7 @@ index e977f57..7fbb3ac 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream
      remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false
      remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false
-@@ -315,6 +335,8 @@ class MediaController {
+@@ -315,6 +362,8 @@ class MediaController {
      remoteCommandCenter.playCommand.isEnabled = false
      remoteCommandCenter.pauseCommand.isEnabled = false
      remoteCommandCenter.togglePlayPauseCommand.isEnabled = false
@@ -333,7 +410,7 @@ index e977f57..7fbb3ac 100644
      remoteCommandCenter.changePlaybackPositionCommand.isEnabled = false
      remoteCommandCenter.skipForwardCommand.isEnabled = false
      remoteCommandCenter.skipBackwardCommand.isEnabled = false
-@@ -323,6 +345,8 @@ class MediaController {
+@@ -323,6 +372,8 @@ class MediaController {
      remoteCommandCenter.playCommand.removeTarget(self)
      remoteCommandCenter.pauseCommand.removeTarget(self)
      remoteCommandCenter.togglePlayPauseCommand.removeTarget(self)
