@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		13B07FB71A68108700A75B9A /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* main.jsbundle */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		894449209D4F8F193C5D0C78 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB8D32CC67E9D291E7DA85CF /* ExpoModulesProvider.swift */; };
 		B2E0015509874D28C9741028 /* libPods-Calmpal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 23EFA2AD30E242EDEFAA5F84 /* libPods-Calmpal.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
@@ -26,7 +25,6 @@
 		13B07FB81A68108700A75B9A /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = main.jsbundle; path = main.jsbundle; sourceTree = "<group>"; };
 		23EFA2AD30E242EDEFAA5F84 /* libPods-Calmpal.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Calmpal.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		64592D5D4C27D61BAF593218 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Calmpal/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Calmpal/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		CF2D75F35DC0DFCDE1BE170F /* Pods-Calmpal.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Calmpal.debug.xcconfig"; path = "Target Support Files/Pods-Calmpal/Pods-Calmpal.debug.xcconfig"; sourceTree = "<group>"; };
 		DAB5B923FD3E4685D1131F59 /* Pods-Calmpal.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Calmpal.release.xcconfig"; path = "Target Support Files/Pods-Calmpal/Pods-Calmpal.release.xcconfig"; sourceTree = "<group>"; };
@@ -61,7 +59,6 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB81A68108700A75B9A /* main.jsbundle */,
-				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
 				64592D5D4C27D61BAF593218 /* PrivacyInfo.xcprivacy */,
 			);
 			name = Calmpal;
@@ -207,7 +204,6 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				F117489A2D0307B40044C1D9 /* artwork-logo-black.png in Resources */,
-				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				13B07FB71A68108700A75B9A /* main.jsbundle in Resources */,
 				C7F5ADF39E139AFFBDA54492 /* PrivacyInfo.xcprivacy in Resources */,
 			);

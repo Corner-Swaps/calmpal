@@ -81,22 +81,46 @@ export const GroundingScreenView: React.FC = () => {
   const totalTimerDurationRef = useRef<number>(totalTimerDuration);
   totalTimerDurationRef.current = totalTimerDuration;
 
+  const remainingTimerSecondsRef = useRef<number>(remainingTimerSeconds);
+  remainingTimerSecondsRef.current = remainingTimerSeconds;
+
   const isPlayingRef = useRef<boolean>(isPlaying);
   isPlayingRef.current = isPlaying;
 
-  // Sync state with AudioManager singleton
+  // Sync state with AudioManager singleton (Single Source of Truth)
   useEffect(() => {
     const unsubscribe = audioManager.subscribe((state) => {
       setActiveProfileState(state.activeProfile);
-      setIsPlaying(state.isPlaying);
-      if (!state.isPlaying && timerEndTimestampRef.current !== null && timerEndTimestampRef.current <= Date.now()) {
-        const resetDuration = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
-        setRemainingTimerSeconds(resetDuration);
-        setTimerEndTimestamp(null);
-      }
+
+      const audioPlaying = state.isPlaying;
+      setIsPlaying((prevPlaying) => {
+        if (prevPlaying !== audioPlaying) {
+          if (audioPlaying) {
+            let dur = remainingTimerSecondsRef.current;
+            if (dur <= 0) {
+              dur = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
+              setRemainingTimerSeconds(dur);
+            }
+            const end = Date.now() + dur * 1000;
+            setTimerEndTimestamp(end);
+            audioManager.setSleepTimerTargetDate(new Date(end));
+            hapticManager.startSoundHaptics(state.activeProfile);
+          } else {
+            hapticManager.stopSoundHaptics();
+            if (timerEndTimestampRef.current !== null) {
+              const left = Math.max(0, (timerEndTimestampRef.current - Date.now()) / 1000);
+              setRemainingTimerSeconds(left);
+            }
+            setTimerEndTimestamp(null);
+            audioManager.setSleepTimerTargetDate(null);
+          }
+          return audioPlaying;
+        }
+        return prevPlaying;
+      });
     });
     return () => unsubscribe();
-  }, [audioManager]);
+  }, [audioManager, hapticManager]);
 
   // Immediate foreground resync when returning from background or lockscreen
   useEffect(() => {
@@ -132,16 +156,23 @@ export const GroundingScreenView: React.FC = () => {
 
   // 1-second countdown ticker when playback is active
   useEffect(() => {
-    if (!isPlaying || isDraggingTimer || activeOverlay === 'editTimer' || timerEndTimestamp === null) {
+    if (!isPlaying || isDraggingTimer || activeOverlay === 'editTimer') {
       return;
     }
 
     const interval = setInterval(() => {
-      const leftSec = (timerEndTimestamp - Date.now()) / 1000;
+      let end = timerEndTimestampRef.current;
+      if (end === null) {
+        const dur = remainingTimerSecondsRef.current > 0 ? remainingTimerSecondsRef.current : (totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0);
+        end = Date.now() + dur * 1000;
+        setTimerEndTimestamp(end);
+        audioManager.setSleepTimerTargetDate(new Date(end));
+      }
+
+      const leftSec = (end - Date.now()) / 1000;
       if (leftSec <= 0) {
-        const resetDuration = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
+        const resetDuration = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
         setRemainingTimerSeconds(resetDuration);
-        setIsPlaying(false);
         setTimerEndTimestamp(null);
         audioManager.setSleepTimerTargetDate(null);
         audioManager.stop();
@@ -151,7 +182,7 @@ export const GroundingScreenView: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isPlaying, isDraggingTimer, activeOverlay, timerEndTimestamp, totalTimerDuration, audioManager]);
+  }, [isPlaying, isDraggingTimer, activeOverlay, audioManager]);
 
   // Keep screen awake while audio playback is active
   useEffect(() => {
@@ -167,27 +198,8 @@ export const GroundingScreenView: React.FC = () => {
 
   const togglePlayPause = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.6, 0.6);
-    const willPlay = !isPlaying;
-    setIsPlaying(willPlay);
-
-    if (willPlay) {
-      const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
-      const end = Date.now() + dur * 1000;
-      setRemainingTimerSeconds(dur);
-      setTimerEndTimestamp(end);
-      audioManager.setSleepTimerTargetDate(new Date(end));
-      hapticManager.startSoundHaptics(activeProfile);
-      await audioManager.resume();
-    } else {
-      hapticManager.stopSoundHaptics();
-      if (timerEndTimestamp !== null) {
-        setRemainingTimerSeconds(Math.max(0, (timerEndTimestamp - Date.now()) / 1000));
-      }
-      setTimerEndTimestamp(null);
-      audioManager.setSleepTimerTargetDate(null);
-      await audioManager.pause();
-    }
-  }, [isPlaying, remainingTimerSeconds, totalTimerDuration, timerEndTimestamp, activeProfile, audioManager, hapticManager]);
+    await audioManager.togglePlayPause();
+  }, [audioManager, hapticManager]);
 
   const selectPreviousSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
@@ -198,24 +210,19 @@ export const GroundingScreenView: React.FC = () => {
     const newIndex = (validIndex - 1 + totalCount) % totalCount;
     const newProfile = allSoundBanners[newIndex].profile;
     setActiveProfileState(newProfile);
-    await audioManager.setActiveProfile(newProfile);
-
-    if (!isPlaying) {
-      setIsPlaying(true);
-    }
-    hapticManager.startSoundHaptics(newProfile);
 
     // Always restart timer from the full configured session duration when skipping sections
-    const dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
+    const dur = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
     const end = Date.now() + dur * 1000;
     setRemainingTimerSeconds(dur);
     setTimerEndTimestamp(end);
     audioManager.setSleepTimerTargetDate(new Date(end));
 
+    await audioManager.setActiveProfile(newProfile);
     if (!audioManager.isAudioPlaying) {
       await audioManager.start();
     }
-  }, [activeProfile, totalTimerDuration, isPlaying, audioManager, hapticManager]);
+  }, [activeProfile, audioManager, hapticManager]);
 
   const selectNextSound = useCallback(async () => {
     hapticManager.playTransientHeartbeat(0.5, 0.5);
@@ -226,24 +233,19 @@ export const GroundingScreenView: React.FC = () => {
     const newIndex = (validIndex + 1) % totalCount;
     const newProfile = allSoundBanners[newIndex].profile;
     setActiveProfileState(newProfile);
-    await audioManager.setActiveProfile(newProfile);
-
-    if (!isPlaying) {
-      setIsPlaying(true);
-    }
-    hapticManager.startSoundHaptics(newProfile);
 
     // Always restart timer from the full configured session duration when skipping sections
-    const dur = totalTimerDuration > 0 ? totalTimerDuration : 600.0;
+    const dur = totalTimerDurationRef.current > 0 ? totalTimerDurationRef.current : 600.0;
     const end = Date.now() + dur * 1000;
     setRemainingTimerSeconds(dur);
     setTimerEndTimestamp(end);
     audioManager.setSleepTimerTargetDate(new Date(end));
 
+    await audioManager.setActiveProfile(newProfile);
     if (!audioManager.isAudioPlaying) {
       await audioManager.start();
     }
-  }, [activeProfile, totalTimerDuration, isPlaying, audioManager, hapticManager]);
+  }, [activeProfile, audioManager, hapticManager]);
 
   const handleConfirmEditTimer = useCallback(() => {
     hapticManager.playTransientHeartbeat(0.5, 0.6);
@@ -253,17 +255,22 @@ export const GroundingScreenView: React.FC = () => {
       useNativeDriver: true,
     }).start(() => {
       if (isPlaying) {
-        const dur = remainingTimerSeconds > 0 ? remainingTimerSeconds : (totalTimerDuration > 0 ? totalTimerDuration : 600.0);
-        const end = Date.now() + dur * 1000;
-        setTimerEndTimestamp(end);
-        audioManager.setSleepTimerTargetDate(new Date(end));
+        if (remainingTimerSeconds <= 0) {
+          audioManager.setSleepTimerTargetDate(null);
+          setTimerEndTimestamp(null);
+          audioManager.stop();
+        } else {
+          const end = Date.now() + remainingTimerSeconds * 1000;
+          setTimerEndTimestamp(end);
+          audioManager.setSleepTimerTargetDate(new Date(end));
+        }
       } else {
         setTimerEndTimestamp(null);
         audioManager.setSleepTimerTargetDate(null);
       }
       setActiveOverlay('none');
     });
-  }, [editTimerFadeAnim, isPlaying, remainingTimerSeconds, totalTimerDuration, audioManager, hapticManager]);
+  }, [editTimerFadeAnim, isPlaying, remainingTimerSeconds, audioManager, hapticManager]);
 
   // Keep mutable callback refs to avoid stale closures in panResponder
   const togglePlayPauseRef = useRef(togglePlayPause);

@@ -54,7 +54,7 @@ index d265606..556d872 100644
        break
      }
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0742943..799d412 100644
+index 0742943..2bf2318 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
 @@ -17,13 +17,16 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
@@ -125,7 +125,7 @@ index 0742943..799d412 100644
    private var source: AudioSource?
  
    // MARK: Observers
-@@ -88,25 +121,32 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -88,25 +121,38 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    var isPlaying: Bool {
@@ -144,12 +144,17 @@ index 0742943..799d412 100644
  
    func play(at rate: Float) {
 -    ref.actionAtItemEnd = isLooping ? .advance : .pause
--    if isLooping {
--      enqueueNextLoopItem()
 +    isPlayingIntent = true
 +    try? AVAudioSession.sharedInstance().setActive(true)
-+    if isLooping && (playerLooper == nil || playerLooper?.status != .ready) {
-+      setupLooper()
+     if isLooping {
+-      enqueueNextLoopItem()
++      if let queuePlayer = ref as? AVQueuePlayer {
++        if playerLooper == nil || playerLooper?.status != .ready || queuePlayer.items().isEmpty || queuePlayer.currentItem == nil {
++          setupLooper()
++        } else if let currentItem = queuePlayer.currentItem, currentItem.currentTime() >= currentItem.duration {
++          currentItem.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero, completionHandler: nil)
++        }
++      }
 +    }
 +    if playerLooper == nil {
 +      ref.actionAtItemEnd = isLooping ? .advance : .pause
@@ -163,7 +168,7 @@ index 0742943..799d412 100644
  
      if isActiveForLockScreen {
        MediaController.shared.updateNowPlayingInfo(for: self)
-@@ -207,8 +247,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -207,8 +253,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
            self.updateStatus(with: [
              "isLoaded": true
            ])
@@ -174,7 +179,7 @@ index 0742943..799d412 100644
            }
            if shouldInstallAudioTap || samplingEnabled {
              installTap()
-@@ -228,10 +268,10 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -228,10 +274,10 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
          guard let self else {
            return
          }
@@ -188,7 +193,7 @@ index 0742943..799d412 100644
          if self.samplingEnabled && self.isLoaded {
            self.uninstallTap()
            self.installTap()
-@@ -264,6 +304,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -264,6 +310,8 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
      self.source = source
      let wasPlaying = ref.timeControlStatus == .playing
      let wasSamplingEnabled = samplingEnabled
@@ -197,7 +202,7 @@ index 0742943..799d412 100644
      removeQueuedLoopItems()
      ref.pause()
  
-@@ -319,6 +361,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -319,6 +367,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    private func teardownPlayer() {
@@ -207,7 +212,7 @@ index 0742943..799d412 100644
      removeQueuedLoopItems()
      if samplingEnabled {
        uninstallTap()
-@@ -405,6 +450,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -405,6 +456,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    private func replacePlayerItem(with item: AVPlayerItem?) {
@@ -217,7 +222,7 @@ index 0742943..799d412 100644
      if let queuePlayer = ref as? AVQueuePlayer {
        queuePlayer.removeAllItems()
        if let item {
-@@ -413,6 +461,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -413,6 +467,9 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
      } else {
        ref.replaceCurrentItem(with: item)
      }
@@ -227,7 +232,7 @@ index 0742943..799d412 100644
    }
  
    private func enqueueNextLoopItem() {
-@@ -449,24 +500,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -449,24 +506,30 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
        object: nil,
        queue: nil
      ) { [weak self] notification in
@@ -266,7 +271,7 @@ index 0742943..799d412 100644
        }
      }
    }
-@@ -496,14 +553,28 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
+@@ -496,14 +559,37 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable {
    }
  
    func pause() {
@@ -280,6 +285,15 @@ index 0742943..799d412 100644
    func resumePlayback() {
 +    isPlayingIntent = true
 +    try? AVAudioSession.sharedInstance().setActive(true)
++    if isLooping {
++      if let queuePlayer = ref as? AVQueuePlayer {
++        if playerLooper == nil || playerLooper?.status != .ready || queuePlayer.items().isEmpty || queuePlayer.currentItem == nil {
++          setupLooper()
++        } else if let currentItem = queuePlayer.currentItem, currentItem.currentTime() >= currentItem.duration {
++          currentItem.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero, completionHandler: nil)
++        }
++      }
++    }
 +    ref.playImmediately(atRate: effectiveRate)
 +    ref.rate = effectiveRate
      ref.play()
