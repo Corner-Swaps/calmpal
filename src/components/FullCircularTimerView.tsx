@@ -78,7 +78,7 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
               cy={radius}
               r={trackRadius}
               stroke="#FFFFFF"
-              strokeWidth={isDragging ? 5.5 : 4.5}
+              strokeWidth={4.5}
               strokeLinecap="round"
               strokeDasharray={`${circumference}`}
               strokeDashoffset={strokeDashoffset}
@@ -87,21 +87,11 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
               rotation={-90}
             />
 
-            {/* Glowing Halo when actively dragging */}
-            {isDragging && (
-              <Circle
-                cx={dotX}
-                cy={dotY}
-                r={13}
-                fill="rgba(255, 255, 255, 0.28)"
-              />
-            )}
-
-            {/* Little White Dot */}
+            {/* Minimal Little White Dot */}
             <Circle
               cx={dotX}
               cy={dotY}
-              r={isDragging ? 7.5 : 5}
+              r={5}
               fill="#FFFFFF"
             />
           </G>

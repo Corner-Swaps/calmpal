@@ -31,7 +31,7 @@ import {
 
 import { SoundProfile, SOUND_ARTIST_CREDITS } from '../models/SoundProfile';
 import { bannerFor, allSoundBanners } from '../models/SoundBannerTheme';
-import { formatNoLeadingZeroHours, TIMER_STEPS, findClosestStepIndex } from '../models/TimeUtils';
+import { formatNoLeadingZeroHours } from '../models/TimeUtils';
 import { AudioManager } from '../managers/AudioManager';
 import { HapticManager } from '../managers/HapticManager';
 import { IMAGE_ASSETS } from '../assets/assetMap';
@@ -302,8 +302,8 @@ export const GroundingScreenView: React.FC = () => {
   const hasMovedVerticallyRef = useRef<boolean>(false);
   const dragStartRemainingSecondsRef = useRef<number>(600.0);
   const dragStartTotalDurationRef = useRef<number>(600.0);
-  const dragStartStepIndexRef = useRef<number>(10);
-  const lastHapticStepRef = useRef<number>(10);
+  const lastSecondRef = useRef<number>(600);
+  const lastHapticTimeRef = useRef<number>(0);
 
   // Background PanResponder for Swipe Gestures, Vertical Timer Shifting & Taps
   const panResponder = useRef(
@@ -318,9 +318,8 @@ export const GroundingScreenView: React.FC = () => {
         hasMovedVerticallyRef.current = false;
         dragStartRemainingSecondsRef.current = remainingTimerSecondsRef.current;
         dragStartTotalDurationRef.current = totalTimerDurationRef.current;
-        const startIdx = findClosestStepIndex(remainingTimerSecondsRef.current);
-        dragStartStepIndexRef.current = startIdx;
-        lastHapticStepRef.current = startIdx;
+        lastSecondRef.current = Math.round(remainingTimerSecondsRef.current);
+        lastHapticTimeRef.current = Date.now();
       },
       onPanResponderMove: (_, gesture) => {
         const absDx = Math.abs(gesture.dx);
@@ -338,25 +337,38 @@ export const GroundingScreenView: React.FC = () => {
         }
 
         if (gestureModeRef.current === 'vertical') {
-          // Sliding UP (negative dy) increases time; sliding DOWN (positive dy) decreases time
-          // ~11pt of vertical dragging per discrete timer step notch
-          const ptsPerStep = 11;
-          const stepDelta = Math.round(-gesture.dy / ptsPerStep);
-          const targetIndex = Math.max(
-            0,
-            Math.min(TIMER_STEPS.length - 1, dragStartStepIndexRef.current + stepDelta)
-          );
+          // 1 second at a time super smooth continuous transition:
+          // Sliding UP (negative dy) increases time; sliding DOWN decreases time
+          const sign = gesture.dy < 0 ? 1 : -1;
 
-          if (targetIndex !== lastHapticStepRef.current) {
-            if (targetIndex === 0 || targetIndex === TIMER_STEPS.length - 1) {
-              hapticManager.playBoundaryImpact();
-            } else {
-              hapticManager.playSelectionTick();
-            }
-            lastHapticStepRef.current = targetIndex;
+          // 1 second per pixel for subtle precision, ramping smoothly for wider sweeps
+          let rawSeconds = 0;
+          if (absDy <= 60) {
+            rawSeconds = absDy * 1.0;
+          } else if (absDy <= 180) {
+            rawSeconds = 60 + (absDy - 60) * 2.0;
+          } else {
+            rawSeconds = 60 + 120 * 2.0 + (absDy - 180) * 5.0;
           }
 
-          const newRemaining = TIMER_STEPS[targetIndex];
+          const secondsDelta = sign * Math.round(rawSeconds);
+          const newRemaining = Math.max(
+            0,
+            Math.min(14400, Math.round(dragStartRemainingSecondsRef.current + secondsDelta))
+          );
+
+          if (newRemaining !== lastSecondRef.current) {
+            const now = Date.now();
+            if (newRemaining === 0 || newRemaining === 14400) {
+              hapticManager.playBoundaryImpact();
+              lastHapticTimeRef.current = now;
+            } else if (now - lastHapticTimeRef.current >= 45) {
+              hapticManager.playSelectionTick();
+              lastHapticTimeRef.current = now;
+            }
+            lastSecondRef.current = newRemaining;
+          }
+
           remainingTimerSecondsRef.current = newRemaining;
           setRemainingTimerSeconds(newRemaining);
 
