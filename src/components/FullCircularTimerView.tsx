@@ -8,6 +8,7 @@ interface FullCircularTimerViewProps {
   totalDuration: number;
   isPlaying: boolean;
   timerEndTimestamp: number | null; // Date.now() timestamp
+  isDragging?: boolean;
 }
 
 export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
@@ -15,20 +16,24 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
   totalDuration,
   isPlaying,
   timerEndTimestamp,
+  isDragging = false,
 }) => {
   const [, setTick] = useState(0);
 
   // Smooth throttled update only when an active countdown timer is running
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying || isDragging) return;
     const interval = setInterval(() => {
       setTick((prev) => (prev + 1) % 1000000);
     }, 50);
 
     return () => clearInterval(interval);
-  }, [isPlaying, timerEndTimestamp]);
+  }, [isPlaying, timerEndTimestamp, isDragging]);
 
   const currentRemaining = (() => {
+    if (isDragging) {
+      return remainingSeconds;
+    }
     if (isPlaying && timerEndTimestamp !== null) {
       const remaining = (timerEndTimestamp - Date.now()) / 1000;
       const maxAllowed = totalDuration > 0 ? totalDuration : remainingSeconds;
@@ -73,7 +78,7 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
               cy={radius}
               r={trackRadius}
               stroke="#FFFFFF"
-              strokeWidth={4.5}
+              strokeWidth={isDragging ? 5.5 : 4.5}
               strokeLinecap="round"
               strokeDasharray={`${circumference}`}
               strokeDashoffset={strokeDashoffset}
@@ -82,11 +87,21 @@ export const FullCircularTimerView: React.FC<FullCircularTimerViewProps> = ({
               rotation={-90}
             />
 
-            {/* Minimal Little White Dot */}
+            {/* Glowing Halo when actively dragging */}
+            {isDragging && (
+              <Circle
+                cx={dotX}
+                cy={dotY}
+                r={13}
+                fill="rgba(255, 255, 255, 0.28)"
+              />
+            )}
+
+            {/* Little White Dot */}
             <Circle
               cx={dotX}
               cy={dotY}
-              r={5}
+              r={isDragging ? 7.5 : 5}
               fill="#FFFFFF"
             />
           </G>

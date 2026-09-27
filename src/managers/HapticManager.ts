@@ -318,6 +318,20 @@ export class HapticManager {
     }, nextDelayMs);
   }
 
+  public playSelectionTick() {
+    if (Platform.OS === 'web') return;
+    try {
+      Haptics.selectionAsync().catch(() => {});
+    } catch {}
+  }
+
+  public playBoundaryImpact() {
+    if (Platform.OS === 'web') return;
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    } catch {}
+  }
+
   private triggerHaptic(style: Haptics.ImpactFeedbackStyle) {
     if (Platform.OS === 'web') return;
     try {
@@ -325,3 +339,4 @@ export class HapticManager {
     } catch {}
   }
 }
+

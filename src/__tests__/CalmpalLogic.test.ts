@@ -7,7 +7,7 @@ import {
   SOUND_ARTIST_CREDITS,
 } from '../models/SoundProfile';
 import { allSoundBanners, bannerFor } from '../models/SoundBannerTheme';
-import { formatNoLeadingZeroHours } from '../models/TimeUtils';
+import { formatNoLeadingZeroHours, TIMER_STEPS, findClosestStepIndex } from '../models/TimeUtils';
 import { HapticManager } from '../managers/HapticManager';
 import { AudioManager } from '../managers/AudioManager';
 
@@ -84,6 +84,43 @@ describe('Calmpal Logic & Data Model Parity Tests', () => {
       expect(formatNoLeadingZeroHours(NaN)).toBe('0:00');
       expect(formatNoLeadingZeroHours(Infinity)).toBe('0:00');
       expect(formatNoLeadingZeroHours(-10)).toBe('0:00');
+    });
+
+    it('TIMER_STEPS begins at 0 and ends at 4 hours (14400s)', () => {
+      expect(TIMER_STEPS[0]).toBe(0);
+      expect(TIMER_STEPS[TIMER_STEPS.length - 1]).toBe(14400);
+      expect(TIMER_STEPS.length).toBe(49);
+
+      // Strictly increasing
+      for (let i = 1; i < TIMER_STEPS.length; i++) {
+        expect(TIMER_STEPS[i]).toBeGreaterThan(TIMER_STEPS[i - 1]);
+      }
+
+      // Contains key preset landmarks
+      expect(TIMER_STEPS).toContain(600); // 10 min
+      expect(TIMER_STEPS).toContain(900); // 15 min
+      expect(TIMER_STEPS).toContain(1800); // 30 min
+      expect(TIMER_STEPS).toContain(3600); // 1 hour
+      expect(TIMER_STEPS).toContain(7200); // 2 hours
+    });
+
+    it('findClosestStepIndex maps arbitrary times to closest discrete notch', () => {
+      expect(findClosestStepIndex(0)).toBe(0);
+      expect(findClosestStepIndex(-10)).toBe(0);
+      expect(findClosestStepIndex(NaN)).toBe(0);
+      expect(findClosestStepIndex(600)).toBe(10); // 10 min
+      expect(findClosestStepIndex(610)).toBe(10); // 610s is closest to 600s (10 min)
+      expect(findClosestStepIndex(650)).toBe(11); // 650s is closest to 660s (11 min)
+      expect(findClosestStepIndex(1800)).toBe(30); // 30 min
+      expect(findClosestStepIndex(15000)).toBe(TIMER_STEPS.length - 1); // Clamp to max 4h
+    });
+  });
+
+  describe('HapticManager Selection & Boundary Ticks', () => {
+    it('executes playSelectionTick and playBoundaryImpact safely without errors', () => {
+      const manager = HapticManager.shared;
+      expect(() => manager.playSelectionTick()).not.toThrow();
+      expect(() => manager.playBoundaryImpact()).not.toThrow();
     });
   });
 

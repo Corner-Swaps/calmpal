@@ -31,7 +31,7 @@ import {
 
 import { SoundProfile, SOUND_ARTIST_CREDITS } from '../models/SoundProfile';
 import { bannerFor, allSoundBanners } from '../models/SoundBannerTheme';
-import { formatNoLeadingZeroHours } from '../models/TimeUtils';
+import { formatNoLeadingZeroHours, TIMER_STEPS, findClosestStepIndex } from '../models/TimeUtils';
 import { AudioManager } from '../managers/AudioManager';
 import { HapticManager } from '../managers/HapticManager';
 import { IMAGE_ASSETS } from '../assets/assetMap';
@@ -297,15 +297,111 @@ export const GroundingScreenView: React.FC = () => {
   const isArtistInfoVisibleRef = useRef(isArtistInfoVisible);
   isArtistInfoVisibleRef.current = isArtistInfoVisible;
 
-  // Background PanResponder for Swipe Gestures & Taps
+  // Gesture tracking refs for vertical timer shift, horizontal swipe, and taps
+  const gestureModeRef = useRef<'undetermined' | 'horizontal' | 'vertical'>('undetermined');
+  const hasMovedVerticallyRef = useRef<boolean>(false);
+  const dragStartRemainingSecondsRef = useRef<number>(600.0);
+  const dragStartTotalDurationRef = useRef<number>(600.0);
+  const dragStartStepIndexRef = useRef<number>(10);
+  const lastHapticStepRef = useRef<number>(10);
+
+  // Background PanResponder for Swipe Gestures, Vertical Timer Shifting & Taps
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gesture) =>
-        Math.abs(gesture.dx) > 10 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+        Math.abs(gesture.dx) > 8 || Math.abs(gesture.dy) > 8,
       onMoveShouldSetPanResponderCapture: (_, gesture) =>
-        Math.abs(gesture.dx) > 15 && Math.abs(gesture.dx) > Math.abs(gesture.dy),
+        Math.abs(gesture.dx) > 12 || Math.abs(gesture.dy) > 12,
+      onPanResponderGrant: () => {
+        gestureModeRef.current = 'undetermined';
+        hasMovedVerticallyRef.current = false;
+        dragStartRemainingSecondsRef.current = remainingTimerSecondsRef.current;
+        dragStartTotalDurationRef.current = totalTimerDurationRef.current;
+        const startIdx = findClosestStepIndex(remainingTimerSecondsRef.current);
+        dragStartStepIndexRef.current = startIdx;
+        lastHapticStepRef.current = startIdx;
+      },
+      onPanResponderMove: (_, gesture) => {
+        const absDx = Math.abs(gesture.dx);
+        const absDy = Math.abs(gesture.dy);
+
+        // Lock to primary axis once threshold exceeded
+        if (gestureModeRef.current === 'undetermined') {
+          if (absDx > absDy * 1.15 && absDx > 8) {
+            gestureModeRef.current = 'horizontal';
+          } else if (absDy > absDx * 1.15 && absDy > 8) {
+            gestureModeRef.current = 'vertical';
+            hasMovedVerticallyRef.current = true;
+            setIsDraggingTimer(true);
+          }
+        }
+
+        if (gestureModeRef.current === 'vertical') {
+          // Sliding UP (negative dy) increases time; sliding DOWN (positive dy) decreases time
+          // ~11pt of vertical dragging per discrete timer step notch
+          const ptsPerStep = 11;
+          const stepDelta = Math.round(-gesture.dy / ptsPerStep);
+          const targetIndex = Math.max(
+            0,
+            Math.min(TIMER_STEPS.length - 1, dragStartStepIndexRef.current + stepDelta)
+          );
+
+          if (targetIndex !== lastHapticStepRef.current) {
+            if (targetIndex === 0 || targetIndex === TIMER_STEPS.length - 1) {
+              hapticManager.playBoundaryImpact();
+            } else {
+              hapticManager.playSelectionTick();
+            }
+            lastHapticStepRef.current = targetIndex;
+          }
+
+          const newRemaining = TIMER_STEPS[targetIndex];
+          remainingTimerSecondsRef.current = newRemaining;
+          setRemainingTimerSeconds(newRemaining);
+
+          // If scrubbed above initial duration, expand totalTimerDuration so on release
+          // the session total matches the new selected duration.
+          // If scrubbed below, keep totalTimerDuration at initial so progress arc shrinks.
+          const newTotal = Math.max(dragStartTotalDurationRef.current, newRemaining);
+          totalTimerDurationRef.current = newTotal;
+          setTotalTimerDuration(newTotal);
+        }
+      },
       onPanResponderRelease: (_, gesture) => {
+        if (gestureModeRef.current === 'vertical' || hasMovedVerticallyRef.current) {
+          setIsDraggingTimer(false);
+          hasMovedVerticallyRef.current = false;
+          gestureModeRef.current = 'undetermined';
+
+          const finalRemaining = remainingTimerSecondsRef.current;
+          const finalTotal =
+            totalTimerDurationRef.current > 0
+              ? totalTimerDurationRef.current
+              : finalRemaining > 0
+              ? finalRemaining
+              : 600.0;
+
+          if (isPlayingRef.current) {
+            if (finalRemaining <= 0) {
+              audioManager.setSleepTimerTargetDate(null);
+              setTimerEndTimestamp(null);
+              timerEndTimestampRef.current = null;
+              audioManager.stop();
+            } else {
+              const end = Date.now() + finalRemaining * 1000;
+              timerEndTimestampRef.current = end;
+              setTimerEndTimestamp(end);
+              audioManager.setSleepTimerTargetDate(new Date(end));
+            }
+          } else {
+            timerEndTimestampRef.current = null;
+            setTimerEndTimestamp(null);
+            audioManager.setSleepTimerTargetDate(null);
+          }
+          return;
+        }
+
         const horizontal = gesture.dx;
         const vertical = gesture.dy;
         const vx = gesture.vx;
@@ -324,18 +420,27 @@ export const GroundingScreenView: React.FC = () => {
             // Swiped Right -> Bring to Previous sound (infinite wrap-around: first -> last)
             selectPreviousSoundRef.current();
           }
-        } else {
-          // Responsive tap: zero dead zone for micro-movements under 22pt
-          if (Math.abs(horizontal) < 22 && Math.abs(vertical) < 22) {
-            if (isArtistInfoVisibleRef.current) {
-              setIsArtistInfoVisible(false);
-            } else {
-              togglePlayPauseRef.current();
-            }
+          gestureModeRef.current = 'undetermined';
+          return;
+        }
+
+        // Responsive tap: zero dead zone for micro-movements under 20pt
+        if (Math.abs(horizontal) < 20 && Math.abs(vertical) < 20) {
+          if (isArtistInfoVisibleRef.current) {
+            setIsArtistInfoVisible(false);
+          } else {
+            togglePlayPauseRef.current();
           }
         }
+        gestureModeRef.current = 'undetermined';
       },
-      onPanResponderTerminate: () => {},
+      onPanResponderTerminate: () => {
+        if (hasMovedVerticallyRef.current) {
+          setIsDraggingTimer(false);
+          hasMovedVerticallyRef.current = false;
+        }
+        gestureModeRef.current = 'undetermined';
+      },
     })
   ).current;
 
@@ -444,6 +549,7 @@ export const GroundingScreenView: React.FC = () => {
                   totalDuration={totalTimerDuration}
                   isPlaying={isPlaying}
                   timerEndTimestamp={timerEndTimestamp}
+                  isDragging={isDraggingTimer}
                 />
               </View>
             )}
