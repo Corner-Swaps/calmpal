@@ -60,3 +60,18 @@ export function findClosestStepIndex(seconds: number): number {
   return closestIndex;
 }
 
+// Returns true if a gesture's starting Y coordinate is within the middle timer section
+// (timer circle of 318pt diameter centered at screenHeight / 2 + 20, plus ~1 inch (72pt) above and below)
+export function isWithinMiddleTimerSection(y: number, screenHeight: number): boolean {
+  if (!Number.isFinite(y) || !Number.isFinite(screenHeight) || screenHeight <= 0) {
+    return false;
+  }
+  const centerY = screenHeight / 2 + 20;
+  const timerRadius = 159; // 318pt diameter / 2
+  const oneInch = 72; // Standard iOS 72pt = 1 inch
+  const timerZoneTop = centerY - timerRadius - oneInch;
+  const timerZoneBottom = centerY + timerRadius + oneInch;
+  return y >= timerZoneTop && y <= timerZoneBottom;
+}
+
+

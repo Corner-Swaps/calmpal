@@ -31,7 +31,7 @@ import {
 
 import { SoundProfile, SOUND_ARTIST_CREDITS } from '../models/SoundProfile';
 import { bannerFor, allSoundBanners } from '../models/SoundBannerTheme';
-import { formatNoLeadingZeroHours } from '../models/TimeUtils';
+import { formatNoLeadingZeroHours, isWithinMiddleTimerSection } from '../models/TimeUtils';
 import { AudioManager } from '../managers/AudioManager';
 import { HapticManager } from '../managers/HapticManager';
 import { IMAGE_ASSETS } from '../assets/assetMap';
@@ -305,14 +305,37 @@ export const GroundingScreenView: React.FC = () => {
   const lastSecondRef = useRef<number>(600);
   const lastHapticTimeRef = useRef<number>(0);
 
+  const screenHeightRef = useRef<number>(screenHeight);
+  screenHeightRef.current = screenHeight;
+
   // Background PanResponder for Swipe Gestures, Vertical Timer Shifting & Taps
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gesture) =>
-        Math.abs(gesture.dx) > 8 || Math.abs(gesture.dy) > 8,
-      onMoveShouldSetPanResponderCapture: (_, gesture) =>
-        Math.abs(gesture.dx) > 12 || Math.abs(gesture.dy) > 12,
+      onMoveShouldSetPanResponder: (_, gesture) => {
+        const absDx = Math.abs(gesture.dx);
+        const absDy = Math.abs(gesture.dy);
+        // Horizontal swipe works anywhere across the screen
+        if (absDx > 8 && absDx > absDy) {
+          return true;
+        }
+        // Vertical timer slide ONLY activates within middle timer section (+- 1 inch)
+        if (absDy > 8 && absDy > absDx) {
+          return isWithinMiddleTimerSection(gesture.y0, screenHeightRef.current);
+        }
+        return false;
+      },
+      onMoveShouldSetPanResponderCapture: (_, gesture) => {
+        const absDx = Math.abs(gesture.dx);
+        const absDy = Math.abs(gesture.dy);
+        if (absDx > 12 && absDx > absDy) {
+          return true;
+        }
+        if (absDy > 12 && absDy > absDx) {
+          return isWithinMiddleTimerSection(gesture.y0, screenHeightRef.current);
+        }
+        return false;
+      },
       onPanResponderGrant: () => {
         gestureModeRef.current = 'undetermined';
         hasMovedVerticallyRef.current = false;
@@ -330,9 +353,11 @@ export const GroundingScreenView: React.FC = () => {
           if (absDx > absDy * 1.15 && absDx > 8) {
             gestureModeRef.current = 'horizontal';
           } else if (absDy > absDx * 1.15 && absDy > 8) {
-            gestureModeRef.current = 'vertical';
-            hasMovedVerticallyRef.current = true;
-            setIsDraggingTimer(true);
+            if (isWithinMiddleTimerSection(gesture.y0, screenHeightRef.current)) {
+              gestureModeRef.current = 'vertical';
+              hasMovedVerticallyRef.current = true;
+              setIsDraggingTimer(true);
+            }
           }
         }
 

@@ -7,7 +7,7 @@ import {
   SOUND_ARTIST_CREDITS,
 } from '../models/SoundProfile';
 import { allSoundBanners, bannerFor } from '../models/SoundBannerTheme';
-import { formatNoLeadingZeroHours, TIMER_STEPS, findClosestStepIndex } from '../models/TimeUtils';
+import { formatNoLeadingZeroHours, TIMER_STEPS, findClosestStepIndex, isWithinMiddleTimerSection } from '../models/TimeUtils';
 import { HapticManager } from '../managers/HapticManager';
 import { AudioManager } from '../managers/AudioManager';
 
@@ -113,6 +113,37 @@ describe('Calmpal Logic & Data Model Parity Tests', () => {
       expect(findClosestStepIndex(650)).toBe(11); // 650s is closest to 660s (11 min)
       expect(findClosestStepIndex(1800)).toBe(30); // 30 min
       expect(findClosestStepIndex(15000)).toBe(TIMER_STEPS.length - 1); // Clamp to max 4h
+    });
+
+    it('isWithinMiddleTimerSection accurately detects middle timer zone and excludes bottom minimizing area', () => {
+      // iPhone 16 / 15 / 14 height = 852
+      // Center = 852 / 2 + 20 = 446. TimerRadius = 159. 1 inch = 72.
+      // Top bound = 446 - 159 - 72 = 215. Bottom bound = 446 + 159 + 72 = 677.
+      const screenH = 852;
+      expect(isWithinMiddleTimerSection(446, screenH)).toBe(true); // Dead center
+      expect(isWithinMiddleTimerSection(300, screenH)).toBe(true); // Within timer circle
+      expect(isWithinMiddleTimerSection(550, screenH)).toBe(true); // Within timer circle
+      expect(isWithinMiddleTimerSection(215, screenH)).toBe(true); // Exact top boundary
+      expect(isWithinMiddleTimerSection(677, screenH)).toBe(true); // Exact bottom boundary
+
+      // Safe zones outside middle section:
+      expect(isWithinMiddleTimerSection(820, screenH)).toBe(false); // Bottom home indicator (minimizing screen)
+      expect(isWithinMiddleTimerSection(780, screenH)).toBe(false); // Bottom dock controls
+      expect(isWithinMiddleTimerSection(50, screenH)).toBe(false);  // Top status bar / Dynamic Island
+      expect(isWithinMiddleTimerSection(100, screenH)).toBe(false); // Top navigation icons
+
+      // iPhone 16 Pro Max height = 932
+      // Center = 932 / 2 + 20 = 486. Top = 255. Bottom = 717.
+      const proMaxH = 932;
+      expect(isWithinMiddleTimerSection(486, proMaxH)).toBe(true);
+      expect(isWithinMiddleTimerSection(900, proMaxH)).toBe(false); // Bottom home indicator swipe
+      expect(isWithinMiddleTimerSection(750, proMaxH)).toBe(false); // Bottom dock area
+      expect(isWithinMiddleTimerSection(30, proMaxH)).toBe(false);  // Top notification center swipe
+
+      // Invalid inputs handled gracefully
+      expect(isWithinMiddleTimerSection(NaN, screenH)).toBe(false);
+      expect(isWithinMiddleTimerSection(446, 0)).toBe(false);
+      expect(isWithinMiddleTimerSection(446, -100)).toBe(false);
     });
   });
 
