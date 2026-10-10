@@ -39,3 +39,7 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
    - Never commit build artifacts (`build/`, `dist/`, `.expo/`), OS metadata (`.DS_Store`), or editor-specific config files (`.claude/`).
    - Keep the working tree completely clean after every task.
 
+## Pre-Task Brief Protocol (Google Play & Master Releases)
+Before every task:
+- Check the `briefs` folder inside the `Google Play` folder in Google Drive and follow the briefs there, starting with `00-master-release-prompt.md`.
+
