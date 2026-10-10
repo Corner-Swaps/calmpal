@@ -23,6 +23,8 @@
       }
     },
     "android": {
+      "package": "com.calmpal.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/icon.png"

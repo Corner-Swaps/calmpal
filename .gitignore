@@ -43,6 +43,16 @@ ios/Pods/
 ios/build/
 ios/*.xcworkspace/xcuserdata/
 ios/*.xcodeproj/xcuserdata/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+*.keystore
+.keystore_password
+backups/
+*.aab
+deliverables/*.aab
 ios/*.xcodeproj/project.xcworkspace/xcuserdata/
 ios/main.jsbundle
 ios/assets/
